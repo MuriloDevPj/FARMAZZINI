@@ -69,10 +69,10 @@ A organização do ambiente:
 * **EAN / GTIN**: Código identificador único (13 dígitos).
 * **Nome do Medicamento**: Título completo do produto.
 * **Marca**: Laboratório ou fabricante.
-* **Preço Sem Desconto**: Valor original (Preço "De").
+* **Preço Sem Desconto**: Valor original.
 * **Preço com PIX**: Valor com desconto máximo à vista.
-* **Preço com Cartão**: Valor para pagamento parcelado.
+* **Preço com Cartão**: Valor para pagamento.
 * **Desconto (%)**: Percentual de economia identificado.
-* **Farmácia**: Identificador da fonte ("Vera Cruz").
+* **Farmácia**: Nome da farmácia.
 
 ---
