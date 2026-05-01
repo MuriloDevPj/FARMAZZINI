@@ -53,7 +53,7 @@ A organização do ambiente:
 * `data/`: Armazenamento local de dados.
     * `raw/`: Dados brutos.
     * `processed/`: Dados limpos.
-* `docs/`: Documentação (Canvas de Escopo, Proposta Comercial).
+* `docs/`: Documentação (Canvas de Escopo, Proposta Comercial, Endreço dos indicadores).
 * `src/scrapers/`: Motores de extração.
     * `veracruz/`: Scripts para a Drogaria Vera Cruz.
     * `farmaponte/`: Scripts para a FarmaPonte.
