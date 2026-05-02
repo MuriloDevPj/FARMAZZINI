@@ -73,5 +73,6 @@ A organização do ambiente:
 * **Preço com Cartão**: Valor para pagamento.
 * **Desconto (%)**: Percentual de economia identificado.
 * **Farmácia**: Nome da farmácia.
+* **Disponibilidade (Estoque)**: qtde em estoque.
 
 ---
