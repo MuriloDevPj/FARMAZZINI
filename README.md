@@ -21,8 +21,7 @@ Acompanhamento das etapas conforme definido no material de **Kick-off**:
 * **Duração:** 1 Semana
 - [ ] **Vera Cruz:** Extração via web scraping (Responsável: Murilo).
 - [ ] **FarmaPonte:** Extração via web scraping (Responsável: Vitor).
-- [ ] Coleta de indicadores obrigatórios: EAN (ou GTIN); nome do medicamento; marca do medicamento;
-Preço com e sem desconto; descontos; nome da farmácia concorrente.
+- [ ] Coleta de indicadores obrigatórios.
 - [ ] Verificação de consistência e tratamento das bases de dados.
 
 ### **Etapa 3: Integração e Automação** 
