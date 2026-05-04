@@ -1,0 +1,1308 @@
+2026-05-03 20:12:46,181 [INFO] ============================================================
+2026-05-03 20:12:46,181 [INFO] Iniciando scraper — FarmaPonte Medicamentos
+2026-05-03 20:12:46,181 [INFO] URL base: https://www.farmaponte.com.br/saude/medicamentos/
+2026-05-03 20:12:46,181 [INFO] ============================================================
+2026-05-03 20:12:46,181 [INFO] Coletando lista de produtos — página 1: https://www.farmaponte.com.br/saude/medicamentos/
+2026-05-03 20:12:48,475 [INFO] Nenhum produto encontrado na página 1. Encerrando paginação.
+2026-05-03 20:12:48,475 [INFO] Total de URLs de produtos coletadas: 0
+2026-05-03 20:12:48,475 [ERROR] Nenhum produto encontrado. Verifique os seletores CSS.
+2026-05-03 20:12:48,475 [ERROR] Dica: inspecione o HTML da página e ajuste os seletores nas funções get_product_urls() e extract_product_data().
+2026-05-03 20:23:36,488 [INFO] ============================================================
+2026-05-03 20:23:36,488 [INFO] Iniciando scraper — FarmaPonte Medicamentos
+2026-05-03 20:23:36,488 [INFO] URL base: https://www.farmaponte.com.br/saude/medicamentos/
+2026-05-03 20:23:36,488 [INFO] ============================================================
+2026-05-03 20:23:36,488 [INFO] Coletando lista de produtos — página 1: https://www.farmaponte.com.br/saude/medicamentos/
+2026-05-03 20:23:36,773 [INFO]   -> 20 produtos encontrados (total: 20)
+2026-05-03 20:23:36,805 [INFO] Ultima pagina atingida.
+2026-05-03 20:23:36,805 [INFO] Total de URLs coletadas: 20
+2026-05-03 20:23:36,805 [INFO] [1/20] Extraindo: https://www.farmaponte.com.br/dipirona-gts-10ml-ger/p
+2026-05-03 20:23:39,476 [INFO] [2/20] Extraindo: https://www.farmaponte.com.br/tadalafila-eurofarma-5mg-caixa-com-30-comprimidos-revestidos/p
+2026-05-03 20:23:42,075 [INFO] [3/20] Extraindo: https://www.farmaponte.com.br/citrato-de-sildenafila-medley-50mg-caixa-com-4-comprimidos-revestidos/p
+2026-05-03 20:23:45,827 [INFO] [4/20] Extraindo: https://www.farmaponte.com.br/dipirona-monoidratada-ache-50mgml-caixa-com-1-frasco-com-100ml-de-solucao-oral-1-copo-medidor/p
+2026-05-03 20:23:48,622 [INFO] [5/20] Extraindo: https://www.farmaponte.com.br/tadalafila-eurofarma-20mg-caixa-com-4-comprimidos-revestidos/p
+2026-05-03 20:23:51,244 [INFO] [6/20] Extraindo: https://www.farmaponte.com.br/dulcolax-5mg-caixa-com-20-drageas/p
+2026-05-03 20:23:56,247 [INFO] [7/20] Extraindo: https://www.farmaponte.com.br/citrato-de-sildenafila-eurofarma-50mg-caixa-com-4-comprimidos-revestidos/p
+2026-05-03 20:24:00,179 [INFO] [8/20] Extraindo: https://www.farmaponte.com.br/apevitin-bc-susp-ems/p
+2026-05-03 20:24:03,903 [INFO] [9/20] Extraindo: https://www.farmaponte.com.br/20-bi-com-30-capsulas/p
+2026-05-03 20:24:07,025 [INFO] [10/20] Extraindo: https://www.farmaponte.com.br/sedatif-pc-com-60-comprimidos/p
+2026-05-03 20:24:09,933 [INFO] [11/20] Extraindo: https://www.farmaponte.com.br/alenia-12mcg-400mcg-caixa-com-60-capsulas-gelatinosas-duras-com-po-de-uso-inalatorio-refil/p
+2026-05-03 20:24:14,404 [INFO] [12/20] Extraindo: https://www.farmaponte.com.br/permanganato-potassio-10-x3adv/p
+2026-05-03 20:24:17,014 [INFO] [13/20] Extraindo: https://www.farmaponte.com.br/simbioflora-15-saches-com-6g-de-po-para-solucao-de-uso-oral/p
+2026-05-03 20:24:19,671 [INFO] [14/20] Extraindo: https://www.farmaponte.com.br/condres-40mg-caixa-com-90-capsulas/p
+2026-05-03 20:24:22,755 [INFO] [15/20] Extraindo: https://www.farmaponte.com.br/odorizante-de-ambiente-bendita-canfora-8-tabletes/p
+2026-05-03 20:24:25,686 [INFO] [16/20] Extraindo: https://www.farmaponte.com.br/niquitin-adesivo-21mg-caixa-com-7-adesivos-transdermicos/p
+2026-05-03 20:24:29,003 [INFO] [17/20] Extraindo: https://www.farmaponte.com.br/gino-canesten-500mg-caixa-com-1-comprimido-vaginal-1-aplicador/p
+2026-05-03 20:24:32,270 [INFO] [18/20] Extraindo: https://www.farmaponte.com.br/tadalafila-medley-20mg-caixa-com-2-comprimidos-revestidos/p
+2026-05-03 20:24:35,637 [INFO] [19/20] Extraindo: https://www.farmaponte.com.br/colidis-gotas-10ml/p
+2026-05-03 20:24:39,029 [INFO] [20/20] Extraindo: https://www.farmaponte.com.br/venocel-100mg-caixa-com-60-capsulas-gelatinosas/p
+2026-05-03 20:24:41,443 [INFO] ============================================================
+2026-05-03 20:24:41,443 [INFO] Extracao concluida! 20 produtos salvos em 'farmaponte_medicamentos.csv'
+2026-05-03 20:24:41,444 [INFO] ============================================================
+2026-05-03 20:32:48,087 [INFO] ============================================================
+2026-05-03 20:32:48,088 [INFO] Iniciando scraper — FarmaPonte Medicamentos
+2026-05-03 20:32:48,088 [INFO] URL base: https://www.farmaponte.com.br/saude/medicamentos/
+2026-05-03 20:32:48,088 [INFO] ============================================================
+2026-05-03 20:32:48,088 [INFO] Coletando lista de produtos — página 1: https://www.farmaponte.com.br/saude/medicamentos/
+2026-05-03 20:32:48,363 [INFO]   -> 20 produtos encontrados (total: 20)
+2026-05-03 20:32:48,396 [INFO] Ultima pagina atingida.
+2026-05-03 20:32:48,396 [INFO] Total de URLs coletadas: 20
+2026-05-03 20:32:48,396 [INFO] [1/20] Extraindo: https://www.farmaponte.com.br/dipirona-gts-10ml-ger/p
+2026-05-03 20:32:50,698 [INFO] [2/20] Extraindo: https://www.farmaponte.com.br/tadalafila-eurofarma-5mg-caixa-com-30-comprimidos-revestidos/p
+2026-05-03 20:32:54,340 [INFO] [3/20] Extraindo: https://www.farmaponte.com.br/citrato-de-sildenafila-medley-50mg-caixa-com-4-comprimidos-revestidos/p
+2026-05-03 20:32:56,162 [INFO] [4/20] Extraindo: https://www.farmaponte.com.br/dipirona-monoidratada-ache-50mgml-caixa-com-1-frasco-com-100ml-de-solucao-oral-1-copo-medidor/p
+2026-05-03 20:32:59,600 [INFO] [5/20] Extraindo: https://www.farmaponte.com.br/tadalafila-eurofarma-20mg-caixa-com-4-comprimidos-revestidos/p
+2026-05-03 20:33:01,851 [INFO] [6/20] Extraindo: https://www.farmaponte.com.br/dulcolax-5mg-caixa-com-20-drageas/p
+2026-05-03 20:33:04,997 [INFO] [7/20] Extraindo: https://www.farmaponte.com.br/citrato-de-sildenafila-eurofarma-50mg-caixa-com-4-comprimidos-revestidos/p
+2026-05-03 20:33:07,485 [INFO] [8/20] Extraindo: https://www.farmaponte.com.br/apevitin-bc-susp-ems/p
+2026-05-03 20:33:10,975 [INFO] [9/20] Extraindo: https://www.farmaponte.com.br/20-bi-com-30-capsulas/p
+2026-05-03 20:33:13,967 [INFO] [10/20] Extraindo: https://www.farmaponte.com.br/sedatif-pc-com-60-comprimidos/p
+2026-05-03 20:33:16,085 [INFO] [11/20] Extraindo: https://www.farmaponte.com.br/alenia-12mcg-400mcg-caixa-com-60-capsulas-gelatinosas-duras-com-po-de-uso-inalatorio-refil/p
+2026-05-03 20:33:18,039 [INFO] [12/20] Extraindo: https://www.farmaponte.com.br/permanganato-potassio-10-x3adv/p
+2026-05-03 20:33:20,903 [INFO] [13/20] Extraindo: https://www.farmaponte.com.br/simbioflora-15-saches-com-6g-de-po-para-solucao-de-uso-oral/p
+2026-05-03 20:33:23,676 [INFO] [14/20] Extraindo: https://www.farmaponte.com.br/condres-40mg-caixa-com-90-capsulas/p
+2026-05-03 20:33:27,035 [INFO] [15/20] Extraindo: https://www.farmaponte.com.br/odorizante-de-ambiente-bendita-canfora-8-tabletes/p
+2026-05-03 20:33:30,369 [INFO] [16/20] Extraindo: https://www.farmaponte.com.br/niquitin-adesivo-21mg-caixa-com-7-adesivos-transdermicos/p
+2026-05-03 20:33:32,696 [INFO] [17/20] Extraindo: https://www.farmaponte.com.br/gino-canesten-500mg-caixa-com-1-comprimido-vaginal-1-aplicador/p
+2026-05-03 20:33:35,661 [INFO] [18/20] Extraindo: https://www.farmaponte.com.br/tadalafila-medley-20mg-caixa-com-2-comprimidos-revestidos/p
+2026-05-03 20:33:38,702 [INFO] [19/20] Extraindo: https://www.farmaponte.com.br/colidis-gotas-10ml/p
+2026-05-03 20:33:41,297 [INFO] [20/20] Extraindo: https://www.farmaponte.com.br/venocel-100mg-caixa-com-60-capsulas-gelatinosas/p
+2026-05-03 20:33:43,223 [INFO] ============================================================
+2026-05-03 20:33:43,224 [INFO] Extracao concluida! 20 produtos salvos em 'farmaponte_medicamentos.csv'
+2026-05-03 20:33:43,224 [INFO] ============================================================
+2026-05-04 08:36:27,393 [INFO] ============================================================
+2026-05-04 08:36:27,393 [INFO] Iniciando scraper — FarmaPonte Medicamentos
+2026-05-04 08:36:27,393 [INFO] URL base: https://www.farmaponte.com.br/saude/medicamentos/
+2026-05-04 08:36:27,393 [INFO] ============================================================
+2026-05-04 08:36:27,393 [INFO] Coletando lista de produtos — página 1: https://www.farmaponte.com.br/saude/medicamentos/
+2026-05-04 08:36:28,101 [INFO]   -> 20 produtos encontrados (total: 20)
+2026-05-04 08:36:28,135 [INFO] Ultima pagina atingida.
+2026-05-04 08:36:28,135 [INFO] Total de URLs coletadas: 20
+2026-05-04 08:36:28,135 [INFO] [1/20] Extraindo: https://www.farmaponte.com.br/dipirona-gts-10ml-ger/p
+2026-05-04 08:36:31,206 [INFO] [2/20] Extraindo: https://www.farmaponte.com.br/tadalafila-eurofarma-5mg-caixa-com-30-comprimidos-revestidos/p
+2026-05-04 08:36:34,344 [INFO] [3/20] Extraindo: https://www.farmaponte.com.br/citrato-de-sildenafila-medley-50mg-caixa-com-4-comprimidos-revestidos/p
+2026-05-04 08:36:38,896 [INFO] [4/20] Extraindo: https://www.farmaponte.com.br/dipirona-monoidratada-ache-50mgml-caixa-com-1-frasco-com-100ml-de-solucao-oral-1-copo-medidor/p
+2026-05-04 08:36:41,447 [INFO] [5/20] Extraindo: https://www.farmaponte.com.br/tadalafila-eurofarma-20mg-caixa-com-4-comprimidos-revestidos/p
+2026-05-04 08:36:44,696 [INFO] [6/20] Extraindo: https://www.farmaponte.com.br/dulcolax-5mg-caixa-com-20-drageas/p
+2026-05-04 08:36:47,959 [INFO] [7/20] Extraindo: https://www.farmaponte.com.br/citrato-de-sildenafila-eurofarma-50mg-caixa-com-4-comprimidos-revestidos/p
+2026-05-04 08:36:50,687 [INFO] [8/20] Extraindo: https://www.farmaponte.com.br/apevitin-bc-susp-ems/p
+2026-05-04 08:36:53,281 [INFO] [9/20] Extraindo: https://www.farmaponte.com.br/20-bi-com-30-capsulas/p
+2026-05-04 08:36:55,722 [INFO] [10/20] Extraindo: https://www.farmaponte.com.br/sedatif-pc-com-60-comprimidos/p
+2026-05-04 08:36:59,732 [INFO] [11/20] Extraindo: https://www.farmaponte.com.br/alenia-12mcg-400mcg-caixa-com-60-capsulas-gelatinosas-duras-com-po-de-uso-inalatorio-refil/p
+2026-05-04 08:37:03,163 [INFO] [12/20] Extraindo: https://www.farmaponte.com.br/permanganato-potassio-10-x3adv/p
+2026-05-04 08:37:05,460 [INFO] [13/20] Extraindo: https://www.farmaponte.com.br/simbioflora-15-saches-com-6g-de-po-para-solucao-de-uso-oral/p
+2026-05-04 08:37:09,997 [INFO] [14/20] Extraindo: https://www.farmaponte.com.br/condres-40mg-caixa-com-90-capsulas/p
+2026-05-04 08:37:14,820 [INFO] [15/20] Extraindo: https://www.farmaponte.com.br/odorizante-de-ambiente-bendita-canfora-8-tabletes/p
+2026-05-04 08:37:18,057 [INFO] [16/20] Extraindo: https://www.farmaponte.com.br/niquitin-adesivo-21mg-caixa-com-7-adesivos-transdermicos/p
+2026-05-04 08:37:21,715 [INFO] [17/20] Extraindo: https://www.farmaponte.com.br/gino-canesten-500mg-caixa-com-1-comprimido-vaginal-1-aplicador/p
+2026-05-04 08:37:26,233 [INFO] [18/20] Extraindo: https://www.farmaponte.com.br/tadalafila-medley-20mg-caixa-com-2-comprimidos-revestidos/p
+2026-05-04 08:37:29,752 [INFO] [19/20] Extraindo: https://www.farmaponte.com.br/colidis-gotas-10ml/p
+2026-05-04 08:37:32,158 [INFO] [20/20] Extraindo: https://www.farmaponte.com.br/venocel-100mg-caixa-com-60-capsulas-gelatinosas/p
+2026-05-04 08:37:34,543 [INFO] ============================================================
+2026-05-04 08:37:34,544 [INFO] Extracao concluida! 20 produtos salvos em 'farmaponte_medicamentos.csv'
+2026-05-04 08:37:34,544 [INFO] ============================================================
+2026-05-04 12:49:13,196 [INFO] ============================================================
+2026-05-04 12:49:13,196 [INFO] Iniciando scraper — FarmaPonte Medicamentos
+2026-05-04 12:49:13,196 [INFO] URL base: https://www.farmaponte.com.br/saude/medicamentos/
+2026-05-04 12:49:13,196 [INFO] ============================================================
+2026-05-04 12:49:13,196 [INFO] Coletando lista de produtos — página 1: https://www.farmaponte.com.br/saude/medicamentos/
+2026-05-04 12:49:13,900 [INFO]   -> 20 produtos encontrados (total: 20)
+2026-05-04 12:49:13,934 [INFO] Ultima pagina atingida.
+2026-05-04 12:49:13,934 [INFO] Total de URLs coletadas: 20
+2026-05-04 12:49:13,934 [INFO] [1/20] Extraindo: https://www.farmaponte.com.br/dipirona-gts-10ml-ger/p
+2026-05-04 12:49:16,423 [INFO] [2/20] Extraindo: https://www.farmaponte.com.br/tadalafila-eurofarma-5mg-caixa-com-30-comprimidos-revestidos/p
+2026-05-04 12:49:19,093 [INFO] [3/20] Extraindo: https://www.farmaponte.com.br/citrato-de-sildenafila-medley-50mg-caixa-com-4-comprimidos-revestidos/p
+2026-05-04 12:49:23,024 [INFO] [4/20] Extraindo: https://www.farmaponte.com.br/dipirona-monoidratada-ache-50mgml-caixa-com-1-frasco-com-100ml-de-solucao-oral-1-copo-medidor/p
+2026-05-04 12:49:26,604 [INFO] [5/20] Extraindo: https://www.farmaponte.com.br/tadalafila-eurofarma-20mg-caixa-com-4-comprimidos-revestidos/p
+2026-05-04 12:49:29,251 [INFO] [6/20] Extraindo: https://www.farmaponte.com.br/dulcolax-5mg-caixa-com-20-drageas/p
+2026-05-04 12:49:33,695 [INFO] [7/20] Extraindo: https://www.farmaponte.com.br/citrato-de-sildenafila-eurofarma-50mg-caixa-com-4-comprimidos-revestidos/p
+2026-05-04 12:49:36,505 [INFO] [8/20] Extraindo: https://www.farmaponte.com.br/apevitin-bc-susp-ems/p
+2026-05-04 12:49:39,489 [INFO] [9/20] Extraindo: https://www.farmaponte.com.br/20-bi-com-30-capsulas/p
+2026-05-04 12:49:43,622 [INFO] [10/20] Extraindo: https://www.farmaponte.com.br/sedatif-pc-com-60-comprimidos/p
+2026-05-04 12:49:45,907 [INFO] [11/20] Extraindo: https://www.farmaponte.com.br/alenia-12mcg-400mcg-caixa-com-60-capsulas-gelatinosas-duras-com-po-de-uso-inalatorio-refil/p
+2026-05-04 12:49:49,613 [INFO] [12/20] Extraindo: https://www.farmaponte.com.br/permanganato-potassio-10-x3adv/p
+2026-05-04 12:49:52,905 [INFO] [13/20] Extraindo: https://www.farmaponte.com.br/simbioflora-15-saches-com-6g-de-po-para-solucao-de-uso-oral/p
+2026-05-04 12:49:56,913 [INFO] [14/20] Extraindo: https://www.farmaponte.com.br/condres-40mg-caixa-com-90-capsulas/p
+2026-05-04 12:50:00,945 [INFO] [15/20] Extraindo: https://www.farmaponte.com.br/odorizante-de-ambiente-bendita-canfora-8-tabletes/p
+2026-05-04 12:50:03,566 [INFO] [16/20] Extraindo: https://www.farmaponte.com.br/niquitin-adesivo-21mg-caixa-com-7-adesivos-transdermicos/p
+2026-05-04 12:50:07,727 [INFO] [17/20] Extraindo: https://www.farmaponte.com.br/gino-canesten-500mg-caixa-com-1-comprimido-vaginal-1-aplicador/p
+2026-05-04 12:50:11,090 [INFO] [18/20] Extraindo: https://www.farmaponte.com.br/tadalafila-medley-20mg-caixa-com-2-comprimidos-revestidos/p
+2026-05-04 12:50:13,402 [INFO] [19/20] Extraindo: https://www.farmaponte.com.br/colidis-gotas-10ml/p
+2026-05-04 12:50:15,517 [INFO] [20/20] Extraindo: https://www.farmaponte.com.br/venocel-100mg-caixa-com-60-capsulas-gelatinosas/p
+2026-05-04 12:50:18,086 [INFO] ============================================================
+2026-05-04 12:50:18,086 [INFO] Extracao concluida! 20 produtos salvos em 'farmaponte_medicamentos.csv'
+2026-05-04 12:50:18,086 [INFO] ============================================================
+2026-05-04 13:01:23,818 [INFO] ============================================================
+2026-05-04 13:01:23,818 [INFO] Iniciando scraper — FarmaPonte Medicamentos
+2026-05-04 13:01:23,818 [INFO] URL base: https://www.farmaponte.com.br/saude/medicamentos/
+2026-05-04 13:01:23,818 [INFO] ============================================================
+2026-05-04 13:01:23,818 [INFO] Coletando lista de produtos — página 1: https://www.farmaponte.com.br/saude/medicamentos/
+2026-05-04 13:01:24,023 [INFO]   -> 20 produtos encontrados (total: 20)
+2026-05-04 13:01:24,053 [INFO] Ultima pagina atingida.
+2026-05-04 13:01:24,053 [INFO] Total de URLs coletadas: 20
+2026-05-04 13:01:24,053 [INFO] [1/20] Extraindo: https://www.farmaponte.com.br/dipirona-gts-10ml-ger/p
+2026-05-04 13:01:26,653 [INFO] [2/20] Extraindo: https://www.farmaponte.com.br/tadalafila-eurofarma-5mg-caixa-com-30-comprimidos-revestidos/p
+2026-05-04 13:01:29,029 [INFO] [3/20] Extraindo: https://www.farmaponte.com.br/citrato-de-sildenafila-medley-50mg-caixa-com-4-comprimidos-revestidos/p
+2026-05-04 13:01:32,614 [INFO] [4/20] Extraindo: https://www.farmaponte.com.br/dipirona-monoidratada-ache-50mgml-caixa-com-1-frasco-com-100ml-de-solucao-oral-1-copo-medidor/p
+2026-05-04 13:01:35,487 [INFO] [5/20] Extraindo: https://www.farmaponte.com.br/tadalafila-eurofarma-20mg-caixa-com-4-comprimidos-revestidos/p
+2026-05-04 13:01:37,735 [INFO] [6/20] Extraindo: https://www.farmaponte.com.br/dulcolax-5mg-caixa-com-20-drageas/p
+2026-05-04 13:01:40,916 [INFO] [7/20] Extraindo: https://www.farmaponte.com.br/citrato-de-sildenafila-eurofarma-50mg-caixa-com-4-comprimidos-revestidos/p
+2026-05-04 13:01:42,777 [INFO] [8/20] Extraindo: https://www.farmaponte.com.br/apevitin-bc-susp-ems/p
+2026-05-04 13:01:44,868 [INFO] [9/20] Extraindo: https://www.farmaponte.com.br/20-bi-com-30-capsulas/p
+2026-05-04 13:01:47,383 [INFO] [10/20] Extraindo: https://www.farmaponte.com.br/sedatif-pc-com-60-comprimidos/p
+2026-05-04 13:01:50,956 [INFO] [11/20] Extraindo: https://www.farmaponte.com.br/alenia-12mcg-400mcg-caixa-com-60-capsulas-gelatinosas-duras-com-po-de-uso-inalatorio-refil/p
+2026-05-04 13:01:53,174 [INFO] [12/20] Extraindo: https://www.farmaponte.com.br/permanganato-potassio-10-x3adv/p
+2026-05-04 13:01:55,585 [INFO] [13/20] Extraindo: https://www.farmaponte.com.br/simbioflora-15-saches-com-6g-de-po-para-solucao-de-uso-oral/p
+2026-05-04 13:01:57,255 [INFO] [14/20] Extraindo: https://www.farmaponte.com.br/condres-40mg-caixa-com-90-capsulas/p
+2026-05-04 13:01:59,847 [INFO] [15/20] Extraindo: https://www.farmaponte.com.br/odorizante-de-ambiente-bendita-canfora-8-tabletes/p
+2026-05-04 13:02:03,300 [INFO] [16/20] Extraindo: https://www.farmaponte.com.br/niquitin-adesivo-21mg-caixa-com-7-adesivos-transdermicos/p
+2026-05-04 13:02:04,964 [INFO] [17/20] Extraindo: https://www.farmaponte.com.br/gino-canesten-500mg-caixa-com-1-comprimido-vaginal-1-aplicador/p
+2026-05-04 13:02:07,373 [INFO] [18/20] Extraindo: https://www.farmaponte.com.br/tadalafila-medley-20mg-caixa-com-2-comprimidos-revestidos/p
+2026-05-04 13:02:09,060 [INFO] [19/20] Extraindo: https://www.farmaponte.com.br/colidis-gotas-10ml/p
+2026-05-04 13:02:12,428 [INFO] [20/20] Extraindo: https://www.farmaponte.com.br/venocel-100mg-caixa-com-60-capsulas-gelatinosas/p
+2026-05-04 13:02:15,480 [INFO] ============================================================
+2026-05-04 13:02:15,483 [INFO] Extracao concluida! 20 produtos salvos em 'farmaponte_medicamentos.csv'
+2026-05-04 13:02:15,483 [INFO] ============================================================
+2026-05-04 13:03:15,916 [INFO] ============================================================
+2026-05-04 13:03:15,916 [INFO] Iniciando scraper — FarmaPonte Medicamentos
+2026-05-04 13:03:15,916 [INFO] URL base: https://www.farmaponte.com.br/saude/medicamentos/
+2026-05-04 13:03:15,916 [INFO] ============================================================
+2026-05-04 13:03:15,916 [INFO] Coletando lista de produtos — página 1: https://www.farmaponte.com.br/saude/medicamentos/
+2026-05-04 13:03:16,136 [INFO]   -> 20 produtos encontrados (total: 20)
+2026-05-04 13:03:16,167 [INFO] Ultima pagina atingida.
+2026-05-04 13:03:16,167 [INFO] Total de URLs coletadas: 20
+2026-05-04 13:03:16,167 [INFO] [1/20] Extraindo: https://www.farmaponte.com.br/dipirona-gts-10ml-ger/p
+2026-05-04 13:03:18,315 [INFO] [2/20] Extraindo: https://www.farmaponte.com.br/tadalafila-eurofarma-5mg-caixa-com-30-comprimidos-revestidos/p
+2026-05-04 13:03:20,490 [INFO] [3/20] Extraindo: https://www.farmaponte.com.br/citrato-de-sildenafila-medley-50mg-caixa-com-4-comprimidos-revestidos/p
+2026-05-04 13:03:24,112 [INFO] [4/20] Extraindo: https://www.farmaponte.com.br/dipirona-monoidratada-ache-50mgml-caixa-com-1-frasco-com-100ml-de-solucao-oral-1-copo-medidor/p
+2026-05-04 13:03:25,860 [INFO] [5/20] Extraindo: https://www.farmaponte.com.br/tadalafila-eurofarma-20mg-caixa-com-4-comprimidos-revestidos/p
+2026-05-04 13:03:28,093 [INFO] [6/20] Extraindo: https://www.farmaponte.com.br/dulcolax-5mg-caixa-com-20-drageas/p
+2026-05-04 13:03:30,021 [INFO] [7/20] Extraindo: https://www.farmaponte.com.br/citrato-de-sildenafila-eurofarma-50mg-caixa-com-4-comprimidos-revestidos/p
+2026-05-04 13:03:32,273 [INFO] [8/20] Extraindo: https://www.farmaponte.com.br/apevitin-bc-susp-ems/p
+2026-05-04 13:03:35,552 [INFO] [9/20] Extraindo: https://www.farmaponte.com.br/20-bi-com-30-capsulas/p
+2026-05-04 13:03:38,034 [INFO] [10/20] Extraindo: https://www.farmaponte.com.br/sedatif-pc-com-60-comprimidos/p
+2026-05-04 13:03:41,231 [INFO] [11/20] Extraindo: https://www.farmaponte.com.br/alenia-12mcg-400mcg-caixa-com-60-capsulas-gelatinosas-duras-com-po-de-uso-inalatorio-refil/p
+2026-05-04 13:03:44,284 [INFO] [12/20] Extraindo: https://www.farmaponte.com.br/permanganato-potassio-10-x3adv/p
+2026-05-04 13:03:47,149 [INFO] [13/20] Extraindo: https://www.farmaponte.com.br/simbioflora-15-saches-com-6g-de-po-para-solucao-de-uso-oral/p
+2026-05-04 13:03:50,934 [INFO] [14/20] Extraindo: https://www.farmaponte.com.br/condres-40mg-caixa-com-90-capsulas/p
+2026-05-04 13:03:53,011 [INFO] [15/20] Extraindo: https://www.farmaponte.com.br/odorizante-de-ambiente-bendita-canfora-8-tabletes/p
+2026-05-04 13:03:55,360 [INFO] [16/20] Extraindo: https://www.farmaponte.com.br/niquitin-adesivo-21mg-caixa-com-7-adesivos-transdermicos/p
+2026-05-04 13:03:58,701 [INFO] [17/20] Extraindo: https://www.farmaponte.com.br/gino-canesten-500mg-caixa-com-1-comprimido-vaginal-1-aplicador/p
+2026-05-04 13:04:01,759 [INFO] [18/20] Extraindo: https://www.farmaponte.com.br/tadalafila-medley-20mg-caixa-com-2-comprimidos-revestidos/p
+2026-05-04 13:04:04,933 [INFO] [19/20] Extraindo: https://www.farmaponte.com.br/colidis-gotas-10ml/p
+2026-05-04 13:04:07,050 [INFO] [20/20] Extraindo: https://www.farmaponte.com.br/venocel-100mg-caixa-com-60-capsulas-gelatinosas/p
+2026-05-04 13:04:09,309 [INFO] ============================================================
+2026-05-04 13:04:09,309 [INFO] Extracao concluida! 20 produtos salvos em 'farmaponte_medicamentos.csv'
+2026-05-04 13:04:09,309 [INFO] ============================================================
+2026-05-04 13:06:24,641 [INFO] ============================================================
+2026-05-04 13:06:24,641 [INFO] Iniciando scraper — FarmaPonte Medicamentos
+2026-05-04 13:06:24,641 [INFO] URL base: https://www.farmaponte.com.br/saude/medicamentos/
+2026-05-04 13:06:24,641 [INFO] ============================================================
+2026-05-04 13:06:24,641 [INFO] Coletando lista de produtos — página 1: https://www.farmaponte.com.br/saude/medicamentos/
+2026-05-04 13:06:24,860 [INFO]   -> 20 produtos encontrados (total: 20)
+2026-05-04 13:08:16,727 [INFO] ============================================================
+2026-05-04 13:08:16,727 [INFO] Iniciando scraper — FarmaPonte Medicamentos
+2026-05-04 13:08:16,727 [INFO] URL base: https://www.farmaponte.com.br/saude/medicamentos/
+2026-05-04 13:08:16,727 [INFO] ============================================================
+2026-05-04 13:08:16,727 [INFO] Coletando lista de produtos — página 1: https://www.farmaponte.com.br/saude/medicamentos/
+2026-05-04 13:08:17,018 [INFO]   -> 20 produtos encontrados (total: 20)
+2026-05-04 13:08:19,249 [INFO] Coletando lista de produtos — página 2: https://www.farmaponte.com.br/saude/medicamentos/?p=2
+2026-05-04 13:08:19,310 [INFO]   -> 20 produtos encontrados (total: 40)
+2026-05-04 13:08:20,884 [INFO] Coletando lista de produtos — página 3: https://www.farmaponte.com.br/saude/medicamentos/?p=3
+2026-05-04 13:08:21,836 [INFO]   -> 20 produtos encontrados (total: 60)
+2026-05-04 13:08:25,084 [INFO] Coletando lista de produtos — página 4: https://www.farmaponte.com.br/saude/medicamentos/?p=4
+2026-05-04 13:08:30,002 [INFO]   -> 20 produtos encontrados (total: 80)
+2026-05-04 13:08:31,709 [INFO] Coletando lista de produtos — página 5: https://www.farmaponte.com.br/saude/medicamentos/?p=5
+2026-05-04 13:08:32,254 [INFO]   -> 20 produtos encontrados (total: 100)
+2026-05-04 13:08:34,766 [INFO] Coletando lista de produtos — página 6: https://www.farmaponte.com.br/saude/medicamentos/?p=6
+2026-05-04 13:08:35,424 [INFO]   -> 20 produtos encontrados (total: 120)
+2026-05-04 13:08:37,265 [INFO] Coletando lista de produtos — página 7: https://www.farmaponte.com.br/saude/medicamentos/?p=7
+2026-05-04 13:08:37,885 [INFO]   -> 20 produtos encontrados (total: 140)
+2026-05-04 13:08:39,511 [INFO] Coletando lista de produtos — página 8: https://www.farmaponte.com.br/saude/medicamentos/?p=8
+2026-05-04 13:08:40,136 [INFO]   -> 20 produtos encontrados (total: 160)
+2026-05-04 13:08:43,354 [INFO] Coletando lista de produtos — página 9: https://www.farmaponte.com.br/saude/medicamentos/?p=9
+2026-05-04 13:08:44,275 [INFO]   -> 20 produtos encontrados (total: 180)
+2026-05-04 13:08:46,230 [INFO] Coletando lista de produtos — página 10: https://www.farmaponte.com.br/saude/medicamentos/?p=10
+2026-05-04 13:08:50,148 [INFO]   -> 20 produtos encontrados (total: 200)
+2026-05-04 13:08:52,265 [INFO] Coletando lista de produtos — página 11: https://www.farmaponte.com.br/saude/medicamentos/?p=11
+2026-05-04 13:08:52,837 [INFO]   -> 20 produtos encontrados (total: 220)
+2026-05-04 13:08:56,053 [INFO] Coletando lista de produtos — página 12: https://www.farmaponte.com.br/saude/medicamentos/?p=12
+2026-05-04 13:08:56,726 [INFO]   -> 20 produtos encontrados (total: 240)
+2026-05-04 13:09:00,178 [INFO] Coletando lista de produtos — página 13: https://www.farmaponte.com.br/saude/medicamentos/?p=13
+2026-05-04 13:09:01,641 [INFO]   -> 20 produtos encontrados (total: 260)
+2026-05-04 13:09:04,418 [INFO] Coletando lista de produtos — página 14: https://www.farmaponte.com.br/saude/medicamentos/?p=14
+2026-05-04 13:09:05,429 [INFO]   -> 20 produtos encontrados (total: 280)
+2026-05-04 13:09:07,680 [INFO] Coletando lista de produtos — página 15: https://www.farmaponte.com.br/saude/medicamentos/?p=15
+2026-05-04 13:09:11,823 [INFO]   -> 20 produtos encontrados (total: 300)
+2026-05-04 13:09:14,313 [INFO] Coletando lista de produtos — página 16: https://www.farmaponte.com.br/saude/medicamentos/?p=16
+2026-05-04 13:09:16,082 [INFO]   -> 20 produtos encontrados (total: 320)
+2026-05-04 13:09:18,126 [INFO] Coletando lista de produtos — página 17: https://www.farmaponte.com.br/saude/medicamentos/?p=17
+2026-05-04 13:09:19,253 [INFO]   -> 20 produtos encontrados (total: 340)
+2026-05-04 13:09:21,777 [INFO] Coletando lista de produtos — página 18: https://www.farmaponte.com.br/saude/medicamentos/?p=18
+2026-05-04 13:09:22,298 [INFO]   -> 20 produtos encontrados (total: 360)
+2026-05-04 13:09:24,727 [INFO] Coletando lista de produtos — página 19: https://www.farmaponte.com.br/saude/medicamentos/?p=19
+2026-05-04 13:09:25,448 [INFO]   -> 20 produtos encontrados (total: 380)
+2026-05-04 13:09:27,183 [INFO] Coletando lista de produtos — página 20: https://www.farmaponte.com.br/saude/medicamentos/?p=20
+2026-05-04 13:09:28,513 [INFO]   -> 20 produtos encontrados (total: 400)
+2026-05-04 13:09:31,891 [INFO] Coletando lista de produtos — página 21: https://www.farmaponte.com.br/saude/medicamentos/?p=21
+2026-05-04 13:09:32,929 [INFO]   -> 20 produtos encontrados (total: 420)
+2026-05-04 13:09:36,384 [INFO] Coletando lista de produtos — página 22: https://www.farmaponte.com.br/saude/medicamentos/?p=22
+2026-05-04 13:09:50,531 [INFO]   -> 20 produtos encontrados (total: 440)
+2026-05-04 13:09:52,578 [INFO] Coletando lista de produtos — página 23: https://www.farmaponte.com.br/saude/medicamentos/?p=23
+2026-05-04 13:09:53,161 [INFO]   -> 20 produtos encontrados (total: 460)
+2026-05-04 13:09:56,655 [INFO] Coletando lista de produtos — página 24: https://www.farmaponte.com.br/saude/medicamentos/?p=24
+2026-05-04 13:09:58,277 [INFO]   -> 20 produtos encontrados (total: 480)
+2026-05-04 13:10:00,003 [INFO] Coletando lista de produtos — página 25: https://www.farmaponte.com.br/saude/medicamentos/?p=25
+2026-05-04 13:10:00,528 [INFO]   -> 20 produtos encontrados (total: 500)
+2026-05-04 13:10:03,124 [INFO] Coletando lista de produtos — página 26: https://www.farmaponte.com.br/saude/medicamentos/?p=26
+2026-05-04 13:10:04,929 [INFO]   -> 20 produtos encontrados (total: 520)
+2026-05-04 13:10:07,497 [INFO] Coletando lista de produtos — página 27: https://www.farmaponte.com.br/saude/medicamentos/?p=27
+2026-05-04 13:10:09,210 [INFO]   -> 20 produtos encontrados (total: 540)
+2026-05-04 13:10:12,190 [INFO] Coletando lista de produtos — página 28: https://www.farmaponte.com.br/saude/medicamentos/?p=28
+2026-05-04 13:10:14,774 [INFO]   -> 20 produtos encontrados (total: 560)
+2026-05-04 13:10:17,232 [INFO] Coletando lista de produtos — página 29: https://www.farmaponte.com.br/saude/medicamentos/?p=29
+2026-05-04 13:10:17,936 [INFO]   -> 20 produtos encontrados (total: 580)
+2026-05-04 13:10:21,188 [INFO] Coletando lista de produtos — página 30: https://www.farmaponte.com.br/saude/medicamentos/?p=30
+2026-05-04 13:10:21,815 [INFO]   -> 20 produtos encontrados (total: 600)
+2026-05-04 13:10:25,040 [INFO] Coletando lista de produtos — página 31: https://www.farmaponte.com.br/saude/medicamentos/?p=31
+2026-05-04 13:10:25,938 [INFO]   -> 20 produtos encontrados (total: 620)
+2026-05-04 13:10:28,515 [INFO] Coletando lista de produtos — página 32: https://www.farmaponte.com.br/saude/medicamentos/?p=32
+2026-05-04 13:10:29,982 [INFO]   -> 20 produtos encontrados (total: 640)
+2026-05-04 13:10:32,863 [INFO] Coletando lista de produtos — página 33: https://www.farmaponte.com.br/saude/medicamentos/?p=33
+2026-05-04 13:10:34,559 [INFO]   -> 20 produtos encontrados (total: 660)
+2026-05-04 13:10:38,030 [INFO] Coletando lista de produtos — página 34: https://www.farmaponte.com.br/saude/medicamentos/?p=34
+2026-05-04 13:10:40,052 [INFO]   -> 20 produtos encontrados (total: 680)
+2026-05-04 13:10:42,999 [INFO] Coletando lista de produtos — página 35: https://www.farmaponte.com.br/saude/medicamentos/?p=35
+2026-05-04 13:10:43,739 [INFO]   -> 20 produtos encontrados (total: 700)
+2026-05-04 13:10:45,496 [INFO] Coletando lista de produtos — página 36: https://www.farmaponte.com.br/saude/medicamentos/?p=36
+2026-05-04 13:10:46,299 [INFO]   -> 20 produtos encontrados (total: 720)
+2026-05-04 13:10:48,670 [INFO] Coletando lista de produtos — página 37: https://www.farmaponte.com.br/saude/medicamentos/?p=37
+2026-05-04 13:10:49,276 [INFO]   -> 20 produtos encontrados (total: 740)
+2026-05-04 13:10:52,633 [INFO] Coletando lista de produtos — página 38: https://www.farmaponte.com.br/saude/medicamentos/?p=38
+2026-05-04 13:10:55,406 [INFO]   -> 20 produtos encontrados (total: 760)
+2026-05-04 13:10:58,802 [INFO] Coletando lista de produtos — página 39: https://www.farmaponte.com.br/saude/medicamentos/?p=39
+2026-05-04 13:11:02,088 [INFO]   -> 20 produtos encontrados (total: 780)
+2026-05-04 13:11:05,470 [INFO] Coletando lista de produtos — página 40: https://www.farmaponte.com.br/saude/medicamentos/?p=40
+2026-05-04 13:11:46,893 [WARNING] Tentativa 1/3 falhou para https://www.farmaponte.com.br/saude/medicamentos/?p=40: HTTPSConnectionPool(host='www.farmaponte.com.br', port=443): Read timed out. (read timeout=20)
+2026-05-04 13:11:51,910 [WARNING] Tentativa 2/3 falhou para https://www.farmaponte.com.br/saude/medicamentos/?p=40: HTTPSConnectionPool(host='www.farmaponte.com.br', port=443): Max retries exceeded with url: /saude/medicamentos/?p=40 (Caused by NameResolutionError("HTTPSConnection(host='www.farmaponte.com.br', port=443): Failed to resolve 'www.farmaponte.com.br' ([Errno 8] nodename nor servname provided, or not known)"))
+2026-05-04 13:12:03,034 [INFO]   -> 20 produtos encontrados (total: 800)
+2026-05-04 13:12:04,785 [INFO] Coletando lista de produtos — página 41: https://www.farmaponte.com.br/saude/medicamentos/?p=41
+2026-05-04 13:12:05,965 [INFO]   -> 20 produtos encontrados (total: 820)
+2026-05-04 13:12:09,235 [INFO] Coletando lista de produtos — página 42: https://www.farmaponte.com.br/saude/medicamentos/?p=42
+2026-05-04 13:12:10,733 [INFO]   -> 20 produtos encontrados (total: 840)
+2026-05-04 13:12:12,361 [INFO] Coletando lista de produtos — página 43: https://www.farmaponte.com.br/saude/medicamentos/?p=43
+2026-05-04 13:12:12,830 [INFO]   -> 20 produtos encontrados (total: 860)
+2026-05-04 13:12:15,806 [INFO] Coletando lista de produtos — página 44: https://www.farmaponte.com.br/saude/medicamentos/?p=44
+2026-05-04 13:12:18,854 [INFO]   -> 20 produtos encontrados (total: 880)
+2026-05-04 13:12:27,267 [INFO] Coletando lista de produtos — página 45: https://www.farmaponte.com.br/saude/medicamentos/?p=45
+2026-05-04 13:12:47,273 [WARNING] Tentativa 1/3 falhou para https://www.farmaponte.com.br/saude/medicamentos/?p=45: HTTPSConnectionPool(host='www.farmaponte.com.br', port=443): Read timed out. (read timeout=20)
+2026-05-04 13:12:52,458 [INFO]   -> 20 produtos encontrados (total: 900)
+2026-05-04 13:12:54,950 [INFO] Coletando lista de produtos — página 46: https://www.farmaponte.com.br/saude/medicamentos/?p=46
+2026-05-04 13:12:55,910 [INFO]   -> 20 produtos encontrados (total: 920)
+2026-05-04 13:12:58,015 [INFO] Coletando lista de produtos — página 47: https://www.farmaponte.com.br/saude/medicamentos/?p=47
+2026-05-04 13:13:00,276 [INFO]   -> 20 produtos encontrados (total: 940)
+2026-05-04 13:13:03,101 [INFO] Coletando lista de produtos — página 48: https://www.farmaponte.com.br/saude/medicamentos/?p=48
+2026-05-04 13:13:04,145 [INFO]   -> 20 produtos encontrados (total: 960)
+2026-05-04 13:13:07,506 [INFO] Coletando lista de produtos — página 49: https://www.farmaponte.com.br/saude/medicamentos/?p=49
+2026-05-04 13:13:08,723 [INFO]   -> 20 produtos encontrados (total: 980)
+2026-05-04 13:13:10,941 [INFO] Coletando lista de produtos — página 50: https://www.farmaponte.com.br/saude/medicamentos/?p=50
+2026-05-04 13:13:11,810 [INFO]   -> 20 produtos encontrados (total: 1000)
+2026-05-04 13:13:14,802 [INFO] Coletando lista de produtos — página 51: https://www.farmaponte.com.br/saude/medicamentos/?p=51
+2026-05-04 13:13:15,837 [INFO]   -> 20 produtos encontrados (total: 1020)
+2026-05-04 13:13:17,938 [INFO] Coletando lista de produtos — página 52: https://www.farmaponte.com.br/saude/medicamentos/?p=52
+2026-05-04 13:13:18,558 [INFO]   -> 20 produtos encontrados (total: 1040)
+2026-05-04 13:13:20,232 [INFO] Coletando lista de produtos — página 53: https://www.farmaponte.com.br/saude/medicamentos/?p=53
+2026-05-04 13:13:21,352 [INFO]   -> 20 produtos encontrados (total: 1060)
+2026-05-04 13:13:24,131 [INFO] Coletando lista de produtos — página 54: https://www.farmaponte.com.br/saude/medicamentos/?p=54
+2026-05-04 13:13:24,932 [INFO]   -> 20 produtos encontrados (total: 1080)
+2026-05-04 13:13:26,448 [INFO] Coletando lista de produtos — página 55: https://www.farmaponte.com.br/saude/medicamentos/?p=55
+2026-05-04 13:13:27,761 [INFO]   -> 20 produtos encontrados (total: 1100)
+2026-05-04 13:13:31,233 [INFO] Coletando lista de produtos — página 56: https://www.farmaponte.com.br/saude/medicamentos/?p=56
+2026-05-04 13:13:31,866 [INFO]   -> 20 produtos encontrados (total: 1120)
+2026-05-04 13:13:35,217 [INFO] Coletando lista de produtos — página 57: https://www.farmaponte.com.br/saude/medicamentos/?p=57
+2026-05-04 13:13:36,231 [INFO]   -> 20 produtos encontrados (total: 1140)
+2026-05-04 13:13:38,513 [INFO] Coletando lista de produtos — página 58: https://www.farmaponte.com.br/saude/medicamentos/?p=58
+2026-05-04 13:13:39,459 [INFO]   -> 20 produtos encontrados (total: 1160)
+2026-05-04 13:13:42,338 [INFO] Coletando lista de produtos — página 59: https://www.farmaponte.com.br/saude/medicamentos/?p=59
+2026-05-04 13:13:42,842 [INFO]   -> 20 produtos encontrados (total: 1180)
+2026-05-04 13:13:44,419 [INFO] Coletando lista de produtos — página 60: https://www.farmaponte.com.br/saude/medicamentos/?p=60
+2026-05-04 13:13:45,803 [INFO]   -> 20 produtos encontrados (total: 1200)
+2026-05-04 13:13:48,779 [INFO] Coletando lista de produtos — página 61: https://www.farmaponte.com.br/saude/medicamentos/?p=61
+2026-05-04 13:13:49,349 [INFO]   -> 20 produtos encontrados (total: 1220)
+2026-05-04 13:13:51,305 [INFO] Coletando lista de produtos — página 62: https://www.farmaponte.com.br/saude/medicamentos/?p=62
+2026-05-04 13:13:53,007 [INFO]   -> 20 produtos encontrados (total: 1240)
+2026-05-04 13:13:54,926 [INFO] Coletando lista de produtos — página 63: https://www.farmaponte.com.br/saude/medicamentos/?p=63
+2026-05-04 13:13:55,590 [INFO]   -> 20 produtos encontrados (total: 1260)
+2026-05-04 13:13:58,839 [INFO] Coletando lista de produtos — página 64: https://www.farmaponte.com.br/saude/medicamentos/?p=64
+2026-05-04 13:13:59,460 [INFO]   -> 20 produtos encontrados (total: 1280)
+2026-05-04 13:14:02,814 [INFO] Coletando lista de produtos — página 65: https://www.farmaponte.com.br/saude/medicamentos/?p=65
+2026-05-04 13:14:03,570 [INFO]   -> 20 produtos encontrados (total: 1300)
+2026-05-04 13:14:05,958 [INFO] Coletando lista de produtos — página 66: https://www.farmaponte.com.br/saude/medicamentos/?p=66
+2026-05-04 13:14:07,072 [INFO]   -> 20 produtos encontrados (total: 1320)
+2026-05-04 13:14:09,686 [INFO] Coletando lista de produtos — página 67: https://www.farmaponte.com.br/saude/medicamentos/?p=67
+2026-05-04 13:14:10,577 [INFO]   -> 20 produtos encontrados (total: 1340)
+2026-05-04 13:14:12,536 [INFO] Coletando lista de produtos — página 68: https://www.farmaponte.com.br/saude/medicamentos/?p=68
+2026-05-04 13:14:13,381 [INFO]   -> 20 produtos encontrados (total: 1360)
+2026-05-04 13:14:15,244 [INFO] Coletando lista de produtos — página 69: https://www.farmaponte.com.br/saude/medicamentos/?p=69
+2026-05-04 13:14:16,001 [INFO]   -> 20 produtos encontrados (total: 1380)
+2026-05-04 13:14:18,095 [INFO] Coletando lista de produtos — página 70: https://www.farmaponte.com.br/saude/medicamentos/?p=70
+2026-05-04 13:14:19,818 [INFO]   -> 20 produtos encontrados (total: 1400)
+2026-05-04 13:14:21,347 [INFO] Coletando lista de produtos — página 71: https://www.farmaponte.com.br/saude/medicamentos/?p=71
+2026-05-04 13:14:22,904 [INFO]   -> 20 produtos encontrados (total: 1420)
+2026-05-04 13:14:26,127 [INFO] Coletando lista de produtos — página 72: https://www.farmaponte.com.br/saude/medicamentos/?p=72
+2026-05-04 13:14:26,852 [INFO]   -> 20 produtos encontrados (total: 1440)
+2026-05-04 13:14:30,230 [INFO] Coletando lista de produtos — página 73: https://www.farmaponte.com.br/saude/medicamentos/?p=73
+2026-05-04 13:14:30,790 [INFO]   -> 20 produtos encontrados (total: 1460)
+2026-05-04 13:14:32,471 [INFO] Coletando lista de produtos — página 74: https://www.farmaponte.com.br/saude/medicamentos/?p=74
+2026-05-04 13:14:33,297 [INFO]   -> 20 produtos encontrados (total: 1480)
+2026-05-04 13:14:36,740 [INFO] Coletando lista de produtos — página 75: https://www.farmaponte.com.br/saude/medicamentos/?p=75
+2026-05-04 13:14:37,908 [INFO]   -> 20 produtos encontrados (total: 1500)
+2026-05-04 13:14:40,260 [INFO] Coletando lista de produtos — página 76: https://www.farmaponte.com.br/saude/medicamentos/?p=76
+2026-05-04 13:14:41,483 [INFO]   -> 20 produtos encontrados (total: 1520)
+2026-05-04 13:14:43,768 [INFO] Coletando lista de produtos — página 77: https://www.farmaponte.com.br/saude/medicamentos/?p=77
+2026-05-04 13:14:44,653 [INFO]   -> 20 produtos encontrados (total: 1540)
+2026-05-04 13:14:47,440 [INFO] Coletando lista de produtos — página 78: https://www.farmaponte.com.br/saude/medicamentos/?p=78
+2026-05-04 13:14:48,647 [INFO]   -> 20 produtos encontrados (total: 1560)
+2026-05-04 13:14:50,710 [INFO] Coletando lista de produtos — página 79: https://www.farmaponte.com.br/saude/medicamentos/?p=79
+2026-05-04 13:14:53,211 [INFO]   -> 20 produtos encontrados (total: 1580)
+2026-05-04 13:14:56,612 [INFO] Coletando lista de produtos — página 80: https://www.farmaponte.com.br/saude/medicamentos/?p=80
+2026-05-04 13:14:57,987 [INFO]   -> 20 produtos encontrados (total: 1600)
+2026-05-04 13:15:01,399 [INFO] Coletando lista de produtos — página 81: https://www.farmaponte.com.br/saude/medicamentos/?p=81
+2026-05-04 13:15:04,857 [INFO]   -> 20 produtos encontrados (total: 1620)
+2026-05-04 13:15:08,109 [INFO] Coletando lista de produtos — página 82: https://www.farmaponte.com.br/saude/medicamentos/?p=82
+2026-05-04 13:15:09,664 [INFO]   -> 20 produtos encontrados (total: 1640)
+2026-05-04 13:15:12,505 [INFO] Coletando lista de produtos — página 83: https://www.farmaponte.com.br/saude/medicamentos/?p=83
+2026-05-04 13:15:13,856 [INFO]   -> 20 produtos encontrados (total: 1660)
+2026-05-04 13:15:16,009 [INFO] Coletando lista de produtos — página 84: https://www.farmaponte.com.br/saude/medicamentos/?p=84
+2026-05-04 13:15:16,858 [INFO]   -> 20 produtos encontrados (total: 1680)
+2026-05-04 13:15:19,404 [INFO] Coletando lista de produtos — página 85: https://www.farmaponte.com.br/saude/medicamentos/?p=85
+2026-05-04 13:15:20,052 [INFO]   -> 20 produtos encontrados (total: 1700)
+2026-05-04 13:15:23,197 [INFO] Coletando lista de produtos — página 86: https://www.farmaponte.com.br/saude/medicamentos/?p=86
+2026-05-04 13:15:23,856 [INFO]   -> 20 produtos encontrados (total: 1720)
+2026-05-04 13:15:26,618 [INFO] Coletando lista de produtos — página 87: https://www.farmaponte.com.br/saude/medicamentos/?p=87
+2026-05-04 13:15:27,379 [INFO]   -> 20 produtos encontrados (total: 1740)
+2026-05-04 13:15:30,328 [INFO] Coletando lista de produtos — página 88: https://www.farmaponte.com.br/saude/medicamentos/?p=88
+2026-05-04 13:15:31,067 [INFO]   -> 20 produtos encontrados (total: 1760)
+2026-05-04 13:15:33,275 [INFO] Coletando lista de produtos — página 89: https://www.farmaponte.com.br/saude/medicamentos/?p=89
+2026-05-04 13:15:33,934 [INFO]   -> 20 produtos encontrados (total: 1780)
+2026-05-04 13:15:36,708 [INFO] Coletando lista de produtos — página 90: https://www.farmaponte.com.br/saude/medicamentos/?p=90
+2026-05-04 13:15:37,601 [INFO]   -> 20 produtos encontrados (total: 1800)
+2026-05-04 13:15:39,807 [INFO] Coletando lista de produtos — página 91: https://www.farmaponte.com.br/saude/medicamentos/?p=91
+2026-05-04 13:15:40,525 [INFO]   -> 20 produtos encontrados (total: 1820)
+2026-05-04 13:15:42,536 [INFO] Coletando lista de produtos — página 92: https://www.farmaponte.com.br/saude/medicamentos/?p=92
+2026-05-04 13:15:43,220 [INFO]   -> 20 produtos encontrados (total: 1840)
+2026-05-04 13:15:44,849 [INFO] Coletando lista de produtos — página 93: https://www.farmaponte.com.br/saude/medicamentos/?p=93
+2026-05-04 13:15:46,180 [INFO]   -> 20 produtos encontrados (total: 1860)
+2026-05-04 13:15:48,778 [INFO] Coletando lista de produtos — página 94: https://www.farmaponte.com.br/saude/medicamentos/?p=94
+2026-05-04 13:15:49,512 [INFO]   -> 20 produtos encontrados (total: 1880)
+2026-05-04 13:15:52,095 [INFO] Coletando lista de produtos — página 95: https://www.farmaponte.com.br/saude/medicamentos/?p=95
+2026-05-04 13:15:52,701 [INFO]   -> 20 produtos encontrados (total: 1900)
+2026-05-04 13:15:55,165 [INFO] Coletando lista de produtos — página 96: https://www.farmaponte.com.br/saude/medicamentos/?p=96
+2026-05-04 13:15:55,851 [INFO]   -> 20 produtos encontrados (total: 1920)
+2026-05-04 13:15:58,581 [INFO] Coletando lista de produtos — página 97: https://www.farmaponte.com.br/saude/medicamentos/?p=97
+2026-05-04 13:15:59,117 [INFO]   -> 20 produtos encontrados (total: 1940)
+2026-05-04 13:16:00,992 [INFO] Coletando lista de produtos — página 98: https://www.farmaponte.com.br/saude/medicamentos/?p=98
+2026-05-04 13:16:01,598 [INFO]   -> 20 produtos encontrados (total: 1960)
+2026-05-04 13:16:03,274 [INFO] Coletando lista de produtos — página 99: https://www.farmaponte.com.br/saude/medicamentos/?p=99
+2026-05-04 13:16:04,850 [INFO]   -> 20 produtos encontrados (total: 1980)
+2026-05-04 13:16:07,790 [INFO] Coletando lista de produtos — página 100: https://www.farmaponte.com.br/saude/medicamentos/?p=100
+2026-05-04 13:16:08,431 [INFO]   -> 20 produtos encontrados (total: 2000)
+2026-05-04 13:16:11,588 [INFO] Coletando lista de produtos — página 101: https://www.farmaponte.com.br/saude/medicamentos/?p=101
+2026-05-04 13:16:12,145 [INFO]   -> 20 produtos encontrados (total: 2020)
+2026-05-04 13:16:14,674 [INFO] Coletando lista de produtos — página 102: https://www.farmaponte.com.br/saude/medicamentos/?p=102
+2026-05-04 13:16:15,433 [INFO]   -> 20 produtos encontrados (total: 2040)
+2026-05-04 13:16:18,165 [INFO] Coletando lista de produtos — página 103: https://www.farmaponte.com.br/saude/medicamentos/?p=103
+2026-05-04 13:16:18,886 [INFO]   -> 20 produtos encontrados (total: 2060)
+2026-05-04 13:16:20,640 [INFO] Coletando lista de produtos — página 104: https://www.farmaponte.com.br/saude/medicamentos/?p=104
+2026-05-04 13:16:21,293 [INFO]   -> 20 produtos encontrados (total: 2080)
+2026-05-04 13:16:23,399 [INFO] Coletando lista de produtos — página 105: https://www.farmaponte.com.br/saude/medicamentos/?p=105
+2026-05-04 13:16:24,035 [INFO]   -> 20 produtos encontrados (total: 2100)
+2026-05-04 13:16:26,020 [INFO] Coletando lista de produtos — página 106: https://www.farmaponte.com.br/saude/medicamentos/?p=106
+2026-05-04 13:16:26,531 [INFO]   -> 20 produtos encontrados (total: 2120)
+2026-05-04 13:16:29,102 [INFO] Coletando lista de produtos — página 107: https://www.farmaponte.com.br/saude/medicamentos/?p=107
+2026-05-04 13:16:29,930 [INFO]   -> 20 produtos encontrados (total: 2140)
+2026-05-04 13:16:32,268 [INFO] Coletando lista de produtos — página 108: https://www.farmaponte.com.br/saude/medicamentos/?p=108
+2026-05-04 13:16:32,837 [INFO]   -> 20 produtos encontrados (total: 2160)
+2026-05-04 13:16:35,667 [INFO] Coletando lista de produtos — página 109: https://www.farmaponte.com.br/saude/medicamentos/?p=109
+2026-05-04 13:16:36,915 [INFO]   -> 20 produtos encontrados (total: 2180)
+2026-05-04 13:16:40,075 [INFO] Coletando lista de produtos — página 110: https://www.farmaponte.com.br/saude/medicamentos/?p=110
+2026-05-04 13:16:40,783 [INFO]   -> 20 produtos encontrados (total: 2200)
+2026-05-04 13:16:43,220 [INFO] Coletando lista de produtos — página 111: https://www.farmaponte.com.br/saude/medicamentos/?p=111
+2026-05-04 13:16:43,869 [INFO]   -> 20 produtos encontrados (total: 2220)
+2026-05-04 13:16:46,479 [INFO] Coletando lista de produtos — página 112: https://www.farmaponte.com.br/saude/medicamentos/?p=112
+2026-05-04 13:16:47,180 [INFO]   -> 20 produtos encontrados (total: 2240)
+2026-05-04 13:16:50,480 [INFO] Coletando lista de produtos — página 113: https://www.farmaponte.com.br/saude/medicamentos/?p=113
+2026-05-04 13:16:51,243 [INFO]   -> 20 produtos encontrados (total: 2260)
+2026-05-04 13:16:53,587 [INFO] Coletando lista de produtos — página 114: https://www.farmaponte.com.br/saude/medicamentos/?p=114
+2026-05-04 13:16:54,332 [INFO]   -> 20 produtos encontrados (total: 2280)
+2026-05-04 13:16:56,355 [INFO] Coletando lista de produtos — página 115: https://www.farmaponte.com.br/saude/medicamentos/?p=115
+2026-05-04 13:16:57,080 [INFO]   -> 20 produtos encontrados (total: 2300)
+2026-05-04 13:17:00,155 [INFO] Coletando lista de produtos — página 116: https://www.farmaponte.com.br/saude/medicamentos/?p=116
+2026-05-04 13:17:01,216 [INFO]   -> 20 produtos encontrados (total: 2320)
+2026-05-04 13:17:04,006 [INFO] Coletando lista de produtos — página 117: https://www.farmaponte.com.br/saude/medicamentos/?p=117
+2026-05-04 13:17:04,668 [INFO]   -> 20 produtos encontrados (total: 2340)
+2026-05-04 13:17:07,575 [INFO] Coletando lista de produtos — página 118: https://www.farmaponte.com.br/saude/medicamentos/?p=118
+2026-05-04 13:17:08,147 [INFO]   -> 20 produtos encontrados (total: 2360)
+2026-05-04 13:17:11,302 [INFO] Coletando lista de produtos — página 119: https://www.farmaponte.com.br/saude/medicamentos/?p=119
+2026-05-04 13:17:13,368 [INFO]   -> 20 produtos encontrados (total: 2380)
+2026-05-04 13:17:16,511 [INFO] Coletando lista de produtos — página 120: https://www.farmaponte.com.br/saude/medicamentos/?p=120
+2026-05-04 13:17:17,974 [INFO]   -> 20 produtos encontrados (total: 2400)
+2026-05-04 13:17:20,220 [INFO] Coletando lista de produtos — página 121: https://www.farmaponte.com.br/saude/medicamentos/?p=121
+2026-05-04 13:17:21,597 [INFO]   -> 20 produtos encontrados (total: 2420)
+2026-05-04 13:17:25,022 [INFO] Coletando lista de produtos — página 122: https://www.farmaponte.com.br/saude/medicamentos/?p=122
+2026-05-04 13:17:25,589 [INFO]   -> 20 produtos encontrados (total: 2440)
+2026-05-04 13:17:27,379 [INFO] Coletando lista de produtos — página 123: https://www.farmaponte.com.br/saude/medicamentos/?p=123
+2026-05-04 13:17:28,319 [INFO]   -> 20 produtos encontrados (total: 2460)
+2026-05-04 13:17:30,528 [INFO] Coletando lista de produtos — página 124: https://www.farmaponte.com.br/saude/medicamentos/?p=124
+2026-05-04 13:17:31,595 [INFO]   -> 20 produtos encontrados (total: 2480)
+2026-05-04 13:17:33,722 [INFO] Coletando lista de produtos — página 125: https://www.farmaponte.com.br/saude/medicamentos/?p=125
+2026-05-04 13:17:36,035 [INFO]   -> 20 produtos encontrados (total: 2500)
+2026-05-04 13:17:39,299 [INFO] Coletando lista de produtos — página 126: https://www.farmaponte.com.br/saude/medicamentos/?p=126
+2026-05-04 13:17:41,345 [INFO]   -> 20 produtos encontrados (total: 2520)
+2026-05-04 13:17:44,071 [INFO] Coletando lista de produtos — página 127: https://www.farmaponte.com.br/saude/medicamentos/?p=127
+2026-05-04 13:17:44,909 [INFO]   -> 20 produtos encontrados (total: 2540)
+2026-05-04 13:17:48,240 [INFO] Coletando lista de produtos — página 128: https://www.farmaponte.com.br/saude/medicamentos/?p=128
+2026-05-04 13:17:49,602 [INFO]   -> 20 produtos encontrados (total: 2560)
+2026-05-04 13:17:51,288 [INFO] Coletando lista de produtos — página 129: https://www.farmaponte.com.br/saude/medicamentos/?p=129
+2026-05-04 13:17:52,001 [INFO]   -> 20 produtos encontrados (total: 2580)
+2026-05-04 13:17:55,033 [INFO] Coletando lista de produtos — página 130: https://www.farmaponte.com.br/saude/medicamentos/?p=130
+2026-05-04 13:17:55,802 [INFO]   -> 20 produtos encontrados (total: 2600)
+2026-05-04 13:17:57,736 [INFO] Coletando lista de produtos — página 131: https://www.farmaponte.com.br/saude/medicamentos/?p=131
+2026-05-04 13:17:58,510 [INFO]   -> 20 produtos encontrados (total: 2620)
+2026-05-04 13:18:01,259 [INFO] Coletando lista de produtos — página 132: https://www.farmaponte.com.br/saude/medicamentos/?p=132
+2026-05-04 13:18:02,010 [INFO]   -> 20 produtos encontrados (total: 2640)
+2026-05-04 13:18:05,220 [INFO] Coletando lista de produtos — página 133: https://www.farmaponte.com.br/saude/medicamentos/?p=133
+2026-05-04 13:18:05,856 [INFO]   -> 20 produtos encontrados (total: 2660)
+2026-05-04 13:18:08,491 [INFO] Coletando lista de produtos — página 134: https://www.farmaponte.com.br/saude/medicamentos/?p=134
+2026-05-04 13:18:09,612 [INFO]   -> 20 produtos encontrados (total: 2680)
+2026-05-04 13:18:11,527 [INFO] Coletando lista de produtos — página 135: https://www.farmaponte.com.br/saude/medicamentos/?p=135
+2026-05-04 13:18:12,063 [INFO]   -> 20 produtos encontrados (total: 2700)
+2026-05-04 13:18:15,170 [INFO] Coletando lista de produtos — página 136: https://www.farmaponte.com.br/saude/medicamentos/?p=136
+2026-05-04 13:18:15,757 [INFO]   -> 20 produtos encontrados (total: 2720)
+2026-05-04 13:18:17,362 [INFO] Coletando lista de produtos — página 137: https://www.farmaponte.com.br/saude/medicamentos/?p=137
+2026-05-04 13:18:19,314 [INFO]   -> 20 produtos encontrados (total: 2740)
+2026-05-04 13:18:22,458 [INFO] Coletando lista de produtos — página 138: https://www.farmaponte.com.br/saude/medicamentos/?p=138
+2026-05-04 13:18:23,828 [INFO]   -> 20 produtos encontrados (total: 2760)
+2026-05-04 13:18:25,376 [INFO] Coletando lista de produtos — página 139: https://www.farmaponte.com.br/saude/medicamentos/?p=139
+2026-05-04 13:18:26,179 [INFO]   -> 20 produtos encontrados (total: 2780)
+2026-05-04 13:18:27,854 [INFO] Coletando lista de produtos — página 140: https://www.farmaponte.com.br/saude/medicamentos/?p=140
+2026-05-04 13:18:28,715 [INFO]   -> 20 produtos encontrados (total: 2800)
+2026-05-04 13:18:31,558 [INFO] Coletando lista de produtos — página 141: https://www.farmaponte.com.br/saude/medicamentos/?p=141
+2026-05-04 13:18:32,387 [INFO]   -> 20 produtos encontrados (total: 2820)
+2026-05-04 13:18:35,501 [INFO] Coletando lista de produtos — página 142: https://www.farmaponte.com.br/saude/medicamentos/?p=142
+2026-05-04 13:18:36,447 [INFO]   -> 20 produtos encontrados (total: 2840)
+2026-05-04 13:18:39,457 [INFO] Coletando lista de produtos — página 143: https://www.farmaponte.com.br/saude/medicamentos/?p=143
+2026-05-04 13:18:40,105 [INFO]   -> 20 produtos encontrados (total: 2860)
+2026-05-04 13:18:42,770 [INFO] Coletando lista de produtos — página 144: https://www.farmaponte.com.br/saude/medicamentos/?p=144
+2026-05-04 13:18:43,448 [INFO]   -> 20 produtos encontrados (total: 2880)
+2026-05-04 13:18:46,523 [INFO] Coletando lista de produtos — página 145: https://www.farmaponte.com.br/saude/medicamentos/?p=145
+2026-05-04 13:18:48,501 [INFO]   -> 20 produtos encontrados (total: 2900)
+2026-05-04 13:18:50,098 [INFO] Coletando lista de produtos — página 146: https://www.farmaponte.com.br/saude/medicamentos/?p=146
+2026-05-04 13:18:50,838 [INFO]   -> 20 produtos encontrados (total: 2920)
+2026-05-04 13:18:52,872 [INFO] Coletando lista de produtos — página 147: https://www.farmaponte.com.br/saude/medicamentos/?p=147
+2026-05-04 13:18:53,573 [INFO]   -> 20 produtos encontrados (total: 2940)
+2026-05-04 13:18:55,710 [INFO] Coletando lista de produtos — página 148: https://www.farmaponte.com.br/saude/medicamentos/?p=148
+2026-05-04 13:18:56,344 [INFO]   -> 20 produtos encontrados (total: 2960)
+2026-05-04 13:18:59,280 [INFO] Coletando lista de produtos — página 149: https://www.farmaponte.com.br/saude/medicamentos/?p=149
+2026-05-04 13:19:00,809 [INFO]   -> 20 produtos encontrados (total: 2980)
+2026-05-04 13:19:02,592 [INFO] Coletando lista de produtos — página 150: https://www.farmaponte.com.br/saude/medicamentos/?p=150
+2026-05-04 13:19:03,853 [INFO]   -> 20 produtos encontrados (total: 3000)
+2026-05-04 13:19:05,993 [INFO] Coletando lista de produtos — página 151: https://www.farmaponte.com.br/saude/medicamentos/?p=151
+2026-05-04 13:19:07,275 [INFO]   -> 20 produtos encontrados (total: 3020)
+2026-05-04 13:19:10,119 [INFO] Coletando lista de produtos — página 152: https://www.farmaponte.com.br/saude/medicamentos/?p=152
+2026-05-04 13:19:11,332 [INFO]   -> 20 produtos encontrados (total: 3040)
+2026-05-04 13:19:13,033 [INFO] Coletando lista de produtos — página 153: https://www.farmaponte.com.br/saude/medicamentos/?p=153
+2026-05-04 13:19:13,890 [INFO]   -> 20 produtos encontrados (total: 3060)
+2026-05-04 13:19:16,835 [INFO] Coletando lista de produtos — página 154: https://www.farmaponte.com.br/saude/medicamentos/?p=154
+2026-05-04 13:19:18,197 [INFO]   -> 20 produtos encontrados (total: 3080)
+2026-05-04 13:19:21,608 [INFO] Coletando lista de produtos — página 155: https://www.farmaponte.com.br/saude/medicamentos/?p=155
+2026-05-04 13:19:22,507 [INFO]   -> 20 produtos encontrados (total: 3100)
+2026-05-04 13:19:25,575 [INFO] Coletando lista de produtos — página 156: https://www.farmaponte.com.br/saude/medicamentos/?p=156
+2026-05-04 13:19:26,393 [INFO]   -> 20 produtos encontrados (total: 3120)
+2026-05-04 13:19:28,684 [INFO] Coletando lista de produtos — página 157: https://www.farmaponte.com.br/saude/medicamentos/?p=157
+2026-05-04 13:19:30,276 [INFO]   -> 20 produtos encontrados (total: 3140)
+2026-05-04 13:19:33,508 [INFO] Coletando lista de produtos — página 158: https://www.farmaponte.com.br/saude/medicamentos/?p=158
+2026-05-04 13:19:34,666 [INFO]   -> 20 produtos encontrados (total: 3160)
+2026-05-04 13:19:36,382 [INFO] Coletando lista de produtos — página 159: https://www.farmaponte.com.br/saude/medicamentos/?p=159
+2026-05-04 13:19:37,128 [INFO]   -> 20 produtos encontrados (total: 3180)
+2026-05-04 13:19:39,023 [INFO] Coletando lista de produtos — página 160: https://www.farmaponte.com.br/saude/medicamentos/?p=160
+2026-05-04 13:19:39,661 [INFO]   -> 20 produtos encontrados (total: 3200)
+2026-05-04 13:19:41,426 [INFO] Coletando lista de produtos — página 161: https://www.farmaponte.com.br/saude/medicamentos/?p=161
+2026-05-04 13:19:42,152 [INFO]   -> 20 produtos encontrados (total: 3220)
+2026-05-04 13:19:44,686 [INFO] Coletando lista de produtos — página 162: https://www.farmaponte.com.br/saude/medicamentos/?p=162
+2026-05-04 13:19:45,363 [INFO]   -> 20 produtos encontrados (total: 3240)
+2026-05-04 13:19:47,592 [INFO] Coletando lista de produtos — página 163: https://www.farmaponte.com.br/saude/medicamentos/?p=163
+2026-05-04 13:19:48,199 [INFO]   -> 20 produtos encontrados (total: 3260)
+2026-05-04 13:19:49,774 [INFO] Coletando lista de produtos — página 164: https://www.farmaponte.com.br/saude/medicamentos/?p=164
+2026-05-04 13:19:51,064 [INFO]   -> 20 produtos encontrados (total: 3280)
+2026-05-04 13:19:53,366 [INFO] Coletando lista de produtos — página 165: https://www.farmaponte.com.br/saude/medicamentos/?p=165
+2026-05-04 13:19:53,892 [INFO]   -> 20 produtos encontrados (total: 3300)
+2026-05-04 13:19:56,924 [INFO] Coletando lista de produtos — página 166: https://www.farmaponte.com.br/saude/medicamentos/?p=166
+2026-05-04 13:19:57,444 [INFO]   -> 20 produtos encontrados (total: 3320)
+2026-05-04 13:20:00,883 [INFO] Coletando lista de produtos — página 167: https://www.farmaponte.com.br/saude/medicamentos/?p=167
+2026-05-04 13:20:01,917 [INFO]   -> 20 produtos encontrados (total: 3340)
+2026-05-04 13:20:04,493 [INFO] Coletando lista de produtos — página 168: https://www.farmaponte.com.br/saude/medicamentos/?p=168
+2026-05-04 13:20:05,172 [INFO]   -> 20 produtos encontrados (total: 3360)
+2026-05-04 13:20:08,585 [INFO] Coletando lista de produtos — página 169: https://www.farmaponte.com.br/saude/medicamentos/?p=169
+2026-05-04 13:20:09,390 [INFO]   -> 20 produtos encontrados (total: 3380)
+2026-05-04 13:20:12,664 [INFO] Coletando lista de produtos — página 170: https://www.farmaponte.com.br/saude/medicamentos/?p=170
+2026-05-04 13:20:13,281 [INFO]   -> 20 produtos encontrados (total: 3400)
+2026-05-04 13:20:15,100 [INFO] Coletando lista de produtos — página 171: https://www.farmaponte.com.br/saude/medicamentos/?p=171
+2026-05-04 13:20:15,851 [INFO]   -> 20 produtos encontrados (total: 3420)
+2026-05-04 13:20:18,233 [INFO] Coletando lista de produtos — página 172: https://www.farmaponte.com.br/saude/medicamentos/?p=172
+2026-05-04 13:20:18,984 [INFO]   -> 20 produtos encontrados (total: 3440)
+2026-05-04 13:20:22,249 [INFO] Coletando lista de produtos — página 173: https://www.farmaponte.com.br/saude/medicamentos/?p=173
+2026-05-04 13:20:23,001 [INFO]   -> 20 produtos encontrados (total: 3460)
+2026-05-04 13:20:25,873 [INFO] Coletando lista de produtos — página 174: https://www.farmaponte.com.br/saude/medicamentos/?p=174
+2026-05-04 13:20:26,698 [INFO]   -> 20 produtos encontrados (total: 3480)
+2026-05-04 13:20:29,567 [INFO] Coletando lista de produtos — página 175: https://www.farmaponte.com.br/saude/medicamentos/?p=175
+2026-05-04 13:20:30,335 [INFO]   -> 20 produtos encontrados (total: 3500)
+2026-05-04 13:20:31,987 [INFO] Coletando lista de produtos — página 176: https://www.farmaponte.com.br/saude/medicamentos/?p=176
+2026-05-04 13:20:33,555 [INFO]   -> 20 produtos encontrados (total: 3520)
+2026-05-04 13:20:36,210 [INFO] Coletando lista de produtos — página 177: https://www.farmaponte.com.br/saude/medicamentos/?p=177
+2026-05-04 13:20:36,938 [INFO]   -> 20 produtos encontrados (total: 3540)
+2026-05-04 13:20:39,985 [INFO] Coletando lista de produtos — página 178: https://www.farmaponte.com.br/saude/medicamentos/?p=178
+2026-05-04 13:20:41,004 [INFO]   -> 20 produtos encontrados (total: 3560)
+2026-05-04 13:20:43,143 [INFO] Coletando lista de produtos — página 179: https://www.farmaponte.com.br/saude/medicamentos/?p=179
+2026-05-04 13:20:43,690 [INFO]   -> 20 produtos encontrados (total: 3580)
+2026-05-04 13:20:45,378 [INFO] Coletando lista de produtos — página 180: https://www.farmaponte.com.br/saude/medicamentos/?p=180
+2026-05-04 13:20:46,214 [INFO]   -> 20 produtos encontrados (total: 3600)
+2026-05-04 13:20:49,444 [INFO] Coletando lista de produtos — página 181: https://www.farmaponte.com.br/saude/medicamentos/?p=181
+2026-05-04 13:20:49,960 [INFO]   -> 20 produtos encontrados (total: 3620)
+2026-05-04 13:20:52,566 [INFO] Coletando lista de produtos — página 182: https://www.farmaponte.com.br/saude/medicamentos/?p=182
+2026-05-04 13:20:53,115 [INFO]   -> 20 produtos encontrados (total: 3640)
+2026-05-04 13:20:54,908 [INFO] Coletando lista de produtos — página 183: https://www.farmaponte.com.br/saude/medicamentos/?p=183
+2026-05-04 13:20:55,578 [INFO]   -> 20 produtos encontrados (total: 3660)
+2026-05-04 13:20:58,106 [INFO] Coletando lista de produtos — página 184: https://www.farmaponte.com.br/saude/medicamentos/?p=184
+2026-05-04 13:20:58,743 [INFO]   -> 20 produtos encontrados (total: 3680)
+2026-05-04 13:21:00,424 [INFO] Coletando lista de produtos — página 185: https://www.farmaponte.com.br/saude/medicamentos/?p=185
+2026-05-04 13:21:01,001 [INFO]   -> 20 produtos encontrados (total: 3700)
+2026-05-04 13:21:04,128 [INFO] Coletando lista de produtos — página 186: https://www.farmaponte.com.br/saude/medicamentos/?p=186
+2026-05-04 13:21:05,099 [INFO]   -> 20 produtos encontrados (total: 3720)
+2026-05-04 13:21:07,180 [INFO] Coletando lista de produtos — página 187: https://www.farmaponte.com.br/saude/medicamentos/?p=187
+2026-05-04 13:21:08,167 [INFO]   -> 20 produtos encontrados (total: 3740)
+2026-05-04 13:21:10,737 [INFO] Coletando lista de produtos — página 188: https://www.farmaponte.com.br/saude/medicamentos/?p=188
+2026-05-04 13:21:12,801 [INFO]   -> 20 produtos encontrados (total: 3760)
+2026-05-04 13:21:14,562 [INFO] Coletando lista de produtos — página 189: https://www.farmaponte.com.br/saude/medicamentos/?p=189
+2026-05-04 13:21:19,117 [INFO]   -> 20 produtos encontrados (total: 3780)
+2026-05-04 13:21:21,927 [INFO] Coletando lista de produtos — página 190: https://www.farmaponte.com.br/saude/medicamentos/?p=190
+2026-05-04 13:21:22,912 [INFO]   -> 20 produtos encontrados (total: 3800)
+2026-05-04 13:21:26,255 [INFO] Coletando lista de produtos — página 191: https://www.farmaponte.com.br/saude/medicamentos/?p=191
+2026-05-04 13:21:27,186 [INFO]   -> 20 produtos encontrados (total: 3820)
+2026-05-04 13:21:30,174 [INFO] Coletando lista de produtos — página 192: https://www.farmaponte.com.br/saude/medicamentos/?p=192
+2026-05-04 13:21:30,876 [INFO]   -> 20 produtos encontrados (total: 3840)
+2026-05-04 13:21:34,231 [INFO] Coletando lista de produtos — página 193: https://www.farmaponte.com.br/saude/medicamentos/?p=193
+2026-05-04 13:21:34,898 [INFO]   -> 20 produtos encontrados (total: 3860)
+2026-05-04 13:21:37,009 [INFO] Coletando lista de produtos — página 194: https://www.farmaponte.com.br/saude/medicamentos/?p=194
+2026-05-04 13:21:38,585 [INFO]   -> 20 produtos encontrados (total: 3880)
+2026-05-04 13:21:40,415 [INFO] Coletando lista de produtos — página 195: https://www.farmaponte.com.br/saude/medicamentos/?p=195
+2026-05-04 13:21:41,298 [INFO]   -> 20 produtos encontrados (total: 3900)
+2026-05-04 13:21:42,910 [INFO] Coletando lista de produtos — página 196: https://www.farmaponte.com.br/saude/medicamentos/?p=196
+2026-05-04 13:21:43,736 [INFO]   -> 20 produtos encontrados (total: 3920)
+2026-05-04 13:21:46,143 [INFO] Coletando lista de produtos — página 197: https://www.farmaponte.com.br/saude/medicamentos/?p=197
+2026-05-04 13:21:47,050 [INFO]   -> 20 produtos encontrados (total: 3940)
+2026-05-04 13:21:50,160 [INFO] Coletando lista de produtos — página 198: https://www.farmaponte.com.br/saude/medicamentos/?p=198
+2026-05-04 13:21:52,201 [INFO]   -> 20 produtos encontrados (total: 3960)
+2026-05-04 13:21:53,851 [INFO] Coletando lista de produtos — página 199: https://www.farmaponte.com.br/saude/medicamentos/?p=199
+2026-05-04 13:21:54,963 [INFO]   -> 20 produtos encontrados (total: 3980)
+2026-05-04 13:21:58,204 [INFO] Coletando lista de produtos — página 200: https://www.farmaponte.com.br/saude/medicamentos/?p=200
+2026-05-04 13:21:59,866 [INFO]   -> 20 produtos encontrados (total: 4000)
+2026-05-04 13:22:01,458 [INFO] Coletando lista de produtos — página 201: https://www.farmaponte.com.br/saude/medicamentos/?p=201
+2026-05-04 13:22:02,150 [INFO]   -> 20 produtos encontrados (total: 4020)
+2026-05-04 13:22:04,124 [INFO] Coletando lista de produtos — página 202: https://www.farmaponte.com.br/saude/medicamentos/?p=202
+2026-05-04 13:22:04,708 [INFO]   -> 20 produtos encontrados (total: 4040)
+2026-05-04 13:22:07,273 [INFO] Coletando lista de produtos — página 203: https://www.farmaponte.com.br/saude/medicamentos/?p=203
+2026-05-04 13:22:07,970 [INFO]   -> 20 produtos encontrados (total: 4060)
+2026-05-04 13:22:10,923 [INFO] Coletando lista de produtos — página 204: https://www.farmaponte.com.br/saude/medicamentos/?p=204
+2026-05-04 13:22:11,764 [INFO]   -> 20 produtos encontrados (total: 4080)
+2026-05-04 13:22:14,572 [INFO] Coletando lista de produtos — página 205: https://www.farmaponte.com.br/saude/medicamentos/?p=205
+2026-05-04 13:22:15,459 [INFO]   -> 20 produtos encontrados (total: 4100)
+2026-05-04 13:22:17,721 [INFO] Coletando lista de produtos — página 206: https://www.farmaponte.com.br/saude/medicamentos/?p=206
+2026-05-04 13:22:18,414 [INFO]   -> 20 produtos encontrados (total: 4120)
+2026-05-04 13:22:20,193 [INFO] Coletando lista de produtos — página 207: https://www.farmaponte.com.br/saude/medicamentos/?p=207
+2026-05-04 13:22:20,678 [INFO]   -> 20 produtos encontrados (total: 4140)
+2026-05-04 13:22:23,146 [INFO] Coletando lista de produtos — página 208: https://www.farmaponte.com.br/saude/medicamentos/?p=208
+2026-05-04 13:22:25,791 [INFO]   -> 20 produtos encontrados (total: 4160)
+2026-05-04 13:22:29,096 [INFO] Coletando lista de produtos — página 209: https://www.farmaponte.com.br/saude/medicamentos/?p=209
+2026-05-04 13:22:29,668 [INFO]   -> 20 produtos encontrados (total: 4180)
+2026-05-04 13:22:31,791 [INFO] Coletando lista de produtos — página 210: https://www.farmaponte.com.br/saude/medicamentos/?p=210
+2026-05-04 13:22:32,325 [INFO]   -> 20 produtos encontrados (total: 4200)
+2026-05-04 13:22:33,908 [INFO] Coletando lista de produtos — página 211: https://www.farmaponte.com.br/saude/medicamentos/?p=211
+2026-05-04 13:22:35,211 [INFO]   -> 20 produtos encontrados (total: 4220)
+2026-05-04 13:22:37,642 [INFO] Coletando lista de produtos — página 212: https://www.farmaponte.com.br/saude/medicamentos/?p=212
+2026-05-04 13:22:38,283 [INFO]   -> 20 produtos encontrados (total: 4240)
+2026-05-04 13:22:40,243 [INFO] Coletando lista de produtos — página 213: https://www.farmaponte.com.br/saude/medicamentos/?p=213
+2026-05-04 13:22:41,408 [INFO]   -> 20 produtos encontrados (total: 4260)
+2026-05-04 13:22:44,663 [INFO] Coletando lista de produtos — página 214: https://www.farmaponte.com.br/saude/medicamentos/?p=214
+2026-05-04 13:22:45,386 [INFO]   -> 20 produtos encontrados (total: 4280)
+2026-05-04 13:22:47,326 [INFO] Coletando lista de produtos — página 215: https://www.farmaponte.com.br/saude/medicamentos/?p=215
+2026-05-04 13:22:47,825 [INFO]   -> 20 produtos encontrados (total: 4300)
+2026-05-04 13:22:50,385 [INFO] Coletando lista de produtos — página 216: https://www.farmaponte.com.br/saude/medicamentos/?p=216
+2026-05-04 13:22:52,064 [INFO]   -> 20 produtos encontrados (total: 4320)
+2026-05-04 13:22:54,806 [INFO] Coletando lista de produtos — página 217: https://www.farmaponte.com.br/saude/medicamentos/?p=217
+2026-05-04 13:22:55,793 [INFO]   -> 20 produtos encontrados (total: 4340)
+2026-05-04 13:22:59,233 [INFO] Coletando lista de produtos — página 218: https://www.farmaponte.com.br/saude/medicamentos/?p=218
+2026-05-04 13:23:00,602 [INFO]   -> 20 produtos encontrados (total: 4360)
+2026-05-04 13:23:02,939 [INFO] Coletando lista de produtos — página 219: https://www.farmaponte.com.br/saude/medicamentos/?p=219
+2026-05-04 13:23:03,839 [INFO]   -> 20 produtos encontrados (total: 4380)
+2026-05-04 13:23:06,140 [INFO] Coletando lista de produtos — página 220: https://www.farmaponte.com.br/saude/medicamentos/?p=220
+2026-05-04 13:23:07,350 [INFO]   -> 20 produtos encontrados (total: 4400)
+2026-05-04 13:23:09,870 [INFO] Coletando lista de produtos — página 221: https://www.farmaponte.com.br/saude/medicamentos/?p=221
+2026-05-04 13:23:10,341 [INFO]   -> 20 produtos encontrados (total: 4420)
+2026-05-04 13:23:12,445 [INFO] Coletando lista de produtos — página 222: https://www.farmaponte.com.br/saude/medicamentos/?p=222
+2026-05-04 13:23:13,404 [INFO]   -> 20 produtos encontrados (total: 4440)
+2026-05-04 13:23:16,407 [INFO] Coletando lista de produtos — página 223: https://www.farmaponte.com.br/saude/medicamentos/?p=223
+2026-05-04 13:23:17,057 [INFO]   -> 20 produtos encontrados (total: 4460)
+2026-05-04 13:23:20,552 [INFO] Coletando lista de produtos — página 224: https://www.farmaponte.com.br/saude/medicamentos/?p=224
+2026-05-04 13:23:21,291 [INFO]   -> 20 produtos encontrados (total: 4480)
+2026-05-04 13:23:23,937 [INFO] Coletando lista de produtos — página 225: https://www.farmaponte.com.br/saude/medicamentos/?p=225
+2026-05-04 13:23:24,498 [INFO]   -> 20 produtos encontrados (total: 4500)
+2026-05-04 13:23:27,436 [INFO] Coletando lista de produtos — página 226: https://www.farmaponte.com.br/saude/medicamentos/?p=226
+2026-05-04 13:23:28,073 [INFO]   -> 20 produtos encontrados (total: 4520)
+2026-05-04 13:23:29,614 [INFO] Coletando lista de produtos — página 227: https://www.farmaponte.com.br/saude/medicamentos/?p=227
+2026-05-04 13:23:30,532 [INFO]   -> 20 produtos encontrados (total: 4540)
+2026-05-04 13:23:32,558 [INFO] Coletando lista de produtos — página 228: https://www.farmaponte.com.br/saude/medicamentos/?p=228
+2026-05-04 13:23:33,314 [INFO]   -> 20 produtos encontrados (total: 4560)
+2026-05-04 13:23:35,963 [INFO] Coletando lista de produtos — página 229: https://www.farmaponte.com.br/saude/medicamentos/?p=229
+2026-05-04 13:23:37,055 [INFO]   -> 20 produtos encontrados (total: 4580)
+2026-05-04 13:23:40,019 [INFO] Coletando lista de produtos — página 230: https://www.farmaponte.com.br/saude/medicamentos/?p=230
+2026-05-04 13:23:40,566 [INFO]   -> 20 produtos encontrados (total: 4600)
+2026-05-04 13:23:42,485 [INFO] Coletando lista de produtos — página 231: https://www.farmaponte.com.br/saude/medicamentos/?p=231
+2026-05-04 13:23:43,100 [INFO]   -> 20 produtos encontrados (total: 4620)
+2026-05-04 13:23:46,160 [INFO] Coletando lista de produtos — página 232: https://www.farmaponte.com.br/saude/medicamentos/?p=232
+2026-05-04 13:23:46,758 [INFO]   -> 20 produtos encontrados (total: 4640)
+2026-05-04 13:23:49,406 [INFO] Coletando lista de produtos — página 233: https://www.farmaponte.com.br/saude/medicamentos/?p=233
+2026-05-04 13:23:49,953 [INFO]   -> 20 produtos encontrados (total: 4660)
+2026-05-04 13:23:52,300 [INFO] Coletando lista de produtos — página 234: https://www.farmaponte.com.br/saude/medicamentos/?p=234
+2026-05-04 13:23:53,307 [INFO]   -> 20 produtos encontrados (total: 4680)
+2026-05-04 13:23:56,461 [INFO] Coletando lista de produtos — página 235: https://www.farmaponte.com.br/saude/medicamentos/?p=235
+2026-05-04 13:23:56,958 [INFO]   -> 20 produtos encontrados (total: 4700)
+2026-05-04 13:24:00,460 [INFO] Coletando lista de produtos — página 236: https://www.farmaponte.com.br/saude/medicamentos/?p=236
+2026-05-04 13:24:01,958 [INFO]   -> 20 produtos encontrados (total: 4720)
+2026-05-04 13:24:04,821 [INFO] Coletando lista de produtos — página 237: https://www.farmaponte.com.br/saude/medicamentos/?p=237
+2026-05-04 13:24:08,117 [INFO]   -> 20 produtos encontrados (total: 4740)
+2026-05-04 13:24:11,213 [INFO] Coletando lista de produtos — página 238: https://www.farmaponte.com.br/saude/medicamentos/?p=238
+2026-05-04 13:24:12,637 [INFO]   -> 20 produtos encontrados (total: 4760)
+2026-05-04 13:24:15,829 [INFO] Coletando lista de produtos — página 239: https://www.farmaponte.com.br/saude/medicamentos/?p=239
+2026-05-04 13:24:16,334 [INFO]   -> 20 produtos encontrados (total: 4780)
+2026-05-04 13:24:19,028 [INFO] Coletando lista de produtos — página 240: https://www.farmaponte.com.br/saude/medicamentos/?p=240
+2026-05-04 13:24:19,740 [INFO]   -> 20 produtos encontrados (total: 4800)
+2026-05-04 13:24:21,290 [INFO] Coletando lista de produtos — página 241: https://www.farmaponte.com.br/saude/medicamentos/?p=241
+2026-05-04 13:24:22,065 [INFO]   -> 20 produtos encontrados (total: 4820)
+2026-05-04 13:24:25,548 [INFO] Coletando lista de produtos — página 242: https://www.farmaponte.com.br/saude/medicamentos/?p=242
+2026-05-04 13:24:26,106 [INFO]   -> 20 produtos encontrados (total: 4840)
+2026-05-04 13:24:28,442 [INFO] Coletando lista de produtos — página 243: https://www.farmaponte.com.br/saude/medicamentos/?p=243
+2026-05-04 13:24:29,692 [INFO]   -> 20 produtos encontrados (total: 4860)
+2026-05-04 13:24:31,484 [INFO] Coletando lista de produtos — página 244: https://www.farmaponte.com.br/saude/medicamentos/?p=244
+2026-05-04 13:24:32,369 [INFO]   -> 20 produtos encontrados (total: 4880)
+2026-05-04 13:24:34,651 [INFO] Coletando lista de produtos — página 245: https://www.farmaponte.com.br/saude/medicamentos/?p=245
+2026-05-04 13:24:35,307 [INFO]   -> 20 produtos encontrados (total: 4900)
+2026-05-04 13:24:38,045 [INFO] Coletando lista de produtos — página 246: https://www.farmaponte.com.br/saude/medicamentos/?p=246
+2026-05-04 13:24:39,895 [INFO]   -> 20 produtos encontrados (total: 4920)
+2026-05-04 13:24:42,749 [INFO] Coletando lista de produtos — página 247: https://www.farmaponte.com.br/saude/medicamentos/?p=247
+2026-05-04 13:24:43,348 [INFO]   -> 20 produtos encontrados (total: 4940)
+2026-05-04 13:24:46,472 [INFO] Coletando lista de produtos — página 248: https://www.farmaponte.com.br/saude/medicamentos/?p=248
+2026-05-04 13:24:47,300 [INFO]   -> 20 produtos encontrados (total: 4960)
+2026-05-04 13:24:49,311 [INFO] Coletando lista de produtos — página 249: https://www.farmaponte.com.br/saude/medicamentos/?p=249
+2026-05-04 13:24:49,859 [INFO]   -> 20 produtos encontrados (total: 4980)
+2026-05-04 13:24:52,982 [INFO] Coletando lista de produtos — página 250: https://www.farmaponte.com.br/saude/medicamentos/?p=250
+2026-05-04 13:24:53,645 [INFO]   -> 20 produtos encontrados (total: 5000)
+2026-05-04 13:24:55,613 [INFO] Coletando lista de produtos — página 251: https://www.farmaponte.com.br/saude/medicamentos/?p=251
+2026-05-04 13:24:56,259 [INFO]   -> 20 produtos encontrados (total: 5020)
+2026-05-04 13:24:58,371 [INFO] Coletando lista de produtos — página 252: https://www.farmaponte.com.br/saude/medicamentos/?p=252
+2026-05-04 13:24:59,468 [INFO]   -> 20 produtos encontrados (total: 5040)
+2026-05-04 13:25:02,489 [INFO] Coletando lista de produtos — página 253: https://www.farmaponte.com.br/saude/medicamentos/?p=253
+2026-05-04 13:25:03,280 [INFO]   -> 20 produtos encontrados (total: 5060)
+2026-05-04 13:25:06,010 [INFO] Coletando lista de produtos — página 254: https://www.farmaponte.com.br/saude/medicamentos/?p=254
+2026-05-04 13:25:06,703 [INFO]   -> 20 produtos encontrados (total: 5080)
+2026-05-04 13:25:10,169 [INFO] Coletando lista de produtos — página 255: https://www.farmaponte.com.br/saude/medicamentos/?p=255
+2026-05-04 13:25:11,131 [INFO]   -> 20 produtos encontrados (total: 5100)
+2026-05-04 13:25:13,234 [INFO] Coletando lista de produtos — página 256: https://www.farmaponte.com.br/saude/medicamentos/?p=256
+2026-05-04 13:25:13,759 [INFO]   -> 20 produtos encontrados (total: 5120)
+2026-05-04 13:25:17,041 [INFO] Coletando lista de produtos — página 257: https://www.farmaponte.com.br/saude/medicamentos/?p=257
+2026-05-04 13:25:18,377 [INFO]   -> 20 produtos encontrados (total: 5140)
+2026-05-04 13:25:20,014 [INFO] Coletando lista de produtos — página 258: https://www.farmaponte.com.br/saude/medicamentos/?p=258
+2026-05-04 13:25:21,311 [INFO]   -> 20 produtos encontrados (total: 5160)
+2026-05-04 13:25:23,789 [INFO] Coletando lista de produtos — página 259: https://www.farmaponte.com.br/saude/medicamentos/?p=259
+2026-05-04 13:25:24,527 [INFO]   -> 20 produtos encontrados (total: 5180)
+2026-05-04 13:25:26,183 [INFO] Coletando lista de produtos — página 260: https://www.farmaponte.com.br/saude/medicamentos/?p=260
+2026-05-04 13:25:26,614 [INFO]   -> 20 produtos encontrados (total: 5200)
+2026-05-04 13:25:29,114 [INFO] Coletando lista de produtos — página 261: https://www.farmaponte.com.br/saude/medicamentos/?p=261
+2026-05-04 13:25:29,802 [INFO]   -> 20 produtos encontrados (total: 5220)
+2026-05-04 13:25:31,616 [INFO] Coletando lista de produtos — página 262: https://www.farmaponte.com.br/saude/medicamentos/?p=262
+2026-05-04 13:25:32,123 [INFO]   -> 20 produtos encontrados (total: 5240)
+2026-05-04 13:25:33,977 [INFO] Coletando lista de produtos — página 263: https://www.farmaponte.com.br/saude/medicamentos/?p=263
+2026-05-04 13:25:34,977 [INFO]   -> 20 produtos encontrados (total: 5260)
+2026-05-04 13:25:37,271 [INFO] Coletando lista de produtos — página 264: https://www.farmaponte.com.br/saude/medicamentos/?p=264
+2026-05-04 13:25:37,758 [INFO]   -> 20 produtos encontrados (total: 5280)
+2026-05-04 13:25:40,525 [INFO] Coletando lista de produtos — página 265: https://www.farmaponte.com.br/saude/medicamentos/?p=265
+2026-05-04 13:25:41,322 [INFO]   -> 20 produtos encontrados (total: 5300)
+2026-05-04 13:25:43,190 [INFO] Coletando lista de produtos — página 266: https://www.farmaponte.com.br/saude/medicamentos/?p=266
+2026-05-04 13:25:43,857 [INFO]   -> 20 produtos encontrados (total: 5320)
+2026-05-04 13:25:46,622 [INFO] Coletando lista de produtos — página 267: https://www.farmaponte.com.br/saude/medicamentos/?p=267
+2026-05-04 13:25:47,368 [INFO]   -> 8 produtos encontrados (total: 5328)
+2026-05-04 13:25:47,368 [INFO] Ultima pagina atingida.
+2026-05-04 13:25:47,368 [INFO] Total de URLs coletadas: 5328
+2026-05-04 13:25:47,368 [INFO] [1/5328] Extraindo: https://www.farmaponte.com.br/dipirona-gts-10ml-ger/p
+2026-05-04 13:25:50,995 [INFO] [2/5328] Extraindo: https://www.farmaponte.com.br/tadalafila-eurofarma-5mg-caixa-com-30-comprimidos-revestidos/p
+2026-05-04 13:25:54,180 [INFO] [3/5328] Extraindo: https://www.farmaponte.com.br/citrato-de-sildenafila-medley-50mg-caixa-com-4-comprimidos-revestidos/p
+2026-05-04 13:25:56,429 [INFO] [4/5328] Extraindo: https://www.farmaponte.com.br/dipirona-monoidratada-ache-50mgml-caixa-com-1-frasco-com-100ml-de-solucao-oral-1-copo-medidor/p
+2026-05-04 13:25:58,260 [INFO] [5/5328] Extraindo: https://www.farmaponte.com.br/tadalafila-eurofarma-20mg-caixa-com-4-comprimidos-revestidos/p
+2026-05-04 13:26:01,581 [INFO] [6/5328] Extraindo: https://www.farmaponte.com.br/dulcolax-5mg-caixa-com-20-drageas/p
+2026-05-04 13:26:04,688 [INFO] [7/5328] Extraindo: https://www.farmaponte.com.br/citrato-de-sildenafila-eurofarma-50mg-caixa-com-4-comprimidos-revestidos/p
+2026-05-04 13:26:07,042 [INFO] [8/5328] Extraindo: https://www.farmaponte.com.br/apevitin-bc-susp-ems/p
+2026-05-04 13:26:08,749 [INFO] [9/5328] Extraindo: https://www.farmaponte.com.br/20-bi-com-30-capsulas/p
+2026-05-04 13:26:11,470 [INFO] [10/5328] Extraindo: https://www.farmaponte.com.br/sedatif-pc-com-60-comprimidos/p
+2026-05-04 13:26:13,105 [INFO] [11/5328] Extraindo: https://www.farmaponte.com.br/alenia-12mcg-400mcg-caixa-com-60-capsulas-gelatinosas-duras-com-po-de-uso-inalatorio-refil/p
+2026-05-04 13:26:15,880 [INFO] [12/5328] Extraindo: https://www.farmaponte.com.br/permanganato-potassio-10-x3adv/p
+2026-05-04 13:26:19,121 [INFO] [13/5328] Extraindo: https://www.farmaponte.com.br/simbioflora-15-saches-com-6g-de-po-para-solucao-de-uso-oral/p
+2026-05-04 13:26:22,027 [INFO] [14/5328] Extraindo: https://www.farmaponte.com.br/condres-40mg-caixa-com-90-capsulas/p
+2026-05-04 13:26:24,654 [INFO] [15/5328] Extraindo: https://www.farmaponte.com.br/odorizante-de-ambiente-bendita-canfora-8-tabletes/p
+2026-05-04 13:26:27,367 [INFO] [16/5328] Extraindo: https://www.farmaponte.com.br/niquitin-adesivo-21mg-caixa-com-7-adesivos-transdermicos/p
+2026-05-04 13:26:29,138 [INFO] [17/5328] Extraindo: https://www.farmaponte.com.br/gino-canesten-500mg-caixa-com-1-comprimido-vaginal-1-aplicador/p
+2026-05-04 13:26:31,638 [INFO] [18/5328] Extraindo: https://www.farmaponte.com.br/tadalafila-medley-20mg-caixa-com-2-comprimidos-revestidos/p
+2026-05-04 13:26:35,112 [INFO] [19/5328] Extraindo: https://www.farmaponte.com.br/colidis-gotas-10ml/p
+2026-05-04 13:26:37,424 [INFO] [20/5328] Extraindo: https://www.farmaponte.com.br/venocel-100mg-caixa-com-60-capsulas-gelatinosas/p
+2026-05-04 13:26:40,646 [INFO] [21/5328] Extraindo: https://www.farmaponte.com.br/leite-de-magnesia-eno-350ml/p
+2026-05-04 13:26:43,394 [INFO] [22/5328] Extraindo: https://www.farmaponte.com.br/loceryl-esmalte-50mgml-caixa-com-1-frasco-com-25ml-de-esmalte-de-uso-dermatologico-10-espatulas-30-compressas-30-lixas/p
+2026-05-04 13:26:47,069 [INFO] [23/5328] Extraindo: https://www.farmaponte.com.br/complexo-homeopatico-almeida-prado-no-46-0005g-002g-0015g-caixa-com-60-comprimidos/p
+2026-05-04 13:26:50,175 [INFO] [24/5328] Extraindo: https://www.farmaponte.com.br/tadalafila-medley-20mg-caixa-com-4-comprimidos-revestidos/p
+2026-05-04 13:26:52,890 [INFO] [25/5328] Extraindo: https://www.farmaponte.com.br/quietude-com-20-flaconetes/p
+2026-05-04 13:26:56,635 [INFO] [26/5328] Extraindo: https://www.farmaponte.com.br/pantogar-neo-com-60-capsulas/p
+2026-05-04 13:26:59,320 [INFO] [27/5328] Extraindo: https://www.farmaponte.com.br/glifage-xr-500mg-caixa-com-30-comprimidos-de-acao-prolongada/p
+2026-05-04 13:27:02,340 [INFO] [28/5328] Extraindo: https://www.farmaponte.com.br/cocyntal-3333mg-3333mg-3333mg-10-flaconetes-com-1ml-de-solucao-de-uso-oral/p
+2026-05-04 13:27:06,309 [INFO] [29/5328] Extraindo: https://www.farmaponte.com.br/sildenafila-50mg-4cpr-neo/p
+2026-05-04 13:27:09,733 [INFO] [30/5328] Extraindo: https://www.farmaponte.com.br/venocel-100mg-caixa-com-30-capsulas-gelatinosas/p
+2026-05-04 13:27:13,613 [INFO] [31/5328] Extraindo: https://www.farmaponte.com.br/clortalidona-ems-25mg-caixa-com-60-comprimidos/p
+2026-05-04 13:27:16,386 [INFO] [32/5328] Extraindo: https://www.farmaponte.com.br/suplemento-calceos-kids-morango-200ml/p
+2026-05-04 13:27:20,569 [INFO] [33/5328] Extraindo: https://www.farmaponte.com.br/sinvastatina-ems-20mg-caixa-com-30-comprimidos-revestidos/p
+2026-05-04 13:27:24,606 [INFO] [34/5328] Extraindo: https://www.farmaponte.com.br/expec-04mgml-20mgml-4mgml-6mgml-caixa-com-1-frasco-com-120ml-de-xarope/p
+2026-05-04 13:27:26,839 [INFO] [35/5328] Extraindo: https://www.farmaponte.com.br/ciprofibrato-biolab-genericos-100mg-caixa-com-30-comprimidos/p
+2026-05-04 13:27:30,294 [INFO] [36/5328] Extraindo: https://www.farmaponte.com.br/kollagenase-06ug-caixa-com-1-bisnaga-com-30g-de-pomada-de-uso-dermatologico-espatula/p
+2026-05-04 13:27:32,814 [INFO] [37/5328] Extraindo: https://www.farmaponte.com.br/niquitin-14mg-7adesivos/p
+2026-05-04 13:27:36,402 [INFO] [38/5328] Extraindo: https://www.farmaponte.com.br/sal-amargo-farmax-30gr/p
+2026-05-04 13:27:40,030 [INFO] [39/5328] Extraindo: https://www.farmaponte.com.br/tamarine-12mg-caixa-com-20-capsulas/p
+2026-05-04 13:27:42,582 [INFO] [40/5328] Extraindo: https://www.farmaponte.com.br/pant-50mg-sol-capilar-50ml-c-3un/p
+2026-05-04 13:27:45,376 [INFO] [41/5328] Extraindo: https://www.farmaponte.com.br/fluconazol-medley-150mg-caixa-com-2-capsulas/p
+2026-05-04 13:27:48,606 [INFO] [42/5328] Extraindo: https://www.farmaponte.com.br/latanoprosta-005mg-col-geo/p
+2026-05-04 13:27:51,592 [INFO] [43/5328] Extraindo: https://www.farmaponte.com.br/spray-nasal-cimespray-9mg-ml-cimed-50ml/p
+2026-05-04 13:27:54,319 [INFO] [44/5328] Extraindo: https://www.farmaponte.com.br/tadalafila-5mg-germed-caixa-com-30-comprimidos-revestidos/p
+2026-05-04 13:27:57,950 [INFO] [45/5328] Extraindo: https://www.farmaponte.com.br/espironolactona-ems-100mg-caixa-com-30-comprimidos/p
+2026-05-04 13:28:03,070 [INFO] [46/5328] Extraindo: https://www.farmaponte.com.br/colaten-plenne-com-30-saches/p
+2026-05-04 13:28:05,067 [INFO] [47/5328] Extraindo: https://www.farmaponte.com.br/tamarine-4878mgg-4719mgg-frasco-com-150g-de-geleia-uso-oral-zero-acucar/p
+2026-05-04 13:28:07,889 [INFO] [48/5328] Extraindo: https://www.farmaponte.com.br/naridrin-1mgml-02mgml-5mgml-caixa-com-1-frasco-com-30ml-de-solucao-de-uso-nasal/p
+2026-05-04 13:28:10,256 [INFO] [49/5328] Extraindo: https://www.farmaponte.com.br/rosuvastatina-calcica-ems-20mg-caixa-com-30-comprimidos-revestidos/p
+2026-05-04 13:28:13,454 [INFO] [50/5328] Extraindo: https://www.farmaponte.com.br/sinvastatina-multilab-20mg-caixa-com-30-comprimidos-revestidos/p
+2026-05-04 13:28:14,064 [INFO]   -> Salvo parcialmente: 50 produtos
+2026-05-04 13:28:17,493 [INFO] [51/5328] Extraindo: https://www.farmaponte.com.br/sintocalmy-600mg-caixa-com-30-comprimidos-revestidos/p
+2026-05-04 13:28:21,892 [INFO] [52/5328] Extraindo: https://www.farmaponte.com.br/sal-de-frutas-eno-2-envelopes-com-5g-de-po-efervescente-de-uso-oral-laranja/p
+2026-05-04 13:28:25,963 [INFO] [53/5328] Extraindo: https://www.farmaponte.com.br/salicetil-100mg-blister-com-10-comprimidos/p
+2026-05-04 13:28:31,491 [INFO] [54/5328] Extraindo: https://www.farmaponte.com.br/aflexa-60cps/p
+2026-05-04 13:28:35,538 [INFO] [55/5328] Extraindo: https://www.farmaponte.com.br/dorflex-10cpr-x30/p
+2026-05-04 13:28:39,793 [INFO] [56/5328] Extraindo: https://www.farmaponte.com.br/nicorette-4mg-mint-30gomas/p
+2026-05-04 13:28:42,913 [INFO] [57/5328] Extraindo: https://www.farmaponte.com.br/alendronato-sod-70mg-4cpr-ger/p
+2026-05-04 13:28:46,356 [INFO] [58/5328] Extraindo: https://www.farmaponte.com.br/neosoro-fluid-alto-volume-09-para-lavagem-nasal-com-30-saches-e-frasco-aplicador-de-240ml/p
+2026-05-04 13:28:49,702 [INFO] [59/5328] Extraindo: https://www.farmaponte.com.br/repelente-xo-inseto-icaridina-25-spr-100ml/p
+2026-05-04 13:28:52,671 [INFO] [60/5328] Extraindo: https://www.farmaponte.com.br/melagriao-0125mgml-0125mgml-00064mgml-caixa-com-1-frasco-com-150ml-de-xarope/p
+2026-05-04 13:28:56,671 [INFO] [61/5328] Extraindo: https://www.farmaponte.com.br/minancora-pom-30gr/p
+2026-05-04 13:29:00,523 [INFO] [62/5328] Extraindo: https://www.farmaponte.com.br/tadalafila-20mg-4-comprimidos-ems-generico/p
+2026-05-04 13:29:03,942 [INFO] [63/5328] Extraindo: https://www.farmaponte.com.br/acido-ursodesoxicolico-ems-300mg-caixa-com-30-comprimidos/p
+2026-05-04 13:29:07,417 [INFO] [64/5328] Extraindo: https://www.farmaponte.com.br/ducodil-5mg-caixa-com-20-comprimidos-revestidos/p
+2026-05-04 13:29:10,444 [INFO] [65/5328] Extraindo: https://www.farmaponte.com.br/allegra-6mgml-caixa-com-1-frasco-com-60ml-de-suspensao-de-uso-oral-seringa-dosadora/p
+2026-05-04 13:29:13,497 [INFO] [66/5328] Extraindo: https://www.farmaponte.com.br/metformina-850-30-teu-gen/p
+2026-05-04 13:29:16,710 [INFO] [67/5328] Extraindo: https://www.farmaponte.com.br/dipirona-monoidratada-comprimido-ems-500mg-blister-com-10-comprimidos/p
+2026-05-04 13:29:20,704 [INFO] [68/5328] Extraindo: https://www.farmaponte.com.br/cetobeta-cre-30gr/p
+2026-05-04 13:29:23,773 [INFO] [69/5328] Extraindo: https://www.farmaponte.com.br/fortice-com-30-comprimidos/p
+2026-05-04 13:29:26,188 [INFO] [70/5328] Extraindo: https://www.farmaponte.com.br/pantogar-neo-com-90-capsulas/p
+2026-05-04 13:29:28,351 [INFO] [71/5328] Extraindo: https://www.farmaponte.com.br/valsartana-hct-80mg-125mg-caixa-com-30-comprimidos-revestidos/p
+2026-05-04 13:29:33,000 [INFO] [72/5328] Extraindo: https://www.farmaponte.com.br/ibuprofeno-600mg-10cpr-prat-x28/p
+2026-05-04 13:29:36,938 [INFO] [73/5328] Extraindo: https://www.farmaponte.com.br/cloridrato-de-tansulosina-ems-04mg-caixa-com-30-comprimidos-revestidos-de-liberacao-prolongada/p
+2026-05-04 13:29:40,545 [INFO] [74/5328] Extraindo: https://www.farmaponte.com.br/tamarine-caixa-com-20-capsulas/p
+2026-05-04 13:29:44,338 [INFO] [75/5328] Extraindo: https://www.farmaponte.com.br/sal-de-frutas-eno-2-envelopes-com-5g-de-po-efervescente-de-uso-oral-tradicional/p
+2026-05-04 13:29:47,450 [INFO] [76/5328] Extraindo: https://www.farmaponte.com.br/emistin-comprimido-1mg-05mg-caixa-com-20-comprimidos/p
+2026-05-04 13:29:50,850 [INFO] [77/5328] Extraindo: https://www.farmaponte.com.br/prolive-55mg-30cap-zz/p
+2026-05-04 13:29:53,622 [INFO] [78/5328] Extraindo: https://www.farmaponte.com.br/neosoro-05mgml-caixa-com-1-frasco-gotejador-com-30ml-de-solucao-de-uso-nasal/p
+2026-05-04 13:29:58,572 [INFO] [79/5328] Extraindo: https://www.farmaponte.com.br/engov-24cpr/p
+2026-05-04 13:30:01,620 [INFO] [80/5328] Extraindo: https://www.farmaponte.com.br/nistatina-oxido-de-zinco-neo-quimica-100000uig-200mgg-caixa-com-1-bisnaga-com-60g-de-pomada-de-uso-dermatologico/p
+2026-05-04 13:30:03,958 [INFO] [81/5328] Extraindo: https://www.farmaponte.com.br/espironolactona-eurofarma-25mg-caixa-com-30-comprimidos/p
+2026-05-04 13:30:07,580 [INFO] [82/5328] Extraindo: https://www.farmaponte.com.br/dorflex-35mg-300mg-50mg-caixa-com-36-comprimidos-porta-blister-1-unidade/p
+2026-05-04 13:30:10,506 [INFO] [83/5328] Extraindo: https://www.farmaponte.com.br/alopurinol-medley-100mg-caixa-com-30-comprimidos/p
+2026-05-04 13:30:13,705 [INFO] [84/5328] Extraindo: https://www.farmaponte.com.br/steaton-200mg-caixa-com-60-capsulas/p
+2026-05-04 13:30:17,705 [INFO] [85/5328] Extraindo: https://www.farmaponte.com.br/hidroclorotiazida-neo-quimica-25mg-caixa-com-30-comprimidos/p
+2026-05-04 13:30:22,317 [INFO] [86/5328] Extraindo: https://www.farmaponte.com.br/zz-fluconazol-150mg2cap-cim-of/p
+2026-05-04 13:30:25,418 [INFO] [87/5328] Extraindo: https://www.farmaponte.com.br/dipirona-sodica-prati-donaduzzi-500mg-blister-com-10-comprimidos/p
+2026-05-04 13:30:29,261 [INFO] [88/5328] Extraindo: https://www.farmaponte.com.br/sinvastatina-cimed-20mg-caixa-com-30-comprimidos-revestidos/p
+2026-05-04 13:30:31,543 [INFO] [89/5328] Extraindo: https://www.farmaponte.com.br/azelan-150mgg-caixa-com-1-bisnaga-com-30g-de-gel-de-uso-dermatologico/p
+2026-05-04 13:30:34,485 [INFO] [90/5328] Extraindo: https://www.farmaponte.com.br/hirudoid-500mg-gel-40gr/p
+2026-05-04 13:30:37,219 [INFO] [91/5328] Extraindo: https://www.farmaponte.com.br/suplemento-alimentar-regenesis-premium-lipinova-120-capsulas-gelatinosas-moles/p
+2026-05-04 13:30:39,858 [INFO] [92/5328] Extraindo: https://www.farmaponte.com.br/nistatina-oxido-de-zinco-ems-100000uig-200mgg-caixa-com-1-bisnaga-com-60g-de-pomada-de-uso-dermatologico/p
+2026-05-04 13:30:44,114 [INFO] [93/5328] Extraindo: https://www.farmaponte.com.br/balsamo-bengue-025gg-025gg-caixa-com-1-bisnaga-com-20g-de-pomada-de-uso-dermatologico/p
+2026-05-04 13:30:46,528 [INFO] [94/5328] Extraindo: https://www.farmaponte.com.br/loratamed-10mg-caixa-com-12-comprimidos/p
+2026-05-04 13:30:50,164 [INFO] [95/5328] Extraindo: https://www.farmaponte.com.br/levotiroxina-sodica-merck-100mcg-caixa-com-30-comprimidos/p
+2026-05-04 13:30:54,411 [INFO] [96/5328] Extraindo: https://www.farmaponte.com.br/fascia-prime-30-saches/p
+2026-05-04 13:30:56,780 [INFO] [97/5328] Extraindo: https://www.farmaponte.com.br/kollis-solucao-gotas-8ml/p
+2026-05-04 13:30:59,320 [INFO] [98/5328] Extraindo: https://www.farmaponte.com.br/aradois-50mg-caixa-com-30-comprimidos-revestidos/p
+2026-05-04 13:31:02,504 [INFO] [99/5328] Extraindo: https://www.farmaponte.com.br/lacday-60cpr-mast/p
+2026-05-04 13:31:06,094 [INFO] [100/5328] Extraindo: https://www.farmaponte.com.br/lufta-gastro-pro-c-12-sachet-10ml/p
+2026-05-04 13:31:06,938 [INFO]   -> Salvo parcialmente: 100 produtos
+2026-05-04 13:31:09,360 [INFO] [101/5328] Extraindo: https://www.farmaponte.com.br/probiatop-30-saches-com-1g-de-po-para-solucao-de-uso-oral/p
+2026-05-04 13:31:12,101 [INFO] [102/5328] Extraindo: https://www.farmaponte.com.br/oxipelle-sol-20ml/p
+2026-05-04 13:31:15,499 [INFO] [103/5328] Extraindo: https://www.farmaponte.com.br/naturetti-caixa-com-16-capsulas-gelatinosas-duras/p
+2026-05-04 13:31:19,216 [INFO] [104/5328] Extraindo: https://www.farmaponte.com.br/xantinon-complex-40mgml-53mgml-50mgml-1-flaconete-com-10ml-de-solucao-de-uso-oral/p
+2026-05-04 13:31:22,751 [INFO] [105/5328] Extraindo: https://www.farmaponte.com.br/natifa-1mg-caixa-com-28-comprimidos-revestidos/p
+2026-05-04 13:31:25,595 [INFO] [106/5328] Extraindo: https://www.farmaponte.com.br/qlaira-caixa-com-26-comprimidos-ativos-2-comprimidos-inativos/p
+2026-05-04 13:31:29,556 [INFO] [107/5328] Extraindo: https://www.farmaponte.com.br/proctyl-50mgg-10mgg-caixa-com-1-bisnaga-com-30g-de-pomada-de-uso-retal-10-aplicadores/p
+2026-05-04 13:31:37,374 [INFO] [108/5328] Extraindo: https://www.farmaponte.com.br/cerumin-04mgml-140mgml-caixa-com-1-frasco-gotejador-com-8ml-de-solucao-de-uso-otologico/p
+2026-05-04 13:31:40,710 [INFO] [109/5328] Extraindo: https://www.farmaponte.com.br/tadalafila-5mg-30cpr-med/p
+2026-05-04 13:31:43,893 [INFO] [110/5328] Extraindo: https://www.farmaponte.com.br/pilulas-imescard-10mg-10mg-10mg-30mg-caixa-com-36-drageas/p
+2026-05-04 13:31:46,272 [INFO] [111/5328] Extraindo: https://www.farmaponte.com.br/rozex-075pcc-caixa-com-1-bisnaga-com-30g-de-gel-de-uso-dermatologico/p
+2026-05-04 13:31:49,248 [INFO] [112/5328] Extraindo: https://www.farmaponte.com.br/puran-t4-50mcg-caixa-com-30-comprimidos/p
+2026-05-04 13:31:52,237 [INFO] [113/5328] Extraindo: https://www.farmaponte.com.br/diad-15mg-1cpr/p
+2026-05-04 13:31:55,361 [INFO] [114/5328] Extraindo: https://www.farmaponte.com.br/cloridrato-de-tansulosina-ems-04mg-caixa-com-60-comprimidos-revestidos-de-liberacao-prolongada/p
+2026-05-04 13:31:59,445 [INFO] [115/5328] Extraindo: https://www.farmaponte.com.br/aflexa-colageno-40mg-caixa-com-30-capsulas/p
+2026-05-04 13:32:02,426 [INFO] [116/5328] Extraindo: https://www.farmaponte.com.br/oleo-mineral-naturol-farmax-frasco-com-100ml-de-oleo-de-uso-dermatologico/p
+2026-05-04 13:32:05,519 [INFO] [117/5328] Extraindo: https://www.farmaponte.com.br/ibuprofeno-100mg-gts-20-ml-med/p
+2026-05-04 13:32:08,098 [INFO] [118/5328] Extraindo: https://www.farmaponte.com.br/allestra-30-0075mg-0030mg-caixa-com-63-comprimidos-revestidos/p
+2026-05-04 13:32:10,614 [INFO] [119/5328] Extraindo: https://www.farmaponte.com.br/slinda-drospirenona-4mg-72-12-comprimidos/p
+2026-05-04 13:32:14,188 [INFO] [120/5328] Extraindo: https://www.farmaponte.com.br/tadalafila-5mg-28cpr-neo/p
+2026-05-04 13:32:16,731 [INFO] [121/5328] Extraindo: https://www.farmaponte.com.br/epocler-100mgml-50mgml-10mgml-caixa-com-6-flaconetes-com-10ml-de-solucao-de-uso-oral/p
+2026-05-04 13:32:19,639 [INFO] [122/5328] Extraindo: https://www.farmaponte.com.br/dexametasona-cr-10gr-teuto-ge/p
+2026-05-04 13:32:24,793 [INFO] [123/5328] Extraindo: https://www.farmaponte.com.br/lidocaina-ems-50mgg-caixa-com-1-bisnaga-com-25g-de-pomada-de-uso-dermatologico/p
+2026-05-04 13:32:29,479 [INFO] [124/5328] Extraindo: https://www.farmaponte.com.br/dramin-caps-gel-50mg-10caps-x20/p
+2026-05-04 13:32:33,408 [INFO] [125/5328] Extraindo: https://www.farmaponte.com.br/floral-de-bach-polinize-rescue-urgencias-30ml/p
+2026-05-04 13:32:36,092 [INFO] [126/5328] Extraindo: https://www.farmaponte.com.br/cloridrato-de-metformina-prati-donaduzzi-500mg-caixa-com-30-comprimidos-revestidos/p
+2026-05-04 13:32:40,261 [INFO] [127/5328] Extraindo: https://www.farmaponte.com.br/rosuvastatina-calcica-ems-10mg-caixa-com-30-comprimidos-revestidos/p
+2026-05-04 13:32:44,026 [INFO] [128/5328] Extraindo: https://www.farmaponte.com.br/nervocalm-250mg-60cpr/p
+2026-05-04 13:32:48,087 [INFO] [129/5328] Extraindo: https://www.farmaponte.com.br/stodal-xarope-150ml/p
+2026-05-04 13:32:50,268 [INFO] [130/5328] Extraindo: https://www.farmaponte.com.br/tamoxifeno-20mg-30cp-blau/p
+2026-05-04 13:32:52,650 [INFO] [131/5328] Extraindo: https://www.farmaponte.com.br/sulf-glicosamina-15g-po-30saches-nq/p
+2026-05-04 13:32:55,560 [INFO] [132/5328] Extraindo: https://www.farmaponte.com.br/calman-c20-drg/p
+2026-05-04 13:32:58,821 [INFO] [133/5328] Extraindo: https://www.farmaponte.com.br/cognicx-60caps/p
+2026-05-04 13:33:00,879 [INFO] [134/5328] Extraindo: https://www.farmaponte.com.br/orlistate-prati-donaduzzi-120mg-caixa-com-84-capsulas-duras/p
+2026-05-04 13:33:04,772 [INFO] [135/5328] Extraindo: https://www.farmaponte.com.br/digeliv-30-caixa-comprimidos-mastigaveis/p
+2026-05-04 13:33:08,302 [INFO] [136/5328] Extraindo: https://www.farmaponte.com.br/allexofedrin-6mgml-caixa-com-1-frasco-com-60ml-de-suspensao-de-uso-oral-sabor-framboesa-seringa-dosadora-pediatrico/p
+2026-05-04 13:33:12,013 [INFO] [137/5328] Extraindo: https://www.farmaponte.com.br/bicarbonato-de-sodio-adv-caixa-com-10-saches-de-25g-de-po-para-solucao-oral/p
+2026-05-04 13:33:14,394 [INFO] [138/5328] Extraindo: https://www.farmaponte.com.br/avamys-00275mgdose-caixa-com-1-frasco-spray-com-120-doses-de-suspensao-de-uso-nasal/p
+2026-05-04 13:33:18,523 [INFO] [139/5328] Extraindo: https://www.farmaponte.com.br/diane-35-3x21/p
+2026-05-04 13:33:21,791 [INFO] [140/5328] Extraindo: https://www.farmaponte.com.br/lactosil-10000-30tabs/p
+2026-05-04 13:33:25,805 [INFO] [141/5328] Extraindo: https://www.farmaponte.com.br/dorflex-50cpr/p
+2026-05-04 13:33:29,451 [INFO] [142/5328] Extraindo: https://www.farmaponte.com.br/motore-extrato-seco-de-curcuma-500mg-60-capsulas/p
+2026-05-04 13:33:33,407 [INFO] [143/5328] Extraindo: https://www.farmaponte.com.br/fledoid-500mg-pomada-40g/p
+2026-05-04 13:33:37,093 [INFO] [144/5328] Extraindo: https://www.farmaponte.com.br/allexofedrin-d-60-120mg-caixa-com-10-comprimidos-revestidos/p
+2026-05-04 13:33:39,748 [INFO] [145/5328] Extraindo: https://www.farmaponte.com.br/budesonida-ems-32mcgacionamento-caixa-com-1-frasco-com-120-doses-de-suspensao-de-uso-nasal/p
+2026-05-04 13:33:42,246 [INFO] [146/5328] Extraindo: https://www.farmaponte.com.br/oscillococcinum-6-tubos-com-1g-de-globulos/p
+2026-05-04 13:33:44,628 [INFO] [147/5328] Extraindo: https://www.farmaponte.com.br/clexane-40mg-inj-10ser/p
+2026-05-04 13:33:47,085 [INFO] [148/5328] Extraindo: https://www.farmaponte.com.br/angeliq-1mg-2mg-caixa-com-28-comprimidos-revestidos/p
+2026-05-04 13:33:49,672 [INFO] [149/5328] Extraindo: https://www.farmaponte.com.br/salonpas-emplastro-11414mg-2184mg-13104mg-2840mg-1842mg-caixa-com-4-emplastros/p
+2026-05-04 13:33:52,059 [INFO] [150/5328] Extraindo: https://www.farmaponte.com.br/ivermectina-vitamedic-6mg-caixa-com-4-comprimidos/p
+2026-05-04 13:33:52,626 [INFO]   -> Salvo parcialmente: 150 produtos
+2026-05-04 13:33:55,506 [INFO] [151/5328] Extraindo: https://www.farmaponte.com.br/andolba-aerossol-45mgg-05mgg-05mgg-caixa-com-1-tubo-aerosol-com-43g-de-solucao-de-uso-dermatologico/p
+2026-05-04 13:33:59,202 [INFO] [152/5328] Extraindo: https://www.farmaponte.com.br/espironolactona-eurofarma-50mg-caixa-com-30-comprimidos/p
+2026-05-04 13:34:02,669 [INFO] [153/5328] Extraindo: https://www.farmaponte.com.br/bepantol-derma-spray-50ml/p
+2026-05-04 13:34:05,637 [INFO] [154/5328] Extraindo: https://www.farmaponte.com.br/imecap-rejuvenecedor-com-30-saches/p
+2026-05-04 13:34:09,141 [INFO] [155/5328] Extraindo: https://www.farmaponte.com.br/simeticona-gts-15ml-med-gen/p
+2026-05-04 13:34:13,427 [INFO] [156/5328] Extraindo: https://www.farmaponte.com.br/aas-protect-100mg-caixa-com-30-comprimidos-revestidos/p
+2026-05-04 13:34:17,485 [INFO] [157/5328] Extraindo: https://www.farmaponte.com.br/sonrisal-1854mg-400mg-325mg-1413mg-blister-com-2-comprimidos-efervescentes-sabor-tradicional/p
+2026-05-04 13:34:20,237 [INFO] [158/5328] Extraindo: https://www.farmaponte.com.br/levotiroxina-sodica-merck-50mcg-caixa-com-30-comprimidos/p
+2026-05-04 13:34:22,708 [INFO] [159/5328] Extraindo: https://www.farmaponte.com.br/propionato-de-clobetasol-prati-donaduzzi-05mgg-solucao-capilar-50-g/p
+2026-05-04 13:34:25,069 [INFO] [160/5328] Extraindo: https://www.farmaponte.com.br/decongex-plus-04mg-1mg-caixa-com-1-frasco-com-120ml-de-xarope-copo-medidor/p
+2026-05-04 13:34:29,281 [INFO] [161/5328] Extraindo: https://www.farmaponte.com.br/colidis-caixa-com-1-frasco-gotejador-com-5ml-de-solucao-oral/p
+2026-05-04 13:34:33,280 [INFO] [162/5328] Extraindo: https://www.farmaponte.com.br/losartana-potassica-neo-quimica-50mg-caixa-com-30-comprimidos-revestidos/p
+2026-05-04 13:34:35,539 [INFO] [163/5328] Extraindo: https://www.farmaponte.com.br/acetilcisteina-ems-20mgml-caixa-com-1-frasco-com-120ml-de-xarope-de-uso-pediatrico-copo-medidor/p
+2026-05-04 13:34:38,782 [INFO] [164/5328] Extraindo: https://www.farmaponte.com.br/daflon-900mg-100mg-caixa-com-30-comprimidos-revestidos/p
+2026-05-04 13:34:41,633 [INFO] [165/5328] Extraindo: https://www.farmaponte.com.br/benatux-xpe-120ml/p
+2026-05-04 13:34:45,723 [INFO] [166/5328] Extraindo: https://www.farmaponte.com.br/enemin-714mgg-770mgg-caixa-com-7-bisnagas-de-solucao-de-uso-retal/p
+2026-05-04 13:34:49,175 [INFO] [167/5328] Extraindo: https://www.farmaponte.com.br/nicorette-2mg-caixa-com-30-gomas-mastigaveis/p
+2026-05-04 13:34:53,076 [INFO] [168/5328] Extraindo: https://www.farmaponte.com.br/buscopan-composto-10mg-250mg-caixa-com-20-comprimidos-revestidos/p
+2026-05-04 13:34:55,940 [INFO] [169/5328] Extraindo: https://www.farmaponte.com.br/epocler-100mgml-50mgml-10mgml-flaconete-com-10ml-de-solucao-de-uso-oral/p
+2026-05-04 13:34:59,800 [INFO] [170/5328] Extraindo: https://www.farmaponte.com.br/esmalte-tratamento-sos-unhas-concreto-7ml/p
+2026-05-04 13:35:05,071 [INFO] [171/5328] Extraindo: https://www.farmaponte.com.br/vick-vaporub-282-526-133mgg-unguento-pote-12g/p
+2026-05-04 13:35:07,519 [INFO] [172/5328] Extraindo: https://www.farmaponte.com.br/maxidrate-45mgg-caixa-com-1-frasco-com-30g-de-gel-de-uso-nasal/p
+2026-05-04 13:35:10,579 [INFO] [173/5328] Extraindo: https://www.farmaponte.com.br/aciclovir-comprimido-teuto-200mg-caixa-com-25-comprimidos/p
+2026-05-04 13:35:14,474 [INFO] [174/5328] Extraindo: https://www.farmaponte.com.br/succinato-de-sumatriptana-biolab-genericos-50mg-caixa-com-2-comprimidos-revestidos/p
+2026-05-04 13:35:18,502 [INFO] [175/5328] Extraindo: https://www.farmaponte.com.br/floripa-solucao-gotas-8ml/p
+2026-05-04 13:35:22,652 [INFO] [176/5328] Extraindo: https://www.farmaponte.com.br/mylanta-plus-80mgml-80mgml-6mgml-caixa-com-1-frasco-com-240ml-de-suspensao-de-uso-oral-morango/p
+2026-05-04 13:35:27,001 [INFO] [177/5328] Extraindo: https://www.farmaponte.com.br/sal-de-frutas-eno-2-envelopes-com-5g-de-po-efervescente-de-uso-oral-guarana/p
+2026-05-04 13:35:30,947 [INFO] [178/5328] Extraindo: https://www.farmaponte.com.br/eliquis-5mg-60cpr/p
+2026-05-04 13:35:33,616 [INFO] [179/5328] Extraindo: https://www.farmaponte.com.br/colaten-ha-com-60-capsulas-duras/p
+2026-05-04 13:35:37,645 [INFO] [180/5328] Extraindo: https://www.farmaponte.com.br/desogestrel-eurofarma-75mcg-caixa-com-84-comprimidos/p
+2026-05-04 13:35:42,359 [INFO] [181/5328] Extraindo: https://www.farmaponte.com.br/doralgina-30mg-300mg-30mg-caixa-com-20-drageas/p
+2026-05-04 13:35:45,922 [INFO] [182/5328] Extraindo: https://www.farmaponte.com.br/viagra-50mg-caixa-com-2-comprimidos-revestidos/p
+2026-05-04 13:35:48,758 [INFO] [183/5328] Extraindo: https://www.farmaponte.com.br/colaten-artro-30-comprimidos/p
+2026-05-04 13:35:51,749 [INFO] [184/5328] Extraindo: https://www.farmaponte.com.br/biofenac-aerosol-60gr/p
+2026-05-04 13:35:54,764 [INFO] [185/5328] Extraindo: https://www.farmaponte.com.br/iumi-es-3mg-002mg-caixa-com-30-comprimidos-revestidos/p
+2026-05-04 13:35:58,271 [INFO] [186/5328] Extraindo: https://www.farmaponte.com.br/molieri-20-3mg-002mg-caixa-com-24-comprimidos-revestidos/p
+2026-05-04 13:36:02,649 [INFO] [187/5328] Extraindo: https://www.farmaponte.com.br/secnidazol-medley-1000mg-caixa-com-2-comprimidos-revestidos/p
+2026-05-04 13:36:04,969 [INFO] [188/5328] Extraindo: https://www.farmaponte.com.br/proctyl-100mg-27mg-caixa-com-15-supositorios-de-uso-retal/p
+2026-05-04 13:36:07,702 [INFO] [189/5328] Extraindo: https://www.farmaponte.com.br/valsartana-160mg-hidroclorotiazida-125mg-30-comprimidos-ache-generico/p
+2026-05-04 13:37:49,023 [INFO] ============================================================
+2026-05-04 13:37:49,023 [INFO] Iniciando scraper — FarmaPonte Medicamentos
+2026-05-04 13:37:49,023 [INFO] URL base: https://www.farmaponte.com.br/saude/medicamentos/
+2026-05-04 13:37:49,023 [INFO] ============================================================
+2026-05-04 13:37:49,023 [INFO] Coletando lista de produtos — página 1: https://www.farmaponte.com.br/saude/medicamentos/
+2026-05-04 13:37:49,214 [INFO]   -> 20 produtos encontrados (total: 20)
+2026-05-04 13:37:49,243 [INFO] Ultima pagina atingida.
+2026-05-04 13:37:49,243 [INFO] Total de URLs coletadas: 20
+2026-05-04 13:37:49,243 [INFO] [1/20] Extraindo: https://www.farmaponte.com.br/dipirona-gts-10ml-ger/p
+2026-05-04 13:37:52,561 [INFO] [2/20] Extraindo: https://www.farmaponte.com.br/tadalafila-eurofarma-5mg-caixa-com-30-comprimidos-revestidos/p
+2026-05-04 13:37:54,324 [INFO] [3/20] Extraindo: https://www.farmaponte.com.br/citrato-de-sildenafila-medley-50mg-caixa-com-4-comprimidos-revestidos/p
+2026-05-04 13:37:57,101 [INFO] [4/20] Extraindo: https://www.farmaponte.com.br/dipirona-monoidratada-ache-50mgml-caixa-com-1-frasco-com-100ml-de-solucao-oral-1-copo-medidor/p
+2026-05-04 13:37:59,804 [INFO] [5/20] Extraindo: https://www.farmaponte.com.br/tadalafila-eurofarma-20mg-caixa-com-4-comprimidos-revestidos/p
+2026-05-04 13:38:01,771 [INFO] [6/20] Extraindo: https://www.farmaponte.com.br/dulcolax-5mg-caixa-com-20-drageas/p
+2026-05-04 13:38:04,986 [INFO] [7/20] Extraindo: https://www.farmaponte.com.br/citrato-de-sildenafila-eurofarma-50mg-caixa-com-4-comprimidos-revestidos/p
+2026-05-04 13:38:08,405 [INFO] [8/20] Extraindo: https://www.farmaponte.com.br/apevitin-bc-susp-ems/p
+2026-05-04 13:38:10,039 [INFO] [9/20] Extraindo: https://www.farmaponte.com.br/20-bi-com-30-capsulas/p
+2026-05-04 13:38:12,714 [INFO] [10/20] Extraindo: https://www.farmaponte.com.br/sedatif-pc-com-60-comprimidos/p
+2026-05-04 13:38:14,816 [INFO] [11/20] Extraindo: https://www.farmaponte.com.br/alenia-12mcg-400mcg-caixa-com-60-capsulas-gelatinosas-duras-com-po-de-uso-inalatorio-refil/p
+2026-05-04 13:38:17,328 [INFO] [12/20] Extraindo: https://www.farmaponte.com.br/permanganato-potassio-10-x3adv/p
+2026-05-04 13:38:19,665 [INFO] [13/20] Extraindo: https://www.farmaponte.com.br/simbioflora-15-saches-com-6g-de-po-para-solucao-de-uso-oral/p
+2026-05-04 13:38:22,568 [INFO] [14/20] Extraindo: https://www.farmaponte.com.br/condres-40mg-caixa-com-90-capsulas/p
+2026-05-04 13:38:25,082 [INFO] [15/20] Extraindo: https://www.farmaponte.com.br/odorizante-de-ambiente-bendita-canfora-8-tabletes/p
+2026-05-04 13:38:28,492 [INFO] [16/20] Extraindo: https://www.farmaponte.com.br/niquitin-adesivo-21mg-caixa-com-7-adesivos-transdermicos/p
+2026-05-04 13:38:30,480 [INFO] [17/20] Extraindo: https://www.farmaponte.com.br/gino-canesten-500mg-caixa-com-1-comprimido-vaginal-1-aplicador/p
+2026-05-04 13:38:32,627 [INFO] [18/20] Extraindo: https://www.farmaponte.com.br/tadalafila-medley-20mg-caixa-com-2-comprimidos-revestidos/p
+2026-05-04 13:38:35,386 [INFO] [19/20] Extraindo: https://www.farmaponte.com.br/colidis-gotas-10ml/p
+2026-05-04 13:38:37,257 [INFO] [20/20] Extraindo: https://www.farmaponte.com.br/venocel-100mg-caixa-com-60-capsulas-gelatinosas/p
+2026-05-04 13:38:40,373 [INFO] ============================================================
+2026-05-04 13:38:40,373 [INFO] Extracao concluida! 20 produtos salvos em 'farmaponte_medicamentos.csv'
+2026-05-04 13:38:40,373 [INFO] ============================================================
+2026-05-04 14:14:13,683 [INFO] ============================================================
+2026-05-04 14:14:13,683 [INFO] Iniciando scraper — FarmaPonte Medicamentos
+2026-05-04 14:14:13,683 [INFO] URL base: https://www.farmaponte.com.br/saude/medicamentos/
+2026-05-04 14:14:13,684 [INFO] ============================================================
+2026-05-04 14:14:13,684 [INFO] Coletando lista de produtos — página 1: https://www.farmaponte.com.br/saude/medicamentos/
+2026-05-04 14:14:13,899 [INFO]   -> 20 produtos encontrados (total: 20)
+2026-05-04 14:14:13,929 [INFO] Ultima pagina atingida.
+2026-05-04 14:14:13,929 [INFO] Total de URLs coletadas: 20
+2026-05-04 14:14:13,930 [INFO] [1/20] Extraindo: https://www.farmaponte.com.br/dipirona-gts-10ml-ger/p
+2026-05-04 14:14:16,290 [INFO] [2/20] Extraindo: https://www.farmaponte.com.br/tadalafila-eurofarma-5mg-caixa-com-30-comprimidos-revestidos/p
+2026-05-04 14:14:18,193 [INFO] [3/20] Extraindo: https://www.farmaponte.com.br/citrato-de-sildenafila-medley-50mg-caixa-com-4-comprimidos-revestidos/p
+2026-05-04 14:14:22,145 [INFO] [4/20] Extraindo: https://www.farmaponte.com.br/dipirona-monoidratada-ache-50mgml-caixa-com-1-frasco-com-100ml-de-solucao-oral-1-copo-medidor/p
+2026-05-04 14:14:26,349 [INFO] [5/20] Extraindo: https://www.farmaponte.com.br/tadalafila-eurofarma-20mg-caixa-com-4-comprimidos-revestidos/p
+2026-05-04 14:14:29,695 [INFO] [6/20] Extraindo: https://www.farmaponte.com.br/dulcolax-5mg-caixa-com-20-drageas/p
+2026-05-04 14:14:33,755 [INFO] [7/20] Extraindo: https://www.farmaponte.com.br/citrato-de-sildenafila-eurofarma-50mg-caixa-com-4-comprimidos-revestidos/p
+2026-05-04 14:14:37,596 [INFO] [8/20] Extraindo: https://www.farmaponte.com.br/apevitin-bc-susp-ems/p
+2026-05-04 14:14:41,477 [INFO] [9/20] Extraindo: https://www.farmaponte.com.br/20-bi-com-30-capsulas/p
+2026-05-04 14:14:43,412 [INFO] [10/20] Extraindo: https://www.farmaponte.com.br/sedatif-pc-com-60-comprimidos/p
+2026-05-04 14:14:45,846 [INFO] [11/20] Extraindo: https://www.farmaponte.com.br/alenia-12mcg-400mcg-caixa-com-60-capsulas-gelatinosas-duras-com-po-de-uso-inalatorio-refil/p
+2026-05-04 14:14:48,471 [INFO] [12/20] Extraindo: https://www.farmaponte.com.br/permanganato-potassio-10-x3adv/p
+2026-05-04 14:14:52,047 [INFO] [13/20] Extraindo: https://www.farmaponte.com.br/simbioflora-15-saches-com-6g-de-po-para-solucao-de-uso-oral/p
+2026-05-04 14:14:54,871 [INFO] [14/20] Extraindo: https://www.farmaponte.com.br/condres-40mg-caixa-com-90-capsulas/p
+2026-05-04 14:15:08,651 [INFO] [15/20] Extraindo: https://www.farmaponte.com.br/odorizante-de-ambiente-bendita-canfora-8-tabletes/p
+2026-05-04 14:15:10,915 [INFO] [16/20] Extraindo: https://www.farmaponte.com.br/niquitin-adesivo-21mg-caixa-com-7-adesivos-transdermicos/p
+2026-05-04 14:15:14,961 [INFO] [17/20] Extraindo: https://www.farmaponte.com.br/gino-canesten-500mg-caixa-com-1-comprimido-vaginal-1-aplicador/p
+2026-05-04 14:15:18,512 [INFO] [18/20] Extraindo: https://www.farmaponte.com.br/tadalafila-medley-20mg-caixa-com-2-comprimidos-revestidos/p
+2026-05-04 14:15:22,442 [INFO] [19/20] Extraindo: https://www.farmaponte.com.br/colidis-gotas-10ml/p
+2026-05-04 14:15:25,683 [INFO] [20/20] Extraindo: https://www.farmaponte.com.br/venocel-100mg-caixa-com-60-capsulas-gelatinosas/p
+2026-05-04 14:15:29,824 [INFO] ============================================================
+2026-05-04 14:15:29,824 [INFO] Extracao concluida! 20 produtos salvos em 'farmaponte_medicamentos.csv'
+2026-05-04 14:15:29,824 [INFO] ============================================================
+2026-05-04 14:17:24,774 [INFO] ============================================================
+2026-05-04 14:17:24,775 [INFO] Iniciando scraper — FarmaPonte Medicamentos
+2026-05-04 14:17:24,775 [INFO] URL base: https://www.farmaponte.com.br/saude/medicamentos/
+2026-05-04 14:17:24,775 [INFO] ============================================================
+2026-05-04 14:17:24,775 [INFO] Coletando lista de produtos — página 1: https://www.farmaponte.com.br/saude/medicamentos/
+2026-05-04 14:17:25,860 [INFO]   -> 20 produtos encontrados (total: 20)
+2026-05-04 14:17:25,893 [INFO] Ultima pagina atingida.
+2026-05-04 14:17:25,893 [INFO] Total de URLs coletadas: 20
+2026-05-04 14:17:25,893 [INFO] [1/20] Extraindo: https://www.farmaponte.com.br/dipirona-gts-10ml-ger/p
+2026-05-04 14:17:28,597 [INFO] [2/20] Extraindo: https://www.farmaponte.com.br/tadalafila-eurofarma-5mg-caixa-com-30-comprimidos-revestidos/p
+2026-05-04 14:17:31,952 [INFO] [3/20] Extraindo: https://www.farmaponte.com.br/citrato-de-sildenafila-medley-50mg-caixa-com-4-comprimidos-revestidos/p
+2026-05-04 14:17:33,941 [INFO] [4/20] Extraindo: https://www.farmaponte.com.br/dipirona-monoidratada-ache-50mgml-caixa-com-1-frasco-com-100ml-de-solucao-oral-1-copo-medidor/p
+2026-05-04 14:17:37,048 [INFO] [5/20] Extraindo: https://www.farmaponte.com.br/tadalafila-eurofarma-20mg-caixa-com-4-comprimidos-revestidos/p
+2026-05-04 14:17:39,772 [INFO] [6/20] Extraindo: https://www.farmaponte.com.br/dulcolax-5mg-caixa-com-20-drageas/p
+2026-05-04 14:17:42,051 [INFO] [7/20] Extraindo: https://www.farmaponte.com.br/citrato-de-sildenafila-eurofarma-50mg-caixa-com-4-comprimidos-revestidos/p
+2026-05-04 14:17:45,260 [INFO] [8/20] Extraindo: https://www.farmaponte.com.br/apevitin-bc-susp-ems/p
+2026-05-04 14:17:47,089 [INFO] [9/20] Extraindo: https://www.farmaponte.com.br/20-bi-com-30-capsulas/p
+2026-05-04 14:17:50,872 [INFO] [10/20] Extraindo: https://www.farmaponte.com.br/sedatif-pc-com-60-comprimidos/p
+2026-05-04 14:17:54,429 [INFO] [11/20] Extraindo: https://www.farmaponte.com.br/alenia-12mcg-400mcg-caixa-com-60-capsulas-gelatinosas-duras-com-po-de-uso-inalatorio-refil/p
+2026-05-04 14:17:57,819 [INFO] [12/20] Extraindo: https://www.farmaponte.com.br/permanganato-potassio-10-x3adv/p
+2026-05-04 14:18:01,175 [INFO] [13/20] Extraindo: https://www.farmaponte.com.br/simbioflora-15-saches-com-6g-de-po-para-solucao-de-uso-oral/p
+2026-05-04 14:18:04,068 [INFO] [14/20] Extraindo: https://www.farmaponte.com.br/condres-40mg-caixa-com-90-capsulas/p
+2026-05-04 14:18:06,856 [INFO] [15/20] Extraindo: https://www.farmaponte.com.br/odorizante-de-ambiente-bendita-canfora-8-tabletes/p
+2026-05-04 14:18:10,188 [INFO] [16/20] Extraindo: https://www.farmaponte.com.br/niquitin-adesivo-21mg-caixa-com-7-adesivos-transdermicos/p
+2026-05-04 14:18:11,797 [INFO] [17/20] Extraindo: https://www.farmaponte.com.br/gino-canesten-500mg-caixa-com-1-comprimido-vaginal-1-aplicador/p
+2026-05-04 14:18:14,228 [INFO] [18/20] Extraindo: https://www.farmaponte.com.br/tadalafila-medley-20mg-caixa-com-2-comprimidos-revestidos/p
+2026-05-04 14:18:17,658 [INFO] [19/20] Extraindo: https://www.farmaponte.com.br/colidis-gotas-10ml/p
+2026-05-04 14:18:19,401 [INFO] [20/20] Extraindo: https://www.farmaponte.com.br/venocel-100mg-caixa-com-60-capsulas-gelatinosas/p
+2026-05-04 14:18:21,190 [INFO] ============================================================
+2026-05-04 14:18:21,190 [INFO] Extracao concluida! 20 produtos salvos em 'farmaponte_medicamentos.csv'
+2026-05-04 14:18:21,190 [INFO] ============================================================
+2026-05-04 14:41:39,348 [INFO] ============================================================
+2026-05-04 14:41:39,348 [INFO] Iniciando scraper — FarmaPonte Medicamentos
+2026-05-04 14:41:39,348 [INFO] URL base: https://www.farmaponte.com.br/saude/medicamentos/
+2026-05-04 14:41:39,349 [INFO] ============================================================
+2026-05-04 14:41:39,349 [INFO] Coletando lista de produtos — página 1: https://www.farmaponte.com.br/saude/medicamentos/
+2026-05-04 14:41:39,630 [INFO]   -> 20 produtos encontrados (total: 20)
+2026-05-04 14:41:39,661 [INFO] Ultima pagina atingida.
+2026-05-04 14:41:39,661 [INFO] Total de URLs coletadas: 20
+2026-05-04 14:41:39,661 [INFO] [1/20] Extraindo: https://www.farmaponte.com.br/dipirona-gts-10ml-ger/p
+2026-05-04 14:41:41,995 [INFO] [2/20] Extraindo: https://www.farmaponte.com.br/tadalafila-eurofarma-5mg-caixa-com-30-comprimidos-revestidos/p
+2026-05-04 14:41:45,272 [INFO] [3/20] Extraindo: https://www.farmaponte.com.br/citrato-de-sildenafila-medley-50mg-caixa-com-4-comprimidos-revestidos/p
+2026-05-04 14:41:48,251 [INFO] [4/20] Extraindo: https://www.farmaponte.com.br/dipirona-monoidratada-ache-50mgml-caixa-com-1-frasco-com-100ml-de-solucao-oral-1-copo-medidor/p
+2026-05-04 14:41:50,656 [INFO] [5/20] Extraindo: https://www.farmaponte.com.br/tadalafila-eurofarma-20mg-caixa-com-4-comprimidos-revestidos/p
+2026-05-04 14:41:53,141 [INFO] [6/20] Extraindo: https://www.farmaponte.com.br/dulcolax-5mg-caixa-com-20-drageas/p
+2026-05-04 14:41:55,116 [INFO] [7/20] Extraindo: https://www.farmaponte.com.br/citrato-de-sildenafila-eurofarma-50mg-caixa-com-4-comprimidos-revestidos/p
+2026-05-04 14:41:57,221 [INFO] [8/20] Extraindo: https://www.farmaponte.com.br/apevitin-bc-susp-ems/p
+2026-05-04 14:41:58,973 [INFO] [9/20] Extraindo: https://www.farmaponte.com.br/20-bi-com-30-capsulas/p
+2026-05-04 14:42:00,594 [INFO] [10/20] Extraindo: https://www.farmaponte.com.br/sedatif-pc-com-60-comprimidos/p
+2026-05-04 14:42:03,684 [INFO] [11/20] Extraindo: https://www.farmaponte.com.br/alenia-12mcg-400mcg-caixa-com-60-capsulas-gelatinosas-duras-com-po-de-uso-inalatorio-refil/p
+2026-05-04 14:42:06,137 [INFO] [12/20] Extraindo: https://www.farmaponte.com.br/permanganato-potassio-10-x3adv/p
+2026-05-04 14:42:09,784 [INFO] [13/20] Extraindo: https://www.farmaponte.com.br/simbioflora-15-saches-com-6g-de-po-para-solucao-de-uso-oral/p
+2026-05-04 14:42:12,762 [INFO] [14/20] Extraindo: https://www.farmaponte.com.br/condres-40mg-caixa-com-90-capsulas/p
+2026-05-04 14:42:15,650 [INFO] [15/20] Extraindo: https://www.farmaponte.com.br/odorizante-de-ambiente-bendita-canfora-8-tabletes/p
+2026-05-04 14:42:18,692 [INFO] [16/20] Extraindo: https://www.farmaponte.com.br/niquitin-adesivo-21mg-caixa-com-7-adesivos-transdermicos/p
+2026-05-04 14:42:20,810 [INFO] [17/20] Extraindo: https://www.farmaponte.com.br/gino-canesten-500mg-caixa-com-1-comprimido-vaginal-1-aplicador/p
+2026-05-04 14:42:23,428 [INFO] [18/20] Extraindo: https://www.farmaponte.com.br/tadalafila-medley-20mg-caixa-com-2-comprimidos-revestidos/p
+2026-05-04 14:42:25,241 [INFO] [19/20] Extraindo: https://www.farmaponte.com.br/colidis-gotas-10ml/p
+2026-05-04 14:42:28,755 [INFO] [20/20] Extraindo: https://www.farmaponte.com.br/venocel-100mg-caixa-com-60-capsulas-gelatinosas/p
+2026-05-04 14:42:31,679 [INFO] ============================================================
+2026-05-04 14:42:31,679 [INFO] Extracao concluida! 20 produtos salvos em 'farmaponte_medicamentos.csv'
+2026-05-04 14:42:31,679 [INFO] ============================================================
+2026-05-04 14:48:27,431 [INFO] ============================================================
+2026-05-04 14:48:27,432 [INFO] Iniciando scraper — FarmaPonte Medicamentos
+2026-05-04 14:48:27,432 [INFO] URL base: https://www.farmaponte.com.br/saude/medicamentos/
+2026-05-04 14:48:27,432 [INFO] ============================================================
+2026-05-04 14:48:27,432 [INFO] Coletando lista de produtos — página 1: https://www.farmaponte.com.br/saude/medicamentos/
+2026-05-04 14:48:27,717 [INFO]   -> 20 produtos encontrados (total: 20)
+2026-05-04 14:48:27,749 [INFO] Ultima pagina atingida.
+2026-05-04 14:48:27,749 [INFO] Total de URLs coletadas: 20
+2026-05-04 14:48:27,749 [INFO] [1/20] Extraindo: https://www.farmaponte.com.br/dipirona-gts-10ml-ger/p
+2026-05-04 14:48:30,356 [INFO] [2/20] Extraindo: https://www.farmaponte.com.br/tadalafila-eurofarma-5mg-caixa-com-30-comprimidos-revestidos/p
+2026-05-04 14:48:32,144 [INFO] [3/20] Extraindo: https://www.farmaponte.com.br/citrato-de-sildenafila-medley-50mg-caixa-com-4-comprimidos-revestidos/p
+2026-05-04 14:48:33,958 [INFO] [4/20] Extraindo: https://www.farmaponte.com.br/dipirona-monoidratada-ache-50mgml-caixa-com-1-frasco-com-100ml-de-solucao-oral-1-copo-medidor/p
+2026-05-04 14:48:36,783 [INFO] [5/20] Extraindo: https://www.farmaponte.com.br/tadalafila-eurofarma-20mg-caixa-com-4-comprimidos-revestidos/p
+2026-05-04 14:48:38,988 [INFO] [6/20] Extraindo: https://www.farmaponte.com.br/dulcolax-5mg-caixa-com-20-drageas/p
+2026-05-04 14:48:42,504 [INFO] [7/20] Extraindo: https://www.farmaponte.com.br/citrato-de-sildenafila-eurofarma-50mg-caixa-com-4-comprimidos-revestidos/p
+2026-05-04 14:48:44,884 [INFO] [8/20] Extraindo: https://www.farmaponte.com.br/apevitin-bc-susp-ems/p
+2026-05-04 14:48:48,408 [INFO] [9/20] Extraindo: https://www.farmaponte.com.br/20-bi-com-30-capsulas/p
+2026-05-04 14:48:50,463 [INFO] [10/20] Extraindo: https://www.farmaponte.com.br/sedatif-pc-com-60-comprimidos/p
+2026-05-04 14:48:52,269 [INFO] [11/20] Extraindo: https://www.farmaponte.com.br/alenia-12mcg-400mcg-caixa-com-60-capsulas-gelatinosas-duras-com-po-de-uso-inalatorio-refil/p
+2026-05-04 14:48:55,461 [INFO] [12/20] Extraindo: https://www.farmaponte.com.br/permanganato-potassio-10-x3adv/p
+2026-05-04 14:48:58,675 [INFO] [13/20] Extraindo: https://www.farmaponte.com.br/simbioflora-15-saches-com-6g-de-po-para-solucao-de-uso-oral/p
+2026-05-04 14:49:01,889 [INFO] [14/20] Extraindo: https://www.farmaponte.com.br/condres-40mg-caixa-com-90-capsulas/p
+2026-05-04 14:49:04,000 [INFO] [15/20] Extraindo: https://www.farmaponte.com.br/odorizante-de-ambiente-bendita-canfora-8-tabletes/p
+2026-05-04 14:49:06,675 [INFO] [16/20] Extraindo: https://www.farmaponte.com.br/niquitin-adesivo-21mg-caixa-com-7-adesivos-transdermicos/p
+2026-05-04 14:49:09,469 [INFO] [17/20] Extraindo: https://www.farmaponte.com.br/gino-canesten-500mg-caixa-com-1-comprimido-vaginal-1-aplicador/p
+2026-05-04 14:49:12,866 [INFO] [18/20] Extraindo: https://www.farmaponte.com.br/tadalafila-medley-20mg-caixa-com-2-comprimidos-revestidos/p
+2026-05-04 14:49:16,176 [INFO] [19/20] Extraindo: https://www.farmaponte.com.br/colidis-gotas-10ml/p
+2026-05-04 14:49:19,324 [INFO] [20/20] Extraindo: https://www.farmaponte.com.br/venocel-100mg-caixa-com-60-capsulas-gelatinosas/p
+2026-05-04 14:49:21,256 [INFO] ============================================================
+2026-05-04 14:49:21,256 [INFO] Extracao concluida! 20 produtos salvos em 'farmaponte_medicamentos.csv'
+2026-05-04 14:49:21,256 [INFO] ============================================================
+2026-05-04 14:53:59,168 [INFO] ============================================================
+2026-05-04 14:53:59,168 [INFO] Iniciando scraper — FarmaPonte Medicamentos
+2026-05-04 14:53:59,168 [INFO] URL base: https://www.farmaponte.com.br/saude/medicamentos/
+2026-05-04 14:53:59,168 [INFO] ============================================================
+2026-05-04 14:53:59,168 [INFO] Coletando lista de produtos — página 1: https://www.farmaponte.com.br/saude/medicamentos/
+2026-05-04 14:53:59,435 [INFO]   -> 20 produtos encontrados (total: 20)
+2026-05-04 14:53:59,465 [INFO] Ultima pagina atingida.
+2026-05-04 14:53:59,465 [INFO] Total de URLs coletadas: 20
+2026-05-04 14:53:59,465 [INFO] [1/20] Extraindo: https://www.farmaponte.com.br/dipirona-gts-10ml-ger/p
+2026-05-04 14:54:02,702 [INFO] [2/20] Extraindo: https://www.farmaponte.com.br/tadalafila-eurofarma-5mg-caixa-com-30-comprimidos-revestidos/p
+2026-05-04 14:54:05,319 [INFO] [3/20] Extraindo: https://www.farmaponte.com.br/citrato-de-sildenafila-medley-50mg-caixa-com-4-comprimidos-revestidos/p
+2026-05-04 14:54:08,779 [INFO] [4/20] Extraindo: https://www.farmaponte.com.br/dipirona-monoidratada-ache-50mgml-caixa-com-1-frasco-com-100ml-de-solucao-oral-1-copo-medidor/p
+2026-05-04 14:54:11,576 [INFO] [5/20] Extraindo: https://www.farmaponte.com.br/tadalafila-eurofarma-20mg-caixa-com-4-comprimidos-revestidos/p
+2026-05-04 14:54:14,628 [INFO] [6/20] Extraindo: https://www.farmaponte.com.br/dulcolax-5mg-caixa-com-20-drageas/p
+2026-05-04 14:54:16,852 [INFO] [7/20] Extraindo: https://www.farmaponte.com.br/citrato-de-sildenafila-eurofarma-50mg-caixa-com-4-comprimidos-revestidos/p
+2026-05-04 14:54:19,457 [INFO] [8/20] Extraindo: https://www.farmaponte.com.br/apevitin-bc-susp-ems/p
+2026-05-04 14:54:21,956 [INFO] [9/20] Extraindo: https://www.farmaponte.com.br/20-bi-com-30-capsulas/p
+2026-05-04 14:54:25,121 [INFO] [10/20] Extraindo: https://www.farmaponte.com.br/sedatif-pc-com-60-comprimidos/p
+2026-05-04 14:54:27,828 [INFO] [11/20] Extraindo: https://www.farmaponte.com.br/alenia-12mcg-400mcg-caixa-com-60-capsulas-gelatinosas-duras-com-po-de-uso-inalatorio-refil/p
+2026-05-04 14:54:29,594 [INFO] [12/20] Extraindo: https://www.farmaponte.com.br/permanganato-potassio-10-x3adv/p
+2026-05-04 14:54:33,000 [INFO] [13/20] Extraindo: https://www.farmaponte.com.br/simbioflora-15-saches-com-6g-de-po-para-solucao-de-uso-oral/p
+2026-05-04 14:54:36,297 [INFO] [14/20] Extraindo: https://www.farmaponte.com.br/condres-40mg-caixa-com-90-capsulas/p
+2026-05-04 14:54:39,488 [INFO] [15/20] Extraindo: https://www.farmaponte.com.br/odorizante-de-ambiente-bendita-canfora-8-tabletes/p
+2026-05-04 14:54:42,870 [INFO] [16/20] Extraindo: https://www.farmaponte.com.br/niquitin-adesivo-21mg-caixa-com-7-adesivos-transdermicos/p
+2026-05-04 14:54:45,841 [INFO] [17/20] Extraindo: https://www.farmaponte.com.br/gino-canesten-500mg-caixa-com-1-comprimido-vaginal-1-aplicador/p
+2026-05-04 14:54:49,192 [INFO] [18/20] Extraindo: https://www.farmaponte.com.br/tadalafila-medley-20mg-caixa-com-2-comprimidos-revestidos/p
+2026-05-04 14:54:51,667 [INFO] [19/20] Extraindo: https://www.farmaponte.com.br/colidis-gotas-10ml/p
+2026-05-04 14:54:53,600 [INFO] [20/20] Extraindo: https://www.farmaponte.com.br/venocel-100mg-caixa-com-60-capsulas-gelatinosas/p
+2026-05-04 14:54:56,256 [INFO] ============================================================
+2026-05-04 14:54:56,257 [INFO] Extracao concluida! 20 produtos salvos em 'farmaponte_medicamentos.csv'
+2026-05-04 14:54:56,257 [INFO] ============================================================
+2026-05-04 15:07:12,696 [INFO] ============================================================
+2026-05-04 15:07:12,696 [INFO] Iniciando scraper — FarmaPonte Medicamentos
+2026-05-04 15:07:12,696 [INFO] URL base: https://www.farmaponte.com.br/saude/medicamentos/
+2026-05-04 15:07:12,696 [INFO] ============================================================
+2026-05-04 15:07:12,696 [INFO] Coletando lista de produtos — página 1: https://www.farmaponte.com.br/saude/medicamentos/
+2026-05-04 15:07:13,009 [INFO]   -> 20 produtos encontrados (total: 20)
+2026-05-04 15:07:13,041 [INFO] Ultima pagina atingida.
+2026-05-04 15:07:13,041 [INFO] Total de URLs coletadas: 20
+2026-05-04 15:07:13,041 [INFO] [1/20] Extraindo: https://www.farmaponte.com.br/dipirona-gts-10ml-ger/p
+2026-05-04 15:07:16,011 [INFO] [2/20] Extraindo: https://www.farmaponte.com.br/tadalafila-eurofarma-5mg-caixa-com-30-comprimidos-revestidos/p
+2026-05-04 15:07:18,886 [INFO] [3/20] Extraindo: https://www.farmaponte.com.br/citrato-de-sildenafila-medley-50mg-caixa-com-4-comprimidos-revestidos/p
+2026-05-04 15:07:20,715 [INFO] [4/20] Extraindo: https://www.farmaponte.com.br/dipirona-monoidratada-ache-50mgml-caixa-com-1-frasco-com-100ml-de-solucao-oral-1-copo-medidor/p
+2026-05-04 15:07:24,064 [INFO] [5/20] Extraindo: https://www.farmaponte.com.br/tadalafila-eurofarma-20mg-caixa-com-4-comprimidos-revestidos/p
+2026-05-04 15:07:26,230 [INFO] [6/20] Extraindo: https://www.farmaponte.com.br/dulcolax-5mg-caixa-com-20-drageas/p
+2026-05-04 15:07:28,660 [INFO] [7/20] Extraindo: https://www.farmaponte.com.br/citrato-de-sildenafila-eurofarma-50mg-caixa-com-4-comprimidos-revestidos/p
+2026-05-04 15:07:30,463 [INFO] [8/20] Extraindo: https://www.farmaponte.com.br/apevitin-bc-susp-ems/p
+2026-05-04 15:07:33,425 [INFO] [9/20] Extraindo: https://www.farmaponte.com.br/20-bi-com-30-capsulas/p
+2026-05-04 15:07:36,644 [INFO] [10/20] Extraindo: https://www.farmaponte.com.br/sedatif-pc-com-60-comprimidos/p
+2026-05-04 15:07:39,217 [INFO] [11/20] Extraindo: https://www.farmaponte.com.br/alenia-12mcg-400mcg-caixa-com-60-capsulas-gelatinosas-duras-com-po-de-uso-inalatorio-refil/p
+2026-05-04 15:07:41,839 [INFO] [12/20] Extraindo: https://www.farmaponte.com.br/permanganato-potassio-10-x3adv/p
+2026-05-04 15:07:43,957 [INFO] [13/20] Extraindo: https://www.farmaponte.com.br/simbioflora-15-saches-com-6g-de-po-para-solucao-de-uso-oral/p
+2026-05-04 15:07:46,815 [INFO] [14/20] Extraindo: https://www.farmaponte.com.br/condres-40mg-caixa-com-90-capsulas/p
+2026-05-04 15:07:49,439 [INFO] [15/20] Extraindo: https://www.farmaponte.com.br/odorizante-de-ambiente-bendita-canfora-8-tabletes/p
+2026-05-04 15:07:52,524 [INFO] [16/20] Extraindo: https://www.farmaponte.com.br/niquitin-adesivo-21mg-caixa-com-7-adesivos-transdermicos/p
+2026-05-04 15:07:55,600 [INFO] [17/20] Extraindo: https://www.farmaponte.com.br/gino-canesten-500mg-caixa-com-1-comprimido-vaginal-1-aplicador/p
+2026-05-04 15:07:58,095 [INFO] [18/20] Extraindo: https://www.farmaponte.com.br/tadalafila-medley-20mg-caixa-com-2-comprimidos-revestidos/p
+2026-05-04 15:08:01,188 [INFO] [19/20] Extraindo: https://www.farmaponte.com.br/colidis-gotas-10ml/p
+2026-05-04 15:08:03,478 [INFO] [20/20] Extraindo: https://www.farmaponte.com.br/venocel-100mg-caixa-com-60-capsulas-gelatinosas/p
+2026-05-04 15:08:05,355 [INFO] ============================================================
+2026-05-04 15:08:05,356 [INFO] Extracao concluida! 20 produtos salvos em 'farmaponte_medicamentos.csv'
+2026-05-04 15:08:05,356 [INFO] ============================================================
+2026-05-04 15:10:19,866 [INFO] ============================================================
+2026-05-04 15:10:19,866 [INFO] Iniciando scraper — FarmaPonte Medicamentos
+2026-05-04 15:10:19,866 [INFO] URL base: https://www.farmaponte.com.br/saude/medicamentos/
+2026-05-04 15:10:19,866 [INFO] ============================================================
+2026-05-04 15:10:19,866 [INFO] Coletando lista de produtos — página 1: https://www.farmaponte.com.br/saude/medicamentos/
+2026-05-04 15:10:20,204 [INFO]   -> 20 produtos encontrados (total: 20)
+2026-05-04 15:10:20,236 [INFO] Ultima pagina atingida.
+2026-05-04 15:10:20,236 [INFO] Total de URLs coletadas: 20
+2026-05-04 15:10:20,236 [INFO] [1/20] Extraindo: https://www.farmaponte.com.br/dipirona-gts-10ml-ger/p
+2026-05-04 15:10:22,773 [INFO] [2/20] Extraindo: https://www.farmaponte.com.br/tadalafila-eurofarma-5mg-caixa-com-30-comprimidos-revestidos/p
+2026-05-04 15:10:24,658 [INFO] [3/20] Extraindo: https://www.farmaponte.com.br/citrato-de-sildenafila-medley-50mg-caixa-com-4-comprimidos-revestidos/p
+2026-05-04 15:10:27,007 [INFO] [4/20] Extraindo: https://www.farmaponte.com.br/dipirona-monoidratada-ache-50mgml-caixa-com-1-frasco-com-100ml-de-solucao-oral-1-copo-medidor/p
+2026-05-04 15:10:29,554 [INFO] [5/20] Extraindo: https://www.farmaponte.com.br/tadalafila-eurofarma-20mg-caixa-com-4-comprimidos-revestidos/p
+2026-05-04 15:10:31,969 [INFO] [6/20] Extraindo: https://www.farmaponte.com.br/dulcolax-5mg-caixa-com-20-drageas/p
+2026-05-04 15:10:34,411 [INFO] [7/20] Extraindo: https://www.farmaponte.com.br/citrato-de-sildenafila-eurofarma-50mg-caixa-com-4-comprimidos-revestidos/p
+2026-05-04 15:10:37,661 [INFO] [8/20] Extraindo: https://www.farmaponte.com.br/apevitin-bc-susp-ems/p
+2026-05-04 15:10:39,507 [INFO] [9/20] Extraindo: https://www.farmaponte.com.br/20-bi-com-30-capsulas/p
+2026-05-04 15:10:42,337 [INFO] [10/20] Extraindo: https://www.farmaponte.com.br/sedatif-pc-com-60-comprimidos/p
+2026-05-04 15:10:44,964 [INFO] [11/20] Extraindo: https://www.farmaponte.com.br/alenia-12mcg-400mcg-caixa-com-60-capsulas-gelatinosas-duras-com-po-de-uso-inalatorio-refil/p
+2026-05-04 15:10:47,578 [INFO] [12/20] Extraindo: https://www.farmaponte.com.br/permanganato-potassio-10-x3adv/p
+2026-05-04 15:10:50,021 [INFO] [13/20] Extraindo: https://www.farmaponte.com.br/simbioflora-15-saches-com-6g-de-po-para-solucao-de-uso-oral/p
+2026-05-04 15:10:53,610 [INFO] [14/20] Extraindo: https://www.farmaponte.com.br/condres-40mg-caixa-com-90-capsulas/p
+2026-05-04 15:10:56,756 [INFO] [15/20] Extraindo: https://www.farmaponte.com.br/odorizante-de-ambiente-bendita-canfora-8-tabletes/p
+2026-05-04 15:10:59,325 [INFO] [16/20] Extraindo: https://www.farmaponte.com.br/niquitin-adesivo-21mg-caixa-com-7-adesivos-transdermicos/p
+2026-05-04 15:11:02,098 [INFO] [17/20] Extraindo: https://www.farmaponte.com.br/gino-canesten-500mg-caixa-com-1-comprimido-vaginal-1-aplicador/p
+2026-05-04 15:11:04,322 [INFO] [18/20] Extraindo: https://www.farmaponte.com.br/tadalafila-medley-20mg-caixa-com-2-comprimidos-revestidos/p
+2026-05-04 15:11:07,860 [INFO] [19/20] Extraindo: https://www.farmaponte.com.br/colidis-gotas-10ml/p
+2026-05-04 15:11:11,258 [INFO] [20/20] Extraindo: https://www.farmaponte.com.br/venocel-100mg-caixa-com-60-capsulas-gelatinosas/p
+2026-05-04 15:11:14,734 [INFO] ============================================================
+2026-05-04 15:11:14,734 [INFO] Extracao concluida! 20 produtos salvos em 'farmaponte_medicamentos.csv'
+2026-05-04 15:11:14,734 [INFO] ============================================================
+2026-05-04 15:16:59,687 [INFO] ============================================================
+2026-05-04 15:16:59,687 [INFO] Iniciando scraper — FarmaPonte Medicamentos
+2026-05-04 15:16:59,687 [INFO] URL base: https://www.farmaponte.com.br/saude/medicamentos/
+2026-05-04 15:16:59,687 [INFO] ============================================================
+2026-05-04 15:16:59,687 [INFO] Coletando lista de produtos — página 1: https://www.farmaponte.com.br/saude/medicamentos/
+2026-05-04 15:17:00,274 [INFO]   -> 20 produtos encontrados (total: 20)
+2026-05-04 15:17:00,307 [INFO] Ultima pagina atingida.
+2026-05-04 15:17:00,307 [INFO] Total de URLs coletadas: 20
+2026-05-04 15:17:00,307 [INFO] [1/20] Extraindo: https://www.farmaponte.com.br/dipirona-gts-10ml-ger/p
+2026-05-04 15:17:03,160 [INFO] [2/20] Extraindo: https://www.farmaponte.com.br/tadalafila-eurofarma-5mg-caixa-com-30-comprimidos-revestidos/p
+2026-05-04 15:17:06,463 [INFO] [3/20] Extraindo: https://www.farmaponte.com.br/citrato-de-sildenafila-medley-50mg-caixa-com-4-comprimidos-revestidos/p
+2026-05-04 15:17:08,515 [INFO] [4/20] Extraindo: https://www.farmaponte.com.br/dipirona-monoidratada-ache-50mgml-caixa-com-1-frasco-com-100ml-de-solucao-oral-1-copo-medidor/p
+2026-05-04 15:17:10,410 [INFO] [5/20] Extraindo: https://www.farmaponte.com.br/tadalafila-eurofarma-20mg-caixa-com-4-comprimidos-revestidos/p
+2026-05-04 15:17:13,035 [INFO] [6/20] Extraindo: https://www.farmaponte.com.br/dulcolax-5mg-caixa-com-20-drageas/p
+2026-05-04 15:17:14,854 [INFO] [7/20] Extraindo: https://www.farmaponte.com.br/citrato-de-sildenafila-eurofarma-50mg-caixa-com-4-comprimidos-revestidos/p
+2026-05-04 15:17:18,317 [INFO] [8/20] Extraindo: https://www.farmaponte.com.br/apevitin-bc-susp-ems/p
+2026-05-04 15:17:20,762 [INFO] [9/20] Extraindo: https://www.farmaponte.com.br/20-bi-com-30-capsulas/p
+2026-05-04 15:17:24,126 [INFO] [10/20] Extraindo: https://www.farmaponte.com.br/sedatif-pc-com-60-comprimidos/p
+2026-05-04 15:17:27,722 [INFO] [11/20] Extraindo: https://www.farmaponte.com.br/alenia-12mcg-400mcg-caixa-com-60-capsulas-gelatinosas-duras-com-po-de-uso-inalatorio-refil/p
+2026-05-04 15:17:31,449 [INFO] [12/20] Extraindo: https://www.farmaponte.com.br/permanganato-potassio-10-x3adv/p
+2026-05-04 15:17:33,453 [INFO] [13/20] Extraindo: https://www.farmaponte.com.br/simbioflora-15-saches-com-6g-de-po-para-solucao-de-uso-oral/p
+2026-05-04 15:17:35,669 [INFO] [14/20] Extraindo: https://www.farmaponte.com.br/condres-40mg-caixa-com-90-capsulas/p
+2026-05-04 15:17:38,912 [INFO] [15/20] Extraindo: https://www.farmaponte.com.br/odorizante-de-ambiente-bendita-canfora-8-tabletes/p
+2026-05-04 15:17:41,589 [INFO] [16/20] Extraindo: https://www.farmaponte.com.br/niquitin-adesivo-21mg-caixa-com-7-adesivos-transdermicos/p
+2026-05-04 15:17:43,376 [INFO] [17/20] Extraindo: https://www.farmaponte.com.br/gino-canesten-500mg-caixa-com-1-comprimido-vaginal-1-aplicador/p
+2026-05-04 15:17:46,439 [INFO] [18/20] Extraindo: https://www.farmaponte.com.br/tadalafila-medley-20mg-caixa-com-2-comprimidos-revestidos/p
+2026-05-04 15:17:49,490 [INFO] [19/20] Extraindo: https://www.farmaponte.com.br/colidis-gotas-10ml/p
+2026-05-04 15:17:52,379 [INFO] [20/20] Extraindo: https://www.farmaponte.com.br/venocel-100mg-caixa-com-60-capsulas-gelatinosas/p
+2026-05-04 15:17:54,329 [INFO] ============================================================
+2026-05-04 15:17:54,330 [INFO] Extracao concluida! 20 produtos salvos em 'farmaponte_medicamentos.csv'
+2026-05-04 15:17:54,330 [INFO] ============================================================
+2026-05-04 15:42:53,243 [INFO] ============================================================
+2026-05-04 15:42:53,243 [INFO] Iniciando scraper — FarmaPonte Medicamentos
+2026-05-04 15:42:53,243 [INFO] URL base: https://www.farmaponte.com.br/saude/medicamentos/
+2026-05-04 15:42:53,243 [INFO] ============================================================
+2026-05-04 15:42:53,243 [INFO] Coletando lista de produtos — página 1: https://www.farmaponte.com.br/saude/medicamentos/
+2026-05-04 15:42:53,487 [INFO]   -> 20 produtos encontrados (total: 20)
+2026-05-04 15:42:53,517 [INFO] Ultima pagina atingida.
+2026-05-04 15:42:53,517 [INFO] Total de URLs coletadas: 20
+2026-05-04 15:42:53,517 [INFO] [1/20] Extraindo: https://www.farmaponte.com.br/dipirona-gts-10ml-ger/p
+2026-05-04 15:42:56,962 [INFO] [2/20] Extraindo: https://www.farmaponte.com.br/tadalafila-eurofarma-5mg-caixa-com-30-comprimidos-revestidos/p
+2026-05-04 15:43:00,585 [INFO] [3/20] Extraindo: https://www.farmaponte.com.br/citrato-de-sildenafila-medley-50mg-caixa-com-4-comprimidos-revestidos/p
+2026-05-04 15:43:03,266 [INFO] [4/20] Extraindo: https://www.farmaponte.com.br/dipirona-monoidratada-ache-50mgml-caixa-com-1-frasco-com-100ml-de-solucao-oral-1-copo-medidor/p
+2026-05-04 15:43:06,648 [INFO] [5/20] Extraindo: https://www.farmaponte.com.br/tadalafila-eurofarma-20mg-caixa-com-4-comprimidos-revestidos/p
+2026-05-04 15:43:09,069 [INFO] [6/20] Extraindo: https://www.farmaponte.com.br/dulcolax-5mg-caixa-com-20-drageas/p
+2026-05-04 15:43:10,972 [INFO] [7/20] Extraindo: https://www.farmaponte.com.br/citrato-de-sildenafila-eurofarma-50mg-caixa-com-4-comprimidos-revestidos/p
+2026-05-04 15:43:12,947 [INFO] [8/20] Extraindo: https://www.farmaponte.com.br/apevitin-bc-susp-ems/p
+2026-05-04 15:43:15,942 [INFO] [9/20] Extraindo: https://www.farmaponte.com.br/20-bi-com-30-capsulas/p
+2026-05-04 15:43:19,178 [INFO] [10/20] Extraindo: https://www.farmaponte.com.br/sedatif-pc-com-60-comprimidos/p
+2026-05-04 15:43:21,251 [INFO] [11/20] Extraindo: https://www.farmaponte.com.br/alenia-12mcg-400mcg-caixa-com-60-capsulas-gelatinosas-duras-com-po-de-uso-inalatorio-refil/p
+2026-05-04 15:43:23,173 [INFO] [12/20] Extraindo: https://www.farmaponte.com.br/permanganato-potassio-10-x3adv/p
+2026-05-04 15:43:24,889 [INFO] [13/20] Extraindo: https://www.farmaponte.com.br/simbioflora-15-saches-com-6g-de-po-para-solucao-de-uso-oral/p
+2026-05-04 15:43:27,835 [INFO] [14/20] Extraindo: https://www.farmaponte.com.br/condres-40mg-caixa-com-90-capsulas/p
+2026-05-04 15:43:29,747 [INFO] [15/20] Extraindo: https://www.farmaponte.com.br/odorizante-de-ambiente-bendita-canfora-8-tabletes/p
+2026-05-04 15:43:32,994 [INFO] [16/20] Extraindo: https://www.farmaponte.com.br/niquitin-adesivo-21mg-caixa-com-7-adesivos-transdermicos/p
+2026-05-04 15:43:35,162 [INFO] [17/20] Extraindo: https://www.farmaponte.com.br/gino-canesten-500mg-caixa-com-1-comprimido-vaginal-1-aplicador/p
+2026-05-04 15:43:38,723 [INFO] [18/20] Extraindo: https://www.farmaponte.com.br/tadalafila-medley-20mg-caixa-com-2-comprimidos-revestidos/p
+2026-05-04 15:43:41,880 [INFO] [19/20] Extraindo: https://www.farmaponte.com.br/colidis-gotas-10ml/p
+2026-05-04 15:43:44,636 [INFO] [20/20] Extraindo: https://www.farmaponte.com.br/venocel-100mg-caixa-com-60-capsulas-gelatinosas/p
+2026-05-04 15:43:47,404 [INFO] ============================================================
+2026-05-04 15:43:47,404 [INFO] Extracao concluida! 20 produtos salvos em 'farmaponte_medicamentos.csv'
+2026-05-04 15:43:47,404 [INFO] ============================================================
+2026-05-04 16:27:38,636 [INFO] ============================================================
+2026-05-04 16:27:38,636 [INFO] Iniciando scraper — FarmaPonte Medicamentos
+2026-05-04 16:27:38,636 [INFO] URL base: https://www.farmaponte.com.br/saude/medicamentos/
+2026-05-04 16:27:38,636 [INFO] ============================================================
+2026-05-04 16:27:38,636 [INFO] Coletando lista de produtos — página 1: https://www.farmaponte.com.br/saude/medicamentos/
+2026-05-04 16:27:38,858 [INFO]   -> 20 produtos encontrados (total: 20)
+2026-05-04 16:27:38,888 [INFO] Ultima pagina atingida.
+2026-05-04 16:27:38,888 [INFO] Total de URLs coletadas: 20
+2026-05-04 16:27:38,888 [INFO] [1/20] Extraindo: https://www.farmaponte.com.br/dipirona-gts-10ml-ger/p
+2026-05-04 16:27:41,866 [INFO] [2/20] Extraindo: https://www.farmaponte.com.br/tadalafila-eurofarma-5mg-caixa-com-30-comprimidos-revestidos/p
+2026-05-04 16:27:44,654 [INFO] [3/20] Extraindo: https://www.farmaponte.com.br/citrato-de-sildenafila-medley-50mg-caixa-com-4-comprimidos-revestidos/p
+2026-05-04 16:27:50,315 [INFO] [4/20] Extraindo: https://www.farmaponte.com.br/dipirona-monoidratada-ache-50mgml-caixa-com-1-frasco-com-100ml-de-solucao-oral-1-copo-medidor/p
+2026-05-04 16:27:53,244 [INFO] [5/20] Extraindo: https://www.farmaponte.com.br/tadalafila-eurofarma-20mg-caixa-com-4-comprimidos-revestidos/p
+2026-05-04 16:27:57,307 [INFO] [6/20] Extraindo: https://www.farmaponte.com.br/dulcolax-5mg-caixa-com-20-drageas/p
+2026-05-04 16:28:01,921 [INFO] [7/20] Extraindo: https://www.farmaponte.com.br/citrato-de-sildenafila-eurofarma-50mg-caixa-com-4-comprimidos-revestidos/p
+2026-05-04 16:28:04,372 [INFO] [8/20] Extraindo: https://www.farmaponte.com.br/apevitin-bc-susp-ems/p
+2026-05-04 16:28:08,301 [INFO] [9/20] Extraindo: https://www.farmaponte.com.br/20-bi-com-30-capsulas/p
+2026-05-04 16:28:11,383 [INFO] [10/20] Extraindo: https://www.farmaponte.com.br/sedatif-pc-com-60-comprimidos/p
+2026-05-04 16:28:14,089 [INFO] [11/20] Extraindo: https://www.farmaponte.com.br/alenia-12mcg-400mcg-caixa-com-60-capsulas-gelatinosas-duras-com-po-de-uso-inalatorio-refil/p
+2026-05-04 16:28:17,194 [INFO] [12/20] Extraindo: https://www.farmaponte.com.br/permanganato-potassio-10-x3adv/p
+2026-05-04 16:28:19,936 [INFO] [13/20] Extraindo: https://www.farmaponte.com.br/simbioflora-15-saches-com-6g-de-po-para-solucao-de-uso-oral/p
+2026-05-04 16:28:23,590 [INFO] [14/20] Extraindo: https://www.farmaponte.com.br/condres-40mg-caixa-com-90-capsulas/p
+2026-05-04 16:28:26,932 [INFO] [15/20] Extraindo: https://www.farmaponte.com.br/odorizante-de-ambiente-bendita-canfora-8-tabletes/p
+2026-05-04 16:28:29,674 [INFO] [16/20] Extraindo: https://www.farmaponte.com.br/niquitin-adesivo-21mg-caixa-com-7-adesivos-transdermicos/p
+2026-05-04 16:28:33,532 [INFO] [17/20] Extraindo: https://www.farmaponte.com.br/gino-canesten-500mg-caixa-com-1-comprimido-vaginal-1-aplicador/p
+2026-05-04 16:28:36,776 [INFO] [18/20] Extraindo: https://www.farmaponte.com.br/tadalafila-medley-20mg-caixa-com-2-comprimidos-revestidos/p
+2026-05-04 16:28:40,377 [INFO] [19/20] Extraindo: https://www.farmaponte.com.br/colidis-gotas-10ml/p
+2026-05-04 16:28:42,432 [INFO] [20/20] Extraindo: https://www.farmaponte.com.br/venocel-100mg-caixa-com-60-capsulas-gelatinosas/p
+2026-05-04 16:28:46,877 [INFO] ============================================================
+2026-05-04 16:28:46,877 [INFO] Extracao concluida! 20 produtos salvos em 'farmaponte_medicamentos.csv'
+2026-05-04 16:28:46,877 [INFO] ============================================================
+2026-05-04 16:35:12,430 [INFO] ============================================================
+2026-05-04 16:35:12,430 [INFO] Iniciando scraper — FarmaPonte Medicamentos
+2026-05-04 16:35:12,430 [INFO] URL base: https://www.farmaponte.com.br/saude/medicamentos/
+2026-05-04 16:35:12,430 [INFO] ============================================================
+2026-05-04 16:35:12,430 [INFO] Coletando lista de produtos — página 1: https://www.farmaponte.com.br/saude/medicamentos/
+2026-05-04 16:35:14,074 [INFO]   -> 20 produtos encontrados (total: 20)
+2026-05-04 16:35:14,106 [INFO] Ultima pagina atingida.
+2026-05-04 16:35:14,106 [INFO] Total de URLs coletadas: 20
+2026-05-04 16:35:14,106 [INFO] [1/20] Extraindo: https://www.farmaponte.com.br/dipirona-gts-10ml-ger/p
+2026-05-04 16:35:17,491 [INFO] [2/20] Extraindo: https://www.farmaponte.com.br/tadalafila-eurofarma-5mg-caixa-com-30-comprimidos-revestidos/p
+2026-05-04 16:35:20,805 [INFO] [3/20] Extraindo: https://www.farmaponte.com.br/citrato-de-sildenafila-medley-50mg-caixa-com-4-comprimidos-revestidos/p
+2026-05-04 16:35:23,511 [INFO] [4/20] Extraindo: https://www.farmaponte.com.br/dipirona-monoidratada-ache-50mgml-caixa-com-1-frasco-com-100ml-de-solucao-oral-1-copo-medidor/p
+2026-05-04 16:35:26,949 [INFO] [5/20] Extraindo: https://www.farmaponte.com.br/tadalafila-eurofarma-20mg-caixa-com-4-comprimidos-revestidos/p
+2026-05-04 16:35:29,112 [INFO] [6/20] Extraindo: https://www.farmaponte.com.br/dulcolax-5mg-caixa-com-20-drageas/p
+2026-05-04 16:35:31,686 [INFO] [7/20] Extraindo: https://www.farmaponte.com.br/citrato-de-sildenafila-eurofarma-50mg-caixa-com-4-comprimidos-revestidos/p
+2026-05-04 16:35:33,920 [INFO] [8/20] Extraindo: https://www.farmaponte.com.br/apevitin-bc-susp-ems/p
+2026-05-04 16:35:36,465 [INFO] [9/20] Extraindo: https://www.farmaponte.com.br/20-bi-com-30-capsulas/p
+2026-05-04 16:35:39,481 [INFO] [10/20] Extraindo: https://www.farmaponte.com.br/sedatif-pc-com-60-comprimidos/p
+2026-05-04 16:35:41,561 [INFO] [11/20] Extraindo: https://www.farmaponte.com.br/alenia-12mcg-400mcg-caixa-com-60-capsulas-gelatinosas-duras-com-po-de-uso-inalatorio-refil/p
+2026-05-04 16:35:44,774 [INFO] [12/20] Extraindo: https://www.farmaponte.com.br/permanganato-potassio-10-x3adv/p
+2026-05-04 16:35:47,065 [INFO] [13/20] Extraindo: https://www.farmaponte.com.br/simbioflora-15-saches-com-6g-de-po-para-solucao-de-uso-oral/p
+2026-05-04 16:35:49,257 [INFO] [14/20] Extraindo: https://www.farmaponte.com.br/condres-40mg-caixa-com-90-capsulas/p
+2026-05-04 16:35:52,290 [INFO] [15/20] Extraindo: https://www.farmaponte.com.br/odorizante-de-ambiente-bendita-canfora-8-tabletes/p
+2026-05-04 16:35:53,978 [INFO] [16/20] Extraindo: https://www.farmaponte.com.br/niquitin-adesivo-21mg-caixa-com-7-adesivos-transdermicos/p
+2026-05-04 16:35:57,186 [INFO] [17/20] Extraindo: https://www.farmaponte.com.br/gino-canesten-500mg-caixa-com-1-comprimido-vaginal-1-aplicador/p
+2026-05-04 16:36:00,920 [INFO] [18/20] Extraindo: https://www.farmaponte.com.br/tadalafila-medley-20mg-caixa-com-2-comprimidos-revestidos/p
+2026-05-04 16:36:02,837 [INFO] [19/20] Extraindo: https://www.farmaponte.com.br/colidis-gotas-10ml/p
+2026-05-04 16:36:04,499 [INFO] [20/20] Extraindo: https://www.farmaponte.com.br/venocel-100mg-caixa-com-60-capsulas-gelatinosas/p
+2026-05-04 16:36:06,646 [INFO] ============================================================
+2026-05-04 16:36:06,646 [INFO] Extracao concluida! 20 produtos salvos em 'farmaponte_medicamentos.csv'
+2026-05-04 16:36:06,646 [INFO] ============================================================
