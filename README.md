@@ -72,7 +72,6 @@ A organização do ambiente:
 * **Preço com PIX**: Valor com desconto máximo à vista.
 * **Preço com Cartão**: Valor para pagamento.
 * **Desconto (%)**: Percentual de economia identificado.
+* **Disponibilidade**: disponível, ou indisponível.
 * **Farmácia**: Nome da farmácia.
-* **Disponibilidade (Estoque)**: qtde em estoque.
-
 ---

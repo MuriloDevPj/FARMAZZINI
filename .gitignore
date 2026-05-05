@@ -1,5 +1,6 @@
 venv/ 
 .env 
+<<<<<<< HEAD
 
 # Ignorar todos os arquivos CSV gerados pela raspagem
 *.csv
@@ -12,3 +13,7 @@ venv/
 __pycache__/
 .pytest_cache/
 .vscode/
+=======
+*.csv
+*.log
+>>>>>>> 4cdaf59d8ee5bfcb0bac9edd446dd1ba4a799f5b
