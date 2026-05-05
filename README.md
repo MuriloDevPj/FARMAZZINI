@@ -19,7 +19,7 @@ Acompanhamento das etapas conforme definido no material de **Kick-off**:
 
 ### **Etapa 2: Extração e Tratamento dos Dados** 
 * **Duração:** 1 Semana
-- [ ] **Vera Cruz:** Extração via web scraping (Responsável: Murilo).
+- [x] **Vera Cruz:** Extração via web scraping (Responsável: Murilo).
 - [ ] **FarmaPonte:** Extração via web scraping (Responsável: Vitor).
 - [ ] Coleta de indicadores obrigatórios.
 - [ ] Verificação de consistência e tratamento das bases de dados.
