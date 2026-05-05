@@ -12,9 +12,10 @@ BASE_URL = "https://www.farmaponte.com.br"
 CATEGORY_URL = "https://www.farmaponte.com.br/saude/medicamentos/"
 OUTPUT_FILE = "farmaponte_medicamentos.csv"
 MAX_PAGES = 267
-DELAY_MIN = 0.3
-DELAY_MAX = 0.5
-MAX_WORKERS = 10
+DELAY_MIN = 0.1
+DELAY_MAX = 0.3
+MAX_WORKERS = 15
+#tempo aproximado 11 minutos
  
 HEADERS = {
     "User-Agent": (
@@ -86,7 +87,6 @@ def extract_product_data(url):
     session = requests.Session()
     session.headers.update(HEADERS)
     time.sleep(random.uniform(DELAY_MIN, DELAY_MAX))
-    
     soup = get_page(url, session)
  
     data = {
