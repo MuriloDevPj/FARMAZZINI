@@ -1,141 +1,185 @@
+import asyncio
+import csv
+import json
+import multiprocessing
 import re
-import pandas as pd
-import os
-import time
+from concurrent.futures import ProcessPoolExecutor
 from datetime import datetime
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.common.by import By
-from webdriver_manager.chrome import ChromeDriverManager
+from pathlib import Path
 
-class VeraCruz:
-    def __init__(self):
-        self.farmacia = "Vera Cruz"
-        self.driver = self._configurar_driver()
+import httpx
 
-    def _configurar_driver(self):
-        chrome_options = Options()
-        # Headless é essencial para processamento em massa (ganha velocidade)
-        chrome_options.add_argument("--headless") 
-        chrome_options.add_argument("--window-size=1920,1080")
-        chrome_options.add_argument("--log-level=3") # Silencia avisos inúteis do Chrome
-        return webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
+BASE     = "https://www.drogariaveracruz.com.br"
+CATS     = [f"{BASE}/medicamentos/", f"{BASE}/generico/"]
+SEM_DL   = 80
+RETRIES  = 3
+TIMEOUT  = httpx.Timeout(12.0, connect=6.0)
+WORKERS  = max(2, multiprocessing.cpu_count() - 1)
+OUT_FILE = (
+    Path(__file__).resolve().parents[3]
+    / "data" / "raw"
+    / f"veracruz_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+)
+COLS = ["ean", "nome", "marca", "preco_sem_desconto",
+        "preco_pix", "preco_cartao", "desconto", "disponivel", "farmacia"]
 
-    def extrair_produto(self, url):
-        try: 
-            self.driver.get(url)
-            time.sleep(2) # Tempo para o JS carregar preços e breadcrumb
+HEADERS = {
+    "User-Agent": (
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+    ),
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "Accept-Language": "pt-BR,pt;q=0.9",
+    "Accept-Encoding": "gzip, deflate, br",
+}
 
-            # --- 1. FILTRO DE CATEGORIA (BREADCRUMB) ---
-            try:
-                # Usando o ID 'breadcrumb' identificado no seu print
-                breadcrumb_txt = self.driver.find_element(By.ID, "breadcrumb").text.lower()
-                alvos = ["medicamentos", "genéricos", "saúde", "diabetes", "hipertensão"]
-                
-                if not any(p in breadcrumb_txt for p in alvos):
-                    return "PULAR" 
-            except:
-                return None 
+_RE_EAN      = re.compile(r'"(?:gtin1[34]|ean|eanCode|gtin|barcode)"\s*:\s*"(\d{8,14})"', re.I)
+_RE_JSONLD   = re.compile(r'<script[^>]+application/ld\+json[^>]*>(.*?)</script>', re.S | re.I)
+_RE_H1       = re.compile(r'<h1[^>]*>(.*?)</h1>', re.S | re.I)
+_RE_TAG      = re.compile(r'<[^>]+>')
+_RE_BRAND    = re.compile(r'"brand"\s*:\s*"([^"]+)"', re.I)
+_RE_STRONG   = re.compile(r'<strong[^>]*>(R\$\s*[\d.,]+)</strong>', re.I)
+_RE_PRECO    = re.compile(r'R\$\s*\d+[.,]\d+')
+_RE_DESCONTO = re.compile(r'-(\d+)%')
+_RE_LINK_HREF = re.compile(r'href=["\']([^"\']+/p)["\']', re.I)
+_RE_LINK_JSON = re.compile(r'"link"\s*:\s*"(/[^"]+/p)"', re.I)
 
-            # --- 2. EXTRAÇÃO DOS DADOS BÁSICOS ---
-            nome = self.driver.find_element(By.XPATH, '//*[@id="content-product"]/div/div/div[2]/h1').text
-            try:
-                marca = self.driver.find_element(By.XPATH, '//*[@id="content-product"]/div/div/div[2]/div[2]/a[1]').text
-            except:
-                marca = "N/A"
-            
-            # --- 3. EXTRAÇÃO DE PREÇOS (TRATAMENTO DE ERRO) ---
-            try:
-                preco_pix = self.driver.find_element(By.XPATH, '//strong[contains(text(), "R$")]').text
-                preco_regular = self.driver.find_element(By.XPATH, '//p[contains(@class, "price-regular")]/del').text
-                preco_cartao = self.driver.find_element(By.XPATH, '//p[contains(@class, "price-card")]/strong').text
-                desconto = self.driver.find_element(By.XPATH, '//span[contains(@class, "discount")]').text
-            except:
-                preco_pix = preco_regular = preco_cartao = desconto = "Consultar Site"
+_RE_INDISPONIVEL = re.compile(r'Avise.me', re.I)
 
-            # --- 4. EAN VIA REGEX (MAIS ROBUSTO) ---
-            try:
-                html = self.driver.page_source
-                ean_match = re.search(r'"gtin13":\s*"(\d+)"', html)
-                ean = ean_match.group(1) if ean_match else "N/A"
-            except:
-                ean = "N/A"
+def parse_html(html: str) -> dict | None:
+    if not html or len(html) < 500:
+        return None
 
-            disponibilidade = "Disponível" if "http://schema.org/InStock" in self.driver.page_source else "Fora de Estoque"
+    # EAN
+    ean = ""
+    for bloco in _RE_JSONLD.findall(html):
+        try:
+            data  = json.loads(bloco)
+            items = data if isinstance(data, list) else [data]
+            for item in items:
+                for key in ("gtin13", "gtin14", "gtin12", "gtin8", "ean"):
+                    val = str(item.get(key, ""))
+                    if val.isdigit() and 8 <= len(val) <= 14:
+                        ean = val; break
+                if ean: break
+        except (json.JSONDecodeError, AttributeError):
+            continue
+        if ean: break
+    if not ean:
+        m = _RE_EAN.search(html)
+        if m: ean = m.group(1)
 
-            return {
-                "data_coleta": datetime.now().strftime("%Y-%m-%d"),
-                "farmacia": self.farmacia,
-                "ean": ean,
-                "produto": nome,
-                "marca": marca,
-                "preco_regular": preco_regular,
-                "preco_pix": preco_pix,
-                "preco_cartao": preco_cartao,
-                "desconto": desconto,
-                "status_estoque": disponibilidade,
-                "url": url
-            }
-        except Exception as e:
-            return None
+    # Nome
+    h1_m = _RE_H1.search(html)
+    nome = _RE_TAG.sub("", h1_m.group(1)).strip() if h1_m else ""
 
-    def fechar(self):
-        self.driver.quit()
+    # Marca
+    brand_m = _RE_BRAND.search(html)
+    marca   = brand_m.group(1) if brand_m else ""
 
-# ===========================================================================
-# ORQUESTRADOR DE EXECUÇÃO
-# ===========================================================================
+    # Preços
+    strongs      = _RE_STRONG.findall(html)
+    preco_pix    = strongs[0] if strongs else ""
+    preco_cartao = strongs[1] if len(strongs) > 1 else preco_pix
 
-def iniciar_automacao():
-    input_file = "src/scrapers/veracruz/urls_veracruz.txt"
-    output_file = "src/scrapers/veracruz/coleta_veracruz.csv"
-    
-    if not os.path.exists(input_file):
-        print("❌ Arquivo de URLs não encontrado!")
-        return
+    todos = _RE_PRECO.findall(html)
+    uniq  = list(dict.fromkeys(p.replace(" ", "") for p in todos))
+    preco_sem_desc = todos[1] if len(uniq) >= 3 else ""
 
-    with open(input_file, "r", encoding="utf-8") as f:
-        urls = [line.strip() for line in f.readlines()]
+    desc_m   = _RE_DESCONTO.search(html)
+    desconto = f"-{desc_m.group(1)}%" if desc_m else ""
 
-    scraper = VeraCruz()
-    resultados = []
-    total = len(urls)
+    # Disponibilidade: botão "Avise-me" indica produto indisponível
+    disponivel = "Indisponível" if _RE_INDISPONIVEL.search(html) else "Disponível"
 
-    print(f"🚀 Processando {total} links. Somente medicamentos serão salvos.")
-    print("Pressione Ctrl+C para parar e salvar o progresso atual.\n")
+    return dict(
+        ean=ean, nome=nome, marca=marca,
+        preco_sem_desconto=preco_sem_desc,
+        preco_pix=preco_pix, preco_cartao=preco_cartao,
+        desconto=desconto, disponivel=disponivel,
+        farmacia="Vera Cruz",
+    )
 
-    try:
-        for i, url in enumerate(urls, 1):
-            res = scraper.extrair_produto(url)
-            
-            if res == "PULAR":
-                print(f"⏩ [{i}/{total}] Ignorado (Perfumaria)")
-                continue
-            
-            if res:
-                resultados.append(res)
-                print(f"✅ [{i}/{total}] Coletado: {res['produto'][:30]}...")
-            
-            # Salvamento de segurança a cada 25 itens
-            if i % 25 == 0 and resultados:
-                pd.DataFrame(resultados).to_csv(output_file, index=False, encoding="utf-8-sig")
-                print(f"💾 Checkpoint: {len(resultados)} itens salvos...")
+async def fetch(client: httpx.AsyncClient, url: str) -> str:
+    for attempt in range(RETRIES):
+        try:
+            r = await client.get(url, follow_redirects=True)
+            r.raise_for_status()
+            return r.text
+        except (httpx.HTTPStatusError, httpx.RequestError, httpx.TimeoutException):
+            if attempt < RETRIES - 1:
+                await asyncio.sleep(1.5 ** attempt)
+    return ""
 
-    except KeyboardInterrupt:
-        print("\n\n🛑 Interrupção detectada! Salvando dados coletados...")
-    finally:
-        if resultados:
-            pd.DataFrame(resultados).to_csv(output_file, index=False, encoding="utf-8-sig")
-            print(f"\n🏁 CONCLUÍDO! Total extraído: {len(resultados)}")
-            print(f"📁 Arquivo: {output_file}")
-        scraper.fechar()
+async def coletar_links(client: httpx.AsyncClient, sem: asyncio.Semaphore) -> set:
+    def _links_da_pagina(html: str) -> set:
+        links = set()
+        for href in _RE_LINK_HREF.findall(html):
+            links.add(href if href.startswith("http") else BASE + href)
+        for path in _RE_LINK_JSON.findall(html):
+            links.add(BASE + path)
+        return links
+
+    async def _paginar(base_url: str) -> set:
+        links, page = set(), 1
+        while True:
+            async with sem:
+                html = await fetch(client, f"{base_url}?p={page}")
+            if not html:
+                break
+            novos = _links_da_pagina(html)
+            if not novos:
+                break
+            links |= novos
+            page  += 1
+        return links
+
+    resultados = await asyncio.gather(*[_paginar(c) for c in CATS])
+    return set().union(*resultados)
+
+async def producer(client, sem, links, queue):
+    async def _dl(url):
+        async with sem:
+            html = await fetch(client, url)
+        await queue.put(html)
+
+    await asyncio.gather(*[_dl(u) for u in links])
+    await queue.put(None)   # sentinel
+
+
+async def consumer(queue, executor):
+    loop, rows = asyncio.get_running_loop(), []
+    while True:
+        html = await queue.get()
+        if html is None:
+            break
+        result = await loop.run_in_executor(executor, parse_html, html)
+        if result:
+            rows.append(result)
+    return rows
+
+async def main():
+    sem    = asyncio.Semaphore(SEM_DL)
+    limits = httpx.Limits(max_connections=SEM_DL + 20,
+                          max_keepalive_connections=SEM_DL,
+                          keepalive_expiry=30)
+
+    async with httpx.AsyncClient(headers=HEADERS, timeout=TIMEOUT,
+                                 limits=limits) as client:
+        links = await coletar_links(client, sem)
+
+        queue = asyncio.Queue(maxsize=500)
+        with ProcessPoolExecutor(max_workers=WORKERS) as executor:
+            prod = asyncio.create_task(producer(client, sem, links, queue))
+            rows = await consumer(queue, executor)
+            await prod
+
+    OUT_FILE.parent.mkdir(parents=True, exist_ok=True)
+    with open(OUT_FILE, "w", newline="", encoding="utf-8-sig") as f:
+        w = csv.DictWriter(f, fieldnames=COLS)
+        w.writeheader()
+        w.writerows(rows)
 
 if __name__ == "__main__":
-    iniciar_automacao()
-
-
-
-
-
-
+    multiprocessing.freeze_support()
+    asyncio.run(main())
