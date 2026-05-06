@@ -1,19 +1,15 @@
-venv/ 
-.env 
-<<<<<<< HEAD
+venv/
+.env
 
-# Ignorar todos os arquivos CSV gerados pela raspagem
+# Dados e logs
 *.csv
-
-# Ignorar a lista de URLs coletadas (opcional, mas recomendado para manter o repositório limpo)
+*.log
 *.txt
 
+# Sistema (Mac)
+.DS_Store
 
-# Ignorar pastas automáticas do Python e do Selenium
+# Python / ferramentas
 __pycache__/
 .pytest_cache/
 .vscode/
-=======
-*.csv
-*.log
->>>>>>> 4cdaf59d8ee5bfcb0bac9edd446dd1ba4a799f5b
