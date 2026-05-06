@@ -1,31 +1,3 @@
-"""
-Scraper – Drogaria Vera Cruz
-Deps: pip install httpx beautifulsoup4 lxml
-
-Estrutura HTML confirmada — bloco de preços:
-
-  <p class="seal-pix ... d-none" data-discount="5">
-      <strong>R$ 10,97</strong>          ← preco_pix  (desconto PIX)
-  </p>
-  <div class="prices">
-      <span>
-          <p class="unit-price">R$ 12,55</p>              ← preco_sem_desconto (visível = tem desconto)
-          <p class="sale-price"><strong>R$ 11,55</strong>  ← preco_cartao
-      </span>
-      <span class="descont">-8%</span>                    ← desconto
-  </div>
-  <p class="card-installments">
-      ou <strong class="get_min_installments">2x</strong>
-      de <strong class="get_card_price">R$ 57,64</strong> ← preco_cartao parcelado = n × valor
-  </p>
-
-  Casos:
-    sem desconto       → unit-price oculto (display:none), seal-pix ausente ou igual ao cartão
-    com desconto       → unit-price visível, seal-pix com valor menor
-    parcelado s/ desc  → get_min_installments presente, sem seal-pix distinto
-    parcelado c/ desc  → get_min_installments presente + seal-pix
-"""
-
 import asyncio
 import csv
 import json
@@ -38,7 +10,6 @@ from pathlib import Path
 import httpx
 from bs4 import BeautifulSoup
 
-# ── config ─────────────────────────────────────────────────────────────────────
 BASE     = "https://www.drogariaveracruz.com.br"
 CATS     = [f"{BASE}/medicamentos/", f"{BASE}/generico/"]
 SEM_DL   = 80
@@ -62,7 +33,6 @@ HEADERS = {
     "Accept-Encoding": "gzip, deflate, br",
 }
 
-# ── regex ───────────────────────────────────────────────────────────────────────
 _RE_JSONLD       = re.compile(r'<script[^>]+application/ld\+json[^>]*>(.*?)</script>', re.S | re.I)
 _RE_EAN_SCRIPT   = re.compile(r'"(?:gtin1[34]|gtin8|ean|eanCode|barcode)"\s*:\s*"(\d{8,14})"', re.I)
 _RE_INDISPONIVEL = re.compile(r'Avise[\s-]*me', re.I)
@@ -70,7 +40,6 @@ _RE_LINK_HREF    = re.compile(r'href=["\']([^"\']+/p)["\']', re.I)
 _RE_LINK_JSON    = re.compile(r'"link"\s*:\s*"(/[^"]+/p)"', re.I)
 
 
-# ── helpers ─────────────────────────────────────────────────────────────────────
 def _txt(tag) -> str:
     return tag.get_text(strip=True) if tag else ""
 
@@ -88,18 +57,12 @@ def _float(texto: str) -> float:
     except (ValueError, AttributeError):
         return 0.0
 
-
-# ══════════════════════════════════════════════════════════════════════════════
-# PARSE — top-level (pickleable pelo ProcessPool)
-# ══════════════════════════════════════════════════════════════════════════════
-
 def parse_html(html: str) -> dict | None:
     if not html or len(html) < 500:
         return None
 
     soup = BeautifulSoup(html, "lxml")
 
-    # ── EAN ───────────────────────────────────────────────────────────────────
     ean = ""
     for bloco in _RE_JSONLD.findall(html):
         try:
@@ -122,7 +85,6 @@ def parse_html(html: str) -> dict | None:
         if m:
             ean = m.group(1)
 
-    # ── Bloco principal ───────────────────────────────────────────────────────
     content = soup.select_one("#content-product")
     if not content:
         return None
@@ -130,29 +92,22 @@ def parse_html(html: str) -> dict | None:
     nome  = _txt(content.select_one("h1"))
     marca = _txt(content.select_one("h1 + div a, h1 ~ div a"))
 
-    # ── Preço PIX — .seal-pix strong ─────────────────────────────────────────
-    # Existe apenas quando há desconto PIX; tag tem classe d-none mas o valor
-    # está no HTML estático (JavaScript a exibe no browser)
     seal = content.select_one(".seal-pix strong, .sale-price-pix strong")
     preco_pix = _limpa_preco(_txt(seal)) if seal else ""
 
-    # ── Preço cartão — .sale-price strong (dentro de .prices) ────────────────
     prices_div   = content.select_one(".prices")
     cartao_tag   = prices_div.select_one(".sale-price strong") if prices_div else None
     preco_cartao = _limpa_preco(_txt(cartao_tag)) if cartao_tag else ""
 
-    # Se não encontrou preço PIX distinto, PIX = cartão
     if not preco_pix:
         preco_pix = preco_cartao
 
-    # ── Preço sem desconto — .unit-price visível ──────────────────────────────
     unit_tag = prices_div.select_one(".unit-price") if prices_div else None
     if unit_tag and not _oculto(unit_tag):
         preco_sem_desc = _limpa_preco(_txt(unit_tag))
     else:
         preco_sem_desc = preco_cartao   # sem desconto → igual ao cartão
 
-    # ── Desconto — .descont visível ───────────────────────────────────────────
     desc_tag = prices_div.select_one(".descont") if prices_div else None
     if desc_tag and not _oculto(desc_tag):
         desconto = _txt(desc_tag)
@@ -161,7 +116,6 @@ def parse_html(html: str) -> dict | None:
     else:
         desconto = ""
 
-    # ── Preço cartão parcelado ────────────────────────────────────────────────
     # Se há parcelas, preco_cartao = n × valor_parcela
     inst_div = content.select_one(".card-installments")
     n_tag    = inst_div.select_one(".get_min_installments") if inst_div else None
@@ -175,7 +129,6 @@ def parse_html(html: str) -> dict | None:
     elif val_tag and not n_tag:
         preco_cartao = _limpa_preco(_txt(val_tag))
 
-    # ── Disponibilidade ───────────────────────────────────────────────────────
     disponivel = "Indisponível" if _RE_INDISPONIVEL.search(html) else "Disponível"
 
     return dict(
@@ -185,11 +138,6 @@ def parse_html(html: str) -> dict | None:
         desconto=desconto, disponivel=disponivel,
         farmacia="Vera Cruz",
     )
-
-
-# ══════════════════════════════════════════════════════════════════════════════
-# HTTP
-# ══════════════════════════════════════════════════════════════════════════════
 
 async def fetch(client: httpx.AsyncClient, url: str) -> str:
     for attempt in range(RETRIES):
@@ -201,11 +149,6 @@ async def fetch(client: httpx.AsyncClient, url: str) -> str:
             if attempt < RETRIES - 1:
                 await asyncio.sleep(1.5 ** attempt)
     return ""
-
-
-# ══════════════════════════════════════════════════════════════════════════════
-# COLETA DE LINKS
-# ══════════════════════════════════════════════════════════════════════════════
 
 async def coletar_links(client: httpx.AsyncClient, sem: asyncio.Semaphore) -> set:
     def _extrair(html: str) -> set:
@@ -230,18 +173,12 @@ async def coletar_links(client: httpx.AsyncClient, sem: asyncio.Semaphore) -> se
 
     return set().union(*await asyncio.gather(*[_paginar(c) for c in CATS]))
 
-
-# ══════════════════════════════════════════════════════════════════════════════
-# PIPELINE
-# ══════════════════════════════════════════════════════════════════════════════
-
 async def producer(client, sem, links, queue):
     async def _dl(url):
         async with sem:
             await queue.put(await fetch(client, url))
     await asyncio.gather(*[_dl(u) for u in links])
     await queue.put(None)
-
 
 async def consumer(queue, executor):
     loop, rows = asyncio.get_running_loop(), []
@@ -253,11 +190,6 @@ async def consumer(queue, executor):
         if r:
             rows.append(r)
     return rows
-
-
-# ══════════════════════════════════════════════════════════════════════════════
-# MAIN
-# ══════════════════════════════════════════════════════════════════════════════
 
 async def main():
     sem    = asyncio.Semaphore(SEM_DL)
@@ -278,7 +210,6 @@ async def main():
         w = csv.DictWriter(f, fieldnames=COLS)
         w.writeheader()
         w.writerows(rows)
-
 
 if __name__ == "__main__":
     multiprocessing.freeze_support()
