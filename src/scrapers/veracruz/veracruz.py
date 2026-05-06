@@ -1,3 +1,31 @@
+"""
+Scraper – Drogaria Vera Cruz
+Deps: pip install httpx beautifulsoup4 lxml
+
+Estrutura HTML confirmada — bloco de preços:
+
+  <p class="seal-pix ... d-none" data-discount="5">
+      <strong>R$ 10,97</strong>          ← preco_pix  (desconto PIX)
+  </p>
+  <div class="prices">
+      <span>
+          <p class="unit-price">R$ 12,55</p>              ← preco_sem_desconto (visível = tem desconto)
+          <p class="sale-price"><strong>R$ 11,55</strong>  ← preco_cartao
+      </span>
+      <span class="descont">-8%</span>                    ← desconto
+  </div>
+  <p class="card-installments">
+      ou <strong class="get_min_installments">2x</strong>
+      de <strong class="get_card_price">R$ 57,64</strong> ← preco_cartao parcelado = n × valor
+  </p>
+
+  Casos:
+    sem desconto       → unit-price oculto (display:none), seal-pix ausente ou igual ao cartão
+    com desconto       → unit-price visível, seal-pix com valor menor
+    parcelado s/ desc  → get_min_installments presente, sem seal-pix distinto
+    parcelado c/ desc  → get_min_installments presente + seal-pix
+"""
+
 import asyncio
 import csv
 import json
@@ -8,7 +36,9 @@ from datetime import datetime
 from pathlib import Path
 
 import httpx
+from bs4 import BeautifulSoup
 
+# ── config ─────────────────────────────────────────────────────────────────────
 BASE     = "https://www.drogariaveracruz.com.br"
 CATS     = [f"{BASE}/medicamentos/", f"{BASE}/generico/"]
 SEM_DL   = 80
@@ -16,8 +46,7 @@ RETRIES  = 3
 TIMEOUT  = httpx.Timeout(12.0, connect=6.0)
 WORKERS  = max(2, multiprocessing.cpu_count() - 1)
 OUT_FILE = (
-    Path(__file__).resolve().parents[3]
-    / "data" / "raw"
+    Path(__file__).resolve().parents[3] / "data" / "raw"
     / f"veracruz_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
 )
 COLS = ["ean", "nome", "marca", "preco_sem_desconto",
@@ -33,24 +62,44 @@ HEADERS = {
     "Accept-Encoding": "gzip, deflate, br",
 }
 
-_RE_EAN      = re.compile(r'"(?:gtin1[34]|ean|eanCode|gtin|barcode)"\s*:\s*"(\d{8,14})"', re.I)
-_RE_JSONLD   = re.compile(r'<script[^>]+application/ld\+json[^>]*>(.*?)</script>', re.S | re.I)
-_RE_H1       = re.compile(r'<h1[^>]*>(.*?)</h1>', re.S | re.I)
-_RE_TAG      = re.compile(r'<[^>]+>')
-_RE_BRAND    = re.compile(r'"brand"\s*:\s*"([^"]+)"', re.I)
-_RE_STRONG   = re.compile(r'<strong[^>]*>(R\$\s*[\d.,]+)</strong>', re.I)
-_RE_PRECO    = re.compile(r'R\$\s*\d+[.,]\d+')
-_RE_DESCONTO = re.compile(r'-(\d+)%')
-_RE_LINK_HREF = re.compile(r'href=["\']([^"\']+/p)["\']', re.I)
-_RE_LINK_JSON = re.compile(r'"link"\s*:\s*"(/[^"]+/p)"', re.I)
+# ── regex ───────────────────────────────────────────────────────────────────────
+_RE_JSONLD       = re.compile(r'<script[^>]+application/ld\+json[^>]*>(.*?)</script>', re.S | re.I)
+_RE_EAN_SCRIPT   = re.compile(r'"(?:gtin1[34]|gtin8|ean|eanCode|barcode)"\s*:\s*"(\d{8,14})"', re.I)
+_RE_INDISPONIVEL = re.compile(r'Avise[\s-]*me', re.I)
+_RE_LINK_HREF    = re.compile(r'href=["\']([^"\']+/p)["\']', re.I)
+_RE_LINK_JSON    = re.compile(r'"link"\s*:\s*"(/[^"]+/p)"', re.I)
 
-_RE_INDISPONIVEL = re.compile(r'Avise.me', re.I)
+
+# ── helpers ─────────────────────────────────────────────────────────────────────
+def _txt(tag) -> str:
+    return tag.get_text(strip=True) if tag else ""
+
+def _oculto(tag) -> bool:
+    return "display:none" in (tag.get("style", "").replace(" ", "")) if tag else True
+
+def _limpa_preco(texto: str) -> str:
+    """'R$ 10,97 no cartão' → 'R$ 10,97'"""
+    m = re.search(r'R\$\s*[\d.,]+', texto)
+    return m.group(0) if m else ""
+
+def _float(texto: str) -> float:
+    try:
+        return float(re.sub(r'[^\d,]', '', texto).replace(',', '.'))
+    except (ValueError, AttributeError):
+        return 0.0
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# PARSE — top-level (pickleable pelo ProcessPool)
+# ══════════════════════════════════════════════════════════════════════════════
 
 def parse_html(html: str) -> dict | None:
     if not html or len(html) < 500:
         return None
 
-    # EAN
+    soup = BeautifulSoup(html, "lxml")
+
+    # ── EAN ───────────────────────────────────────────────────────────────────
     ean = ""
     for bloco in _RE_JSONLD.findall(html):
         try:
@@ -60,36 +109,73 @@ def parse_html(html: str) -> dict | None:
                 for key in ("gtin13", "gtin14", "gtin12", "gtin8", "ean"):
                     val = str(item.get(key, ""))
                     if val.isdigit() and 8 <= len(val) <= 14:
-                        ean = val; break
-                if ean: break
+                        ean = val
+                        break
+                if ean:
+                    break
         except (json.JSONDecodeError, AttributeError):
             continue
-        if ean: break
+        if ean:
+            break
     if not ean:
-        m = _RE_EAN.search(html)
-        if m: ean = m.group(1)
+        m = _RE_EAN_SCRIPT.search(html)
+        if m:
+            ean = m.group(1)
 
-    # Nome
-    h1_m = _RE_H1.search(html)
-    nome = _RE_TAG.sub("", h1_m.group(1)).strip() if h1_m else ""
+    # ── Bloco principal ───────────────────────────────────────────────────────
+    content = soup.select_one("#content-product")
+    if not content:
+        return None
 
-    # Marca
-    brand_m = _RE_BRAND.search(html)
-    marca   = brand_m.group(1) if brand_m else ""
+    nome  = _txt(content.select_one("h1"))
+    marca = _txt(content.select_one("h1 + div a, h1 ~ div a"))
 
-    # Preços
-    strongs      = _RE_STRONG.findall(html)
-    preco_pix    = strongs[0] if strongs else ""
-    preco_cartao = strongs[1] if len(strongs) > 1 else preco_pix
+    # ── Preço PIX — .seal-pix strong ─────────────────────────────────────────
+    # Existe apenas quando há desconto PIX; tag tem classe d-none mas o valor
+    # está no HTML estático (JavaScript a exibe no browser)
+    seal = content.select_one(".seal-pix strong, .sale-price-pix strong")
+    preco_pix = _limpa_preco(_txt(seal)) if seal else ""
 
-    todos = _RE_PRECO.findall(html)
-    uniq  = list(dict.fromkeys(p.replace(" ", "") for p in todos))
-    preco_sem_desc = todos[1] if len(uniq) >= 3 else ""
+    # ── Preço cartão — .sale-price strong (dentro de .prices) ────────────────
+    prices_div   = content.select_one(".prices")
+    cartao_tag   = prices_div.select_one(".sale-price strong") if prices_div else None
+    preco_cartao = _limpa_preco(_txt(cartao_tag)) if cartao_tag else ""
 
-    desc_m   = _RE_DESCONTO.search(html)
-    desconto = f"-{desc_m.group(1)}%" if desc_m else ""
+    # Se não encontrou preço PIX distinto, PIX = cartão
+    if not preco_pix:
+        preco_pix = preco_cartao
 
-    # Disponibilidade: botão "Avise-me" indica produto indisponível
+    # ── Preço sem desconto — .unit-price visível ──────────────────────────────
+    unit_tag = prices_div.select_one(".unit-price") if prices_div else None
+    if unit_tag and not _oculto(unit_tag):
+        preco_sem_desc = _limpa_preco(_txt(unit_tag))
+    else:
+        preco_sem_desc = preco_cartao   # sem desconto → igual ao cartão
+
+    # ── Desconto — .descont visível ───────────────────────────────────────────
+    desc_tag = prices_div.select_one(".descont") if prices_div else None
+    if desc_tag and not _oculto(desc_tag):
+        desconto = _txt(desc_tag)
+        if desconto == "0%":
+            desconto = ""
+    else:
+        desconto = ""
+
+    # ── Preço cartão parcelado ────────────────────────────────────────────────
+    # Se há parcelas, preco_cartao = n × valor_parcela
+    inst_div = content.select_one(".card-installments")
+    n_tag    = inst_div.select_one(".get_min_installments") if inst_div else None
+    val_tag  = inst_div.select_one(".get_card_price")       if inst_div else None
+
+    if n_tag and val_tag:
+        n     = int(re.sub(r'\D', '', _txt(n_tag)) or 1)
+        val   = _float(_txt(val_tag))
+        total = n * val
+        preco_cartao = f"R$ {total:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+    elif val_tag and not n_tag:
+        preco_cartao = _limpa_preco(_txt(val_tag))
+
+    # ── Disponibilidade ───────────────────────────────────────────────────────
     disponivel = "Indisponível" if _RE_INDISPONIVEL.search(html) else "Disponível"
 
     return dict(
@@ -99,6 +185,11 @@ def parse_html(html: str) -> dict | None:
         desconto=desconto, disponivel=disponivel,
         farmacia="Vera Cruz",
     )
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# HTTP
+# ══════════════════════════════════════════════════════════════════════════════
 
 async def fetch(client: httpx.AsyncClient, url: str) -> str:
     for attempt in range(RETRIES):
@@ -111,8 +202,13 @@ async def fetch(client: httpx.AsyncClient, url: str) -> str:
                 await asyncio.sleep(1.5 ** attempt)
     return ""
 
+
+# ══════════════════════════════════════════════════════════════════════════════
+# COLETA DE LINKS
+# ══════════════════════════════════════════════════════════════════════════════
+
 async def coletar_links(client: httpx.AsyncClient, sem: asyncio.Semaphore) -> set:
-    def _links_da_pagina(html: str) -> set:
+    def _extrair(html: str) -> set:
         links = set()
         for href in _RE_LINK_HREF.findall(html):
             links.add(href if href.startswith("http") else BASE + href)
@@ -125,26 +221,26 @@ async def coletar_links(client: httpx.AsyncClient, sem: asyncio.Semaphore) -> se
         while True:
             async with sem:
                 html = await fetch(client, f"{base_url}?p={page}")
-            if not html:
-                break
-            novos = _links_da_pagina(html)
+            novos = _extrair(html)
             if not novos:
                 break
             links |= novos
             page  += 1
         return links
 
-    resultados = await asyncio.gather(*[_paginar(c) for c in CATS])
-    return set().union(*resultados)
+    return set().union(*await asyncio.gather(*[_paginar(c) for c in CATS]))
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# PIPELINE
+# ══════════════════════════════════════════════════════════════════════════════
 
 async def producer(client, sem, links, queue):
     async def _dl(url):
         async with sem:
-            html = await fetch(client, url)
-        await queue.put(html)
-
+            await queue.put(await fetch(client, url))
     await asyncio.gather(*[_dl(u) for u in links])
-    await queue.put(None)   # sentinel
+    await queue.put(None)
 
 
 async def consumer(queue, executor):
@@ -153,10 +249,15 @@ async def consumer(queue, executor):
         html = await queue.get()
         if html is None:
             break
-        result = await loop.run_in_executor(executor, parse_html, html)
-        if result:
-            rows.append(result)
+        r = await loop.run_in_executor(executor, parse_html, html)
+        if r:
+            rows.append(r)
     return rows
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# MAIN
+# ══════════════════════════════════════════════════════════════════════════════
 
 async def main():
     sem    = asyncio.Semaphore(SEM_DL)
@@ -164,10 +265,8 @@ async def main():
                           max_keepalive_connections=SEM_DL,
                           keepalive_expiry=30)
 
-    async with httpx.AsyncClient(headers=HEADERS, timeout=TIMEOUT,
-                                 limits=limits) as client:
+    async with httpx.AsyncClient(headers=HEADERS, timeout=TIMEOUT, limits=limits) as client:
         links = await coletar_links(client, sem)
-
         queue = asyncio.Queue(maxsize=500)
         with ProcessPoolExecutor(max_workers=WORKERS) as executor:
             prod = asyncio.create_task(producer(client, sem, links, queue))
@@ -179,6 +278,7 @@ async def main():
         w = csv.DictWriter(f, fieldnames=COLS)
         w.writeheader()
         w.writerows(rows)
+
 
 if __name__ == "__main__":
     multiprocessing.freeze_support()
