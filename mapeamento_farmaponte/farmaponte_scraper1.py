@@ -10,12 +10,11 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
  
 BASE_URL = "https://www.farmaponte.com.br"
 CATEGORY_URL = "https://www.farmaponte.com.br/saude/medicamentos/"
-OUTPUT_FILE = "farmaponte_medicamentos.csv"
-MAX_PAGES = 267
-DELAY_MIN = 0.1
-DELAY_MAX = 0.3
-MAX_WORKERS = 15
-#tempo aproximado 11 minutos
+OUTPUT_FILE = f"farmaponte-{datetime.now().strftime('%d-%m-%Y')}.csv"
+DELAY_MIN = 0.0
+DELAY_MAX = 0.0
+MAX_WORKERS = 20
+#tempo aproximado 4 minutos
  
 HEADERS = {
     "User-Agent": (
@@ -58,10 +57,22 @@ def calc_discount(price_from, price_to):
  
 def get_product_urls(session):
     urls = []
-    for page_num in range(1, MAX_PAGES + 1):
+    max_pages = None
+
+    # Detecta o total de páginas na primeira página
+    first_soup = get_page(CATEGORY_URL, session)
+    if first_soup:
+        paginator = first_soup.find("div", string=re.compile(r"Página\s+\d+\s+de\s+\d+"))
+        if paginator:
+            match = re.search(r"de\s+(\d+)", paginator.get_text())
+            if match:
+                max_pages = int(match.group(1))
+                print(f"Total de páginas detectado: {max_pages}")
+
+    for page_num in range(1, max_pages + 1):
         page_url = CATEGORY_URL if page_num == 1 else f"{CATEGORY_URL}?p={page_num}"
         if page_num % 30 == 0:
-            print(f"Coletando página {page_num}/{MAX_PAGES}...")
+            print(f"Coletando página {page_num}/{max_pages}...")
  
         soup = get_page(page_url, session)
         if not soup:
@@ -90,18 +101,22 @@ def extract_product_data(url):
     soup = get_page(url, session)
  
     data = {
-        "farmacia": "FarmaPonte",
-        "url": url,
+        "ean_gtin": None,
         "nome": None,
         "marca": None,
-        "ean_gtin": None,
         "preco_de": None,
         "preco_por": None,
         "preco_cartao": None,
         "preco_pix": None,
         "desconto_pct": None,
-        "data_coleta": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "disponivel": None,
+        "farmacia": "FarmaPonte",
     }
+
+    col_order = [
+        "ean_gtin", "nome", "marca",
+        "preco_de", "preco_por", "preco_cartao", "preco_pix", "desconto_pct", "disponivel", "farmacia"
+    ]
  
     nome_el = soup.select_one("h1.name") or soup.select_one("h1")
     if nome_el:
@@ -141,6 +156,8 @@ def extract_product_data(url):
         data["preco_pix"] = clean_price(preco_pix_el.get_text())
      
     data["desconto_pct"] = calc_discount(data["preco_de"], data["preco_por"])
+
+    data["disponivel"] = "Disponível" if data["preco_de"] else "Indisponível"
  
     return data
  
@@ -169,10 +186,10 @@ def main():
  
     df = pd.DataFrame(all_data)
     col_order = [
-        "farmacia", "nome", "marca", "ean_gtin",
-        "preco_de", "preco_por", "preco_cartao", "preco_pix", "desconto_pct",
-        "url", "data_coleta",
+        "ean_gtin", "nome", "marca",
+        "preco_de", "preco_por", "preco_cartao", "preco_pix", "desconto_pct", "disponivel", "farmacia"
     ]
+    
     df = df.reindex(columns=[c for c in col_order if c in df.columns])
     df.to_csv(OUTPUT_FILE, index=False, encoding="utf-8-sig")
  
