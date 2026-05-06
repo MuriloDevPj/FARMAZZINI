@@ -14,7 +14,7 @@ OUTPUT_FILE = f"farmaponte-{datetime.now().strftime('%d-%m-%Y')}.csv"
 DELAY_MIN = 0.0
 DELAY_MAX = 0.0
 MAX_WORKERS = 20
-#tempo aproximado 4 minutos
+#tempo aproximado 4 minutoss
  
 HEADERS = {
     "User-Agent": (
