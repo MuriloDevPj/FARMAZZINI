@@ -14,7 +14,7 @@ OUTPUT_FILE = f"farmaponte-{datetime.now().strftime('%d-%m-%Y')}.csv"
 DELAY_MIN = 0.0
 DELAY_MAX = 0.0
 MAX_WORKERS = 20
-#tempo aproximado 4 minutoss
+#tempo aproximado 4 minutos
  
 HEADERS = {
     "User-Agent": (
@@ -105,18 +105,12 @@ def extract_product_data(url):
         "nome": None,
         "marca": None,
         "preco_de": None,
-        "preco_por": None,
         "preco_cartao": None,
         "preco_pix": None,
         "desconto_pct": None,
         "disponivel": None,
         "farmacia": "FarmaPonte",
     }
-
-    col_order = [
-        "ean_gtin", "nome", "marca",
-        "preco_de", "preco_por", "preco_cartao", "preco_pix", "desconto_pct", "disponivel", "farmacia"
-    ]
  
     nome_el = soup.select_one("h1.name") or soup.select_one("h1")
     if nome_el:
@@ -138,10 +132,6 @@ def extract_product_data(url):
     if preco_de_el:
         data["preco_de"] = clean_price(preco_de_el.get_text())
  
-    preco_por_el = soup.select_one("p.sale-price.money:not(.seal-pix)")
-    if preco_por_el:
-        data["preco_por"] = clean_price(preco_por_el.get_text())
- 
     parcelas_el = soup.select_one("strong.get_min_installments")
     valor_parcela_el = soup.select_one("strong.get_card_price")
     if parcelas_el and valor_parcela_el:
@@ -155,7 +145,7 @@ def extract_product_data(url):
     if preco_pix_el:
         data["preco_pix"] = clean_price(preco_pix_el.get_text())
      
-    data["desconto_pct"] = calc_discount(data["preco_de"], data["preco_por"])
+    data["desconto_pct"] = calc_discount(data["preco_de"], data["preco_pix"])
 
     data["disponivel"] = "Disponível" if data["preco_de"] else "Indisponível"
  
@@ -187,7 +177,7 @@ def main():
     df = pd.DataFrame(all_data)
     col_order = [
         "ean_gtin", "nome", "marca",
-        "preco_de", "preco_por", "preco_cartao", "preco_pix", "desconto_pct", "disponivel", "farmacia"
+        "preco_de", "preco_pix", "preco_cartao", "desconto_pct", "disponivel", "farmacia"
     ]
     
     df = df.reindex(columns=[c for c in col_order if c in df.columns])
