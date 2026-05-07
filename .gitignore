@@ -24,6 +24,7 @@ venv/
 *.csv
 *.log
 *.txt
+*.json
 
 # Sistema (Mac)
 .DS_Store
