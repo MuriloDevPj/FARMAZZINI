@@ -12,7 +12,7 @@ from bs4 import BeautifulSoup
 
 BASE     = "https://www.drogariaveracruz.com.br"
 CATS     = [f"{BASE}/medicamentos/", f"{BASE}/generico/"]
-SEM_DL   = 80
+SEM_DL   = 100
 RETRIES  = 3
 TIMEOUT  = httpx.Timeout(12.0, connect=6.0)
 WORKERS  = max(2, multiprocessing.cpu_count() - 1)
