@@ -40,6 +40,19 @@ def get_page(url, session):
  
  
 def clean_price(text):
+    """Retorna string no formato 'R$ X,XX', igual ao padrão Vera Cruz."""
+    if not text:
+        return ""
+    cleaned = re.sub(r"[^\d,]", "", str(text)).replace(",", ".")
+    try:
+        value = float(cleaned)
+        return f"R$ {value:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+    except ValueError:
+        return ""
+
+
+def clean_price_float(text):
+    """Converte texto de preço para float (uso interno para cálculo de desconto)."""
     if not text:
         return None
     cleaned = re.sub(r"[^\d,]", "", str(text)).replace(",", ".")
@@ -47,13 +60,17 @@ def clean_price(text):
         return float(cleaned)
     except ValueError:
         return None
- 
- 
-def calc_discount(price_from, price_to):
-    if price_from and price_to and price_from > 0:
-        return round((1 - price_to / price_from) * 100, 2)
-    return None
- 
+
+
+def calc_discount(preco_sem_desconto: str, preco_pix: str) -> str:
+    """Retorna desconto como string com '%', ex: '15%'. Igual ao padrão Vera Cruz."""
+    price_from = clean_price_float(preco_sem_desconto)
+    price_to = clean_price_float(preco_pix)
+    if price_from and price_to and price_from > 0 and price_to < price_from:
+        pct = round((1 - price_to / price_from) * 100)
+        return f"{pct}%"
+    return ""
+
  
 def get_product_urls(session):
     urls = []
@@ -100,14 +117,15 @@ def extract_product_data(url):
     time.sleep(random.uniform(DELAY_MIN, DELAY_MAX))
     soup = get_page(url, session)
  
+    # Colunas alinhadas ao padrão Vera Cruz
     data = {
-        "ean_gtin": None,
+        "ean": None,
         "nome": None,
         "marca": None,
-        "preco_de": None,
-        "preco_cartao": None,
-        "preco_pix": None,
-        "desconto_pct": None,
+        "preco_sem_desconto": "",
+        "preco_pix": "",
+        "preco_cartao": "",
+        "desconto": "",
         "disponivel": None,
         "farmacia": "FarmaPonte",
     }
@@ -124,34 +142,53 @@ def extract_product_data(url):
     if script_el:
         try:
             jdata = json.loads(script_el.string or "")
-            data["ean_gtin"] = str(jdata.get("gtin13", "")) or None
+            ean_val = str(jdata.get("gtin13", ""))
+            data["ean"] = ean_val if ean_val.isdigit() and 8 <= len(ean_val) <= 14 else None
         except Exception:
             pass
  
     preco_de_el = soup.select_one("p.unit-price") or soup.select_one(".unit-price")
     if preco_de_el:
-        data["preco_de"] = clean_price(preco_de_el.get_text())
- 
+        data["preco_sem_desconto"] = clean_price(preco_de_el.get_text())
+
     parcelas_el = soup.select_one("strong.get_min_installments")
     valor_parcela_el = soup.select_one("strong.get_card_price")
     if parcelas_el and valor_parcela_el:
         parcelas_txt = re.search(r"\d+", parcelas_el.get_text())
         parcelas = int(parcelas_txt.group()) if parcelas_txt else 1
-        valor_parcela = clean_price(valor_parcela_el.get_text())
+        valor_parcela = clean_price_float(valor_parcela_el.get_text())
         if valor_parcela:
-            data["preco_cartao"] = round(parcelas * valor_parcela, 2)
- 
+            total = parcelas * valor_parcela
+            data["preco_cartao"] = (
+                f"R$ {total:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+            )
+    elif valor_parcela_el:
+        data["preco_cartao"] = clean_price(valor_parcela_el.get_text())
+
     preco_pix_el = soup.select_one("p.seal-pix.sale-price-pix") or soup.select_one("p.sale-price-pix")
     if preco_pix_el:
         data["preco_pix"] = clean_price(preco_pix_el.get_text())
-     
-    data["desconto_pct"] = calc_discount(data["preco_de"], data["preco_pix"])
 
-    data["disponivel"] = "Disponível" if data["preco_de"] else "Indisponível"
+    # Se não há preço PIX separado, usa o preço cartão (igual Vera Cruz)
+    if not data["preco_pix"]:
+        data["preco_pix"] = data["preco_cartao"]
+
+    # Se não há preço sem desconto, usa o preço cartão (igual Vera Cruz)
+    if not data["preco_sem_desconto"]:
+        data["preco_sem_desconto"] = data["preco_cartao"]
+
+    data["desconto"] = calc_discount(data["preco_sem_desconto"], data["preco_pix"])
+
+    data["disponivel"] = "Disponível" if data["preco_sem_desconto"] else "Indisponível"
  
     return data
  
  
+# Colunas na mesma ordem que Vera Cruz
+COLS = ["ean", "nome", "marca", "preco_sem_desconto",
+        "preco_pix", "preco_cartao", "desconto", "disponivel", "farmacia"]
+
+
 def main(): 
     session = requests.Session()
     session.headers.update(HEADERS)
@@ -175,12 +212,7 @@ def main():
                 )
  
     df = pd.DataFrame(all_data)
-    col_order = [
-        "ean_gtin", "nome", "marca",
-        "preco_de", "preco_pix", "preco_cartao", "desconto_pct", "disponivel", "farmacia"
-    ]
-    
-    df = df.reindex(columns=[c for c in col_order if c in df.columns])
+    df = df.reindex(columns=COLS)
     df.to_csv(OUTPUT_FILE, index=False, encoding="utf-8-sig")
  
 if __name__ == "__main__":
