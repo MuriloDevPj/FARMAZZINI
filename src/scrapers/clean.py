@@ -70,7 +70,7 @@ def executar_limpeza():
             continue
             
         csv_atual = arquivos[0]
-        print(f"Processando {nome_real}: {csv_atual.name}")
+        print(f"✨ Processando {nome_real}: {csv_atual.name}")
         
         # Leitura e Limpeza
         df_bruto = pd.read_csv(csv_atual, dtype=str, encoding="utf-8-sig")
