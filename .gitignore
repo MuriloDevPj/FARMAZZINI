@@ -25,6 +25,7 @@ venv/
 *.log
 *.txt
 *.json
+*.parquet
 
 # Sistema (Mac)
 .DS_Store
