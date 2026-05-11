@@ -10,16 +10,33 @@ from pathlib import Path
 import httpx
 from bs4 import BeautifulSoup
 
+BUCKET_NAME = "farmazzini-equipe6"
+
+def enviar_para_s3(caminho_local: Path) -> bool:
+    """Envia o CSV gerado para s3://farmazzini-equipe6/raw/"""
+    try:
+        import boto3
+        from botocore.exceptions import NoCredentialsError
+        s3         = boto3.client("s3")
+        destino_s3 = f"raw/{caminho_local.name}"
+        s3.upload_file(str(caminho_local), BUCKET_NAME, destino_s3)
+        return True
+    except Exception:
+        return False
+
 BASE     = "https://www.drogariaveracruz.com.br"
 CATS     = [f"{BASE}/medicamentos/", f"{BASE}/generico/"]
-SEM_DL   = 100
+SEM_DL   = 80
 RETRIES  = 3
 TIMEOUT  = httpx.Timeout(12.0, connect=6.0)
 WORKERS  = max(2, multiprocessing.cpu_count() - 1)
-OUT_FILE = (
-    Path(__file__).resolve().parents[3] / "data" / "raw"
-    / f"veracruz_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
-)
+# Na EC2 salva no diretório atual; localmente respeita a estrutura do projeto
+_NOME_ARQUIVO = f"veracruz_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+try:
+    OUT_FILE = Path(__file__).resolve().parents[3] / "data" / "raw" / _NOME_ARQUIVO
+    OUT_FILE.parent.mkdir(parents=True, exist_ok=True)
+except (IndexError, OSError):
+    OUT_FILE = Path.cwd() / _NOME_ARQUIVO
 COLS = ["ean", "nome", "marca", "preco_sem_desconto",
         "preco_pix", "preco_cartao", "desconto", "disponivel", "farmacia"]
 
