@@ -14,13 +14,27 @@ PROCESSED_PATH = "/Users/vitortakashi/FARMAZZINI/data/processed"
  
  
 def limpar_dados(df, nome_tabela):
-    for coluna in df.columns:
-        df[coluna] = df[coluna].astype(str).replace("nan", "")
-        if coluna in ["data_venda", "quantidade"]:
-            df[coluna] = df[coluna].replace("", f"{coluna}_nao_identificada")
-        else:
-            df[coluna] = df[coluna].replace("", f"{coluna}_nao_identificado")
- 
+    # int64_field_0 — inteiro, None se vazio
+    if "int64_field_0" in df.columns:
+        df["int64_field_0"] = pd.to_numeric(df["int64_field_0"], errors="coerce").astype("Int64")
+
+    # venda_id — inteiro, None se vazio
+    if "venda_id" in df.columns:
+        df["venda_id"] = pd.to_numeric(df["venda_id"], errors="coerce").astype("Int64")
+
+    # nome_produto — string, None se vazio
+    if "nome_produto" in df.columns:
+        df["nome_produto"] = df["nome_produto"].where(df["nome_produto"].notna(), None)
+
+    # data_venda — converte "01-2024" para date, None se vazio
+    if "data_venda" in df.columns:
+        df["data_venda"] = pd.to_datetime(df["data_venda"], format="%m-%Y", errors="coerce")
+        df["data_venda"] = df["data_venda"].dt.date
+
+    # quantidade — double, None se vazio
+    if "quantidade" in df.columns:
+        df["quantidade"] = pd.to_numeric(df["quantidade"], errors="coerce")
+
     return df
  
  
