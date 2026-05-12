@@ -9,10 +9,26 @@ from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
+import boto3
+import os
+from botocore.exceptions import NoCredentialsError
+
+def enviar_para_s3(caminho_local_arquivo):
+    s3 = boto3.client('s3')
+    nome_bucket = "farmazzini-equipe6"
+    nome_arquivo = os.path.basename(caminho_local_arquivo)
+    try:
+        s3.upload_file(caminho_local_arquivo, nome_bucket, f"raw/{nome_arquivo}")
+        print(f"Upload concluído com sucesso: raw/{nome_arquivo}")
+    except Exception as e:
+        print(f"Erro no upload S3: {e}")
+
 BASE_URL     = "https://www.farmaponte.com.br"
 CATEGORY_URL = "https://www.farmaponte.com.br/saude/medicamentos/"
-OUT_FILE     = (Path(__file__).resolve().parents[3] / "data" / "raw"
-                / f"farmaponte_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv")
+
+# Define o nome do arquivo com a data atual e salva na pasta atual
+nome_csv = f"farmaponte_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+OUT_FILE = Path(f"/tmp/{nome_csv}")
 DELAY_MIN  = 0.0
 DELAY_MAX  = 0.0
 MAX_WORKERS = 20
@@ -179,7 +195,6 @@ def extract_product_data(url):
 
     return data
 
-
 def main():
     session = requests.Session()
     session.headers.update(HEADERS)
@@ -204,6 +219,10 @@ def main():
     df.to_csv(OUT_FILE, index=False, encoding="utf-8-sig")
     print(f"Salvo em: {OUT_FILE}")
 
+
+def lambda_handler(event, context):
+    main()
+    return {"statusCode": 200, "body": "OK"}
 
 if __name__ == "__main__":
     main()
