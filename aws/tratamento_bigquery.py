@@ -9,7 +9,7 @@ TABELAS = [
     "Historico_Vendas_Vera_Cruz",
 ]
  
-BUCKET = "fermazzini-equipe6"
+BUCKET = "farmazzini-equipe6"
 PROCESSED_PATH = "/Users/vitortakashi/FARMAZZINI/data/processed"
  
  
@@ -38,7 +38,7 @@ def main():
         df.to_parquet(arquivo_local, index=False)
         print(f"  -> Salvo em {arquivo_local}")
  
-        s3_key = f"Data/{tabela}/{tabela}_clean_{timestamp}.parquet"
+        s3_key = f"processed/{tabela}/{tabela}_clean_{timestamp}.parquet"
         s3.upload_file(arquivo_local, BUCKET, s3_key)
         print(f"  -> Enviado para s3://{BUCKET}/{s3_key}")
  
