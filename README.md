@@ -26,10 +26,10 @@ Acompanhamento das etapas conforme definido no material de **Kick-off**:
 
 ### **Etapa 3: Integração e Automação** 
 * **Duração:** 1 Semana
-- [ ] Centralização das informações extraídas num Bucket S3.
-- [ ] Configuração do Amazon Glue Data Catalog e schemas de tabelas.
-- [ ] Automação dos scripts via AWS Lambda, EventBridge e EC2.
-- [ ] Configuração de atualização automática (frequência definida no cronograma).
+- [x] Centralização das informações extraídas num Bucket S3.
+- [x] Configuração do Amazon Glue Data Catalog e schemas de tabelas.
+- [x] Automação dos scripts via AWS Lambda, EventBridge e EC2.
+- [x] Configuração de atualização automática (frequência definida no cronograma).
 
 ### **Etapa 4: Chatbot de Busca** 
 * **Duração:** 1.5 Semanas
