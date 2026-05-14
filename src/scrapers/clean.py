@@ -19,7 +19,7 @@ def normalizar_ean(val):
     if pd.isna(val) or str(val).strip() in ("", "nan", "None", "NONE"):
         return "NONE"
     digits = re.sub(r"\D", "", str(val))
-    return digits if 8 <= len(digits) <= 14 else "NONE"
+    return digits if 8 <= len(digits) <= 14 else None
 
 def normalizar_campo(val):
     if pd.isna(val) or str(val).strip() in ("", "nan", "None", "NONE"):
@@ -30,7 +30,7 @@ def limpar_base(df, nome_farmacia):
     """Padroniza, preenche vazios com NONE e deduplica por farmácia."""
     for col in COLS:
         if col not in df.columns:
-            df[col] = "NONE"
+            df[col] = None
     
     df = df[COLS].copy()
     df["farmacia"] = nome_farmacia
@@ -39,7 +39,7 @@ def limpar_base(df, nome_farmacia):
     df["marca"] = df["marca"].apply(normalizar_campo)
     df["disponivel"] = df["disponivel"].apply(normalizar_campo)
     
-    df = df.replace({"": "NONE", "nan": "NONE", None: "NONE"})
+    df = df.replace({"": "None", "nan": "NONE", None: "NONE"})
 
     df_com_ean = df[df["ean"] != "NONE"].copy()
     df_sem_ean = df[df["ean"] == "NONE"].copy()
@@ -70,7 +70,7 @@ def executar_limpeza():
             continue
             
         csv_atual = arquivos[0]
-        print(f"✨ Processando {nome_real}: {csv_atual.name}")
+        print(f"Processando {nome_real}: {csv_atual.name}")
         
         # Leitura e Limpeza
         df_bruto = pd.read_csv(csv_atual, dtype=str, encoding="utf-8-sig")

@@ -1,225 +1,241 @@
-import requests
-from bs4 import BeautifulSoup
-import pandas as pd
-import time
-import random
-import re
+import asyncio
+import csv
 import json
+import os
+import re
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
-from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
-import boto3
-import os
-from botocore.exceptions import NoCredentialsError
+from curl_cffi.requests import AsyncSession
+from bs4 import BeautifulSoup
 
-def enviar_para_s3(caminho_local_arquivo):
-    s3 = boto3.client('s3')
-    nome_bucket = "farmazzini-equipe6"
-    nome_arquivo = os.path.basename(caminho_local_arquivo)
-    try:
-        s3.upload_file(caminho_local_arquivo, nome_bucket, f"raw/{nome_arquivo}")
-        print(f"Upload concluído com sucesso: raw/{nome_arquivo}")
-    except Exception as e:
-        print(f"Erro no upload S3: {e}")
+# ── Configurações ──────────────────────────────────────────────────────────────
+BUCKET_NAME = "farmazzini-equipe6"
+BASE        = "https://www.farmaponte.com.br"
+CATS        = [f"{BASE}/saude/medicamentos/"]
+RETRIES     = 3
+WORKERS     = 8
 
-BASE_URL     = "https://www.farmaponte.com.br"
-CATEGORY_URL = "https://www.farmaponte.com.br/saude/medicamentos/"
+SEM_CAT  = 50
+SEM_PROD = 150
 
-# Define o nome do arquivo com a data atual e salva na pasta atual
-BASE_DIR = Path(__file__).resolve().parent.parent.parent.parent
-nome_csv = f"farmaponte_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
-OUT_FILE = BASE_DIR / "data" / "raw" / nome_csv
-DELAY_MIN  = 0.0
-DELAY_MAX  = 0.0
-MAX_WORKERS = 20
+COLS = ["ean", "nome", "marca", "preco_sem_desconto",
+        "preco_pix", "preco_cartao", "desconto", "disponivel", "farmacia"]
 
 HEADERS = {
-    "User-Agent": (
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-        "AppleWebKit/537.36 (KHTML, like Gecko) "
-        "Chrome/124.0.0.0 Safari/537.36"
-    ),
-    "Accept-Language": "pt-BR,pt;q=0.9",
-    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-    "Referer": "https://www.farmaponte.com.br/",
+    "User-Agent":                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+    "Accept":                    "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+    "Accept-Language":           "pt-BR,pt;q=0.9",
+    "Accept-Encoding":           "gzip, deflate, br",
+    "Sec-Ch-Ua":                 '"Chromium";v="124", "Google Chrome";v="124", "Not-A.Brand";v="99"',
+    "Sec-Ch-Ua-Mobile":          "?0",
+    "Sec-Ch-Ua-Platform":        '"Windows"',
+    "Sec-Fetch-Dest":            "document",
+    "Sec-Fetch-Mode":            "navigate",
+    "Sec-Fetch-Site":            "none",
+    "Sec-Fetch-User":            "?1",
+    "Upgrade-Insecure-Requests": "1",
+    "Referer":                   f"{BASE}/",
 }
 
-# Colunas alinhadas ao schema compartilhado (mesmo que Vera Cruz + url)
-COLS = ["ean","nome","marca","preco_sem_desconto","preco_pix",
-        "preco_cartao","desconto","disponivel","farmacia"]
+_RE_JSONLD     = re.compile(r'<script[^>]+application/ld\+json[^>]*>(.*?)</script>', re.S | re.I)
+_RE_EAN_SCRIPT = re.compile(r'"(?:gtin1[34]|gtin8|ean|eanCode|barcode)"\s*:\s*"(\d{8,14})"', re.I)
+_RE_PROD_LINK  = re.compile(r'href=["\']([^"\']+/p)["\']', re.I)
+_RE_PAGINAS    = re.compile(r'de\s+(\d+)', re.I)
 
 
-def get_page(url, session):
-    for attempt in range(1, 4):
+# ── Helpers ────────────────────────────────────────────────────────────────────
+
+def _resolve_out_file() -> Path:
+    nome = f"farmaponte_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+    if os.environ.get("AWS_LAMBDA_FUNCTION_NAME"):
+        return Path("/tmp") / nome
+    local_win = Path(r"C:\Users\muril\Documents\TrienamentoPJ\T1\FARMAZZINI\data\raw") / nome
+    if local_win.parent.exists():
+        return local_win
+    return Path.cwd() / nome
+
+def _txt(tag) -> str:
+    return tag.get_text(strip=True) if tag else ""
+
+def _limpa_preco(texto: str) -> str:
+    m = re.search(r'R\$\s*[\d.,]+', str(texto))
+    return m.group(0) if m else ""
+
+def _float(texto: str) -> float:
+    try:
+        return float(re.sub(r'[^\d,]', '', str(texto)).replace(',', '.'))
+    except (ValueError, AttributeError):
+        return 0.0
+
+def _fmt(valor: float) -> str:
+    return f"R$ {valor:,.2f}".replace(",","X").replace(".",",").replace("X",".")
+
+def enviar_para_s3(caminho_local: Path) -> None:
+    try:
+        import boto3
+        boto3.client("s3").upload_file(
+            str(caminho_local), BUCKET_NAME, f"raw/{caminho_local.name}"
+        )
+    except Exception:
+        pass
+
+
+# ── Parse (CPU-bound, roda no executor) ───────────────────────────────────────
+
+def parse_html(html: str) -> dict | None:
+    if not html or len(html) < 500:
+        return None
+
+    ean = ""
+    for bloco in _RE_JSONLD.findall(html):
         try:
-            resp = session.get(url, headers=HEADERS, timeout=20)
-            resp.raise_for_status()
-            return BeautifulSoup(resp.text, "lxml")
-        except requests.RequestException:
-            time.sleep(5 * attempt)
-    return None
-
-
-def clean_price(text):
-    if not text:
-        return ""
-    cleaned = re.sub(r"[^\d,]", "", str(text)).replace(",", ".")
-    try:
-        value = float(cleaned)
-        return f"R$ {value:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
-    except ValueError:
-        return ""
-
-
-def clean_price_float(text):
-    if not text:
-        return None
-    cleaned = re.sub(r"[^\d,]", "", str(text)).replace(",", ".")
-    try:
-        return float(cleaned)
-    except ValueError:
-        return None
-
-
-def calc_discount(preco_sem_desconto, preco_pix):
-    price_from = clean_price_float(preco_sem_desconto)
-    price_to   = clean_price_float(preco_pix)
-    if price_from and price_to and price_from > 0 and price_to < price_from:
-        pct = round((1 - price_to / price_from) * 100)
-        return f"{pct}%"
-    return "0%"
-
-
-def get_product_urls(session):
-    urls = []
-    first_soup = get_page(CATEGORY_URL, session)
-    max_pages  = 1
-
-    if first_soup:
-        paginator = first_soup.find("div", string=re.compile(r"Página\s+\d+\s+de\s+\d+"))
-        if paginator:
-            m = re.search(r"de\s+(\d+)", paginator.get_text())
-            if m:
-                max_pages = int(m.group(1))
-
-    for page_num in range(1, max_pages + 1):
-        page_url = CATEGORY_URL if page_num == 1 else f"{CATEGORY_URL}?p={page_num}"
-        soup = get_page(page_url, session)
-        if not soup:
+            data  = json.loads(bloco)
+            items = data if isinstance(data, list) else [data]
+            for item in items:
+                for key in ("gtin13", "gtin14", "gtin12", "gtin8", "ean"):
+                    val = str(item.get(key, ""))
+                    if val.isdigit() and 8 <= len(val) <= 14:
+                        ean = val
+                        break
+                if ean:
+                    break
+        except (json.JSONDecodeError, AttributeError):
             continue
-
-        links = soup.find_all("a", href=re.compile(r"/p$"))
-        if not links:
+        if ean:
             break
+    if not ean:
+        m = _RE_EAN_SCRIPT.search(html)
+        if m:
+            ean = m.group(1)
 
-        for a in links:
-            href = a.get("href", "")
-            full = href if href.startswith("http") else BASE_URL + href
-            urls.append(full)
+    soup = BeautifulSoup(html, "lxml")
 
-        time.sleep(random.uniform(DELAY_MIN, DELAY_MAX))
+    nome  = _txt(soup.select_one("h1.name") or soup.select_one("h1"))
+    marca = _txt(soup.select_one("a.title_marca, .title_marca"))
 
-    return list(dict.fromkeys(urls))
-
-
-def extract_product_data(url):
-    session = requests.Session()
-    session.headers.update(HEADERS)
-    time.sleep(random.uniform(DELAY_MIN, DELAY_MAX))
-    soup = get_page(url, session)
-
-    if not soup:
-        return None
-
-    data = {col: "" for col in COLS}
-    data["farmacia"] = "FarmaPonte"
-    data["url"]      = url
-
-    # Nome
-    nome_el = soup.select_one("h1.name") or soup.select_one("h1")
-    if nome_el:
-        data["nome"] = nome_el.get_text(strip=True)
-
-    # Marca
-    marca_el = soup.select_one("a.title_marca") or soup.select_one(".title_marca")
-    if marca_el:
-        data["marca"] = marca_el.get_text(strip=True)
-
-    # EAN
-    script_el = soup.find("script", type="application/ld+json")
-    if script_el:
-        try:
-            jdata   = json.loads(script_el.string or "")
-            ean_val = str(jdata.get("gtin13", ""))
-            if ean_val.isdigit() and 8 <= len(ean_val) <= 14:
-                data["ean"] = ean_val
-        except Exception:
-            pass
-
-    # Preço sem desconto
-    preco_de_el = soup.select_one("p.unit-price, .unit-price")
-    if preco_de_el:
-        data["preco_sem_desconto"] = clean_price(preco_de_el.get_text())
-
-    # Preço cartão (total = parcelas × valor)
+    preco_sem_desc   = _limpa_preco(_txt(soup.select_one("p.unit-price, .unit-price")))
+    pix_el           = soup.select_one("p.seal-pix.sale-price-pix, p.sale-price-pix")
+    preco_pix        = _limpa_preco(_txt(pix_el))
     parcelas_el      = soup.select_one("strong.get_min_installments")
     valor_parcela_el = soup.select_one("strong.get_card_price")
+    preco_cartao     = ""
+
     if parcelas_el and valor_parcela_el:
-        n_match = re.search(r"\d+", parcelas_el.get_text())
-        n       = int(n_match.group()) if n_match else 1
-        val     = clean_price_float(valor_parcela_el.get_text())
+        n_m = re.search(r'\d+', _txt(parcelas_el))
+        n   = int(n_m.group()) if n_m else 1
+        val = _float(_txt(valor_parcela_el))
         if val:
-            total = n * val
-            data["preco_cartao"] = (
-                f"R$ {total:,.2f}".replace(",","X").replace(".",",").replace("X",".")
-            )
+            preco_cartao = _fmt(n * val)
     elif valor_parcela_el:
-        data["preco_cartao"] = clean_price(valor_parcela_el.get_text())
+        preco_cartao = _limpa_preco(_txt(valor_parcela_el))
 
-    # Preço PIX
-    preco_pix_el = soup.select_one("p.seal-pix.sale-price-pix, p.sale-price-pix")
-    if preco_pix_el:
-        data["preco_pix"] = clean_price(preco_pix_el.get_text())
+    if not preco_pix:      preco_pix      = preco_cartao
+    if not preco_sem_desc: preco_sem_desc = preco_cartao
 
-    # Fallbacks
-    if not data["preco_pix"]:
-        data["preco_pix"] = data["preco_cartao"]
-    if not data["preco_sem_desconto"]:
-        data["preco_sem_desconto"] = data["preco_cartao"]
+    pf         = _float(preco_sem_desc)
+    pt         = _float(preco_pix)
+    desconto   = f"{round((1 - pt / pf) * 100)}%" if pf > 0 and 0 < pt < pf else "0%"
+    disponivel = "Disponível" if preco_pix else "Indisponível"
 
-    # Desconto
-    data["desconto"] = calc_discount(data["preco_sem_desconto"], data["preco_pix"])
+    return dict(ean=ean, nome=nome, marca=marca,
+                preco_sem_desconto=preco_sem_desc, preco_pix=preco_pix,
+                preco_cartao=preco_cartao, desconto=desconto,
+                disponivel=disponivel, farmacia="FarmaPonte")
 
-    # Disponibilidade
-    data["disponivel"] = "Disponível" if data["preco_pix"] else "Indisponível"
 
-    return data
+# ── I/O assíncrono ─────────────────────────────────────────────────────────────
 
-def main():
-    session = requests.Session()
-    session.headers.update(HEADERS)
+async def fetch(session: AsyncSession, url: str, sem: asyncio.Semaphore) -> str:
+    async with sem:
+        for attempt in range(RETRIES):
+            try:
+                r = await session.get(url, impersonate="chrome124",
+                                      headers=HEADERS, allow_redirects=True, timeout=20)
+                r.raise_for_status()
+                return r.text
+            except Exception:
+                if attempt < RETRIES - 1:
+                    await asyncio.sleep(1.5 ** attempt)
+    return ""
 
-    product_urls = get_product_urls(session)
-    print(f"Total de produtos encontrados: {len(product_urls)}")
 
-    all_data = []
-    total    = len(product_urls)
+async def coletar_links(session: AsyncSession) -> set:
+    sem = asyncio.Semaphore(SEM_CAT)
 
-    with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
-        futures = {executor.submit(extract_product_data, url): url for url in product_urls}
-        for i, future in enumerate(as_completed(futures), start=1):
-            result = future.result()
-            if result:
-                all_data.append(result)
-            if i % 100 == 0:
-                print(f"[{i}/{total}]")
+    async def _cat(base_url: str) -> set:
+        html_p1 = await fetch(session, base_url, sem)
+        if not html_p1:
+            return set()
+        soup  = BeautifulSoup(html_p1, "lxml")
+        max_p = 1
+        pag_t = soup.find(string=_RE_PAGINAS)
+        if pag_t:
+            m = _RE_PAGINAS.search(str(pag_t))
+            if m:
+                max_p = int(m.group(1))
+        extras = await asyncio.gather(*[
+            fetch(session, f"{base_url}?p={i}", sem)
+            for i in range(2, max_p + 1)
+        ])
+        links = set()
+        for html in [html_p1] + list(extras):
+            for href in _RE_PROD_LINK.findall(html):
+                links.add(href if href.startswith("http") else BASE + href)
+        return links
 
-    OUT_FILE.parent.mkdir(parents=True, exist_ok=True)
-    df = pd.DataFrame(all_data).reindex(columns=COLS)
-    df.to_csv(OUT_FILE, index=False, encoding="utf-8-sig")
-    print(f"Salvo em: {OUT_FILE}")
+    return set().union(*await asyncio.gather(*[_cat(c) for c in CATS]))
+
+
+async def main_async() -> Path:
+    print("Iniciando extracao FarmaPonte...")
+
+    sem_prod = asyncio.Semaphore(SEM_PROD)
+    loop     = asyncio.get_running_loop()
+    out      = _resolve_out_file()
+    out.parent.mkdir(parents=True, exist_ok=True)
+
+    async with AsyncSession() as session:
+        links = await coletar_links(session)
+
+        with ThreadPoolExecutor(max_workers=WORKERS) as executor:
+            with open(out, "w", newline="", encoding="utf-8-sig") as f:
+                writer = csv.DictWriter(f, fieldnames=COLS)
+                writer.writeheader()
+
+                queue_parse: asyncio.Queue = asyncio.Queue()
+
+                async def _fetch_and_enqueue(url: str) -> None:
+                    html = await fetch(session, url, sem_prod)
+                    await queue_parse.put(html)
+
+                async def _producer() -> None:
+                    await asyncio.gather(*[_fetch_and_enqueue(u) for u in links])
+                    await queue_parse.put(None)
+
+                async def _consumer() -> None:
+                    while True:
+                        html = await queue_parse.get()
+                        if html is None:
+                            break
+                        row = await loop.run_in_executor(executor, parse_html, html)
+                        if row:
+                            writer.writerow(row)
+                        del html
+
+                prod_task = asyncio.create_task(_producer())
+                await _consumer()
+                await prod_task
+
+    enviar_para_s3(out)
+    print("Extracao FarmaPonte concluida.")
+    return out
+
+
+def lambda_handler(event, context):
+    asyncio.run(main_async())
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main_async())

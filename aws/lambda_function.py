@@ -6,7 +6,7 @@ from datetime import datetime
 
 # Configurações globais
 S3_CLIENT = boto3.client('s3')
-DEST_BUCKET = "farmazzini-equipe6"
+DEST_BUCKET = "farmazzini-equipe6-ohio"
 COLS = ["ean", "nome", "marca", "preco_sem_desconto", "preco_pix", 
         "preco_cartao", "desconto", "disponivel", "farmacia"]
 
