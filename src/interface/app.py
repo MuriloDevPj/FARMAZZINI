@@ -24,7 +24,7 @@ os.environ["AWS_ACCESS_KEY_ID"]     = st.secrets.get("AWS_ACCESS_KEY_ID", "")
 os.environ["AWS_SECRET_ACCESS_KEY"] = st.secrets.get("AWS_SECRET_ACCESS_KEY", "")
 os.environ["AWS_DEFAULT_REGION"]    = st.secrets.get("AWS_DEFAULT_REGION", "us-east-2")
 
-# ── CSS do arquivo externo (sem bloqueios de sidebar) ─────────────────────────
+# ── CSS do arquivo externo ────────────────────────────────────────────────────
 _css_path = os.path.join(_here, "styles", "custom.css")
 with open(_css_path, "r", encoding="utf-8") as f:
     st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
