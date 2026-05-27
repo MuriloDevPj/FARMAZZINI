@@ -27,10 +27,18 @@ h2, h3, h4 {
     color: #FFFFFF !important;
 }
 
-/* ── Sidebar — estilo sem travar largura ou esconder controles ───────────── */
+/* ── Sidebar — largura fixa + controles sempre visíveis ─────────────────── */
 [data-testid="stSidebar"] {
     background-color: #111111 !important;
     border-right: 1px solid #2A2A2A !important;
+    min-width: 260px !important;  /* ← ajuste aqui para deixar mais fina ou grossa */
+    max-width: 260px !important;  /* ← mantenha igual ao min-width                 */
+    width: 260px !important;
+}
+
+[data-testid="stSidebar"] > div:first-child {
+    width: 260px !important;      /* ← mesmo valor dos três acima */
+    min-width: 260px !important;
 }
 
 [data-testid="stSidebar"] h1,
@@ -41,13 +49,15 @@ h2, h3, h4 {
     color: #E8E8E8 !important;
 }
 
-/* Garante que o botão de toggle da sidebar seja sempre visível (Streamlit 1.57) */
+/* Garante que o botão de toggle da sidebar seja sempre visível */
 [data-testid="stSidebarCollapseButton"],
 [data-testid="collapsedControl"],
-[data-testid="stSidebarCollapsedControl"] {
+[data-testid="stSidebarCollapsedControl"],
+button[data-testid="baseButton-headerNoPadding"] {
     display: flex !important;
     visibility: visible !important;
     opacity: 1 !important;
+    z-index: 999 !important;
 }
 
 /* ── Botão primário ───────────────────────────────────────────────────────── */
