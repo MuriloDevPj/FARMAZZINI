@@ -204,7 +204,18 @@ hr {
 ::-webkit-scrollbar-thumb:hover { background: #8B1A1A; }
 
 /* ── Ocultar elementos padrão do Streamlit ────────────────────────────────── */
-#MainMenu, footer, header { visibility: hidden !important; }
+/* NÃO ocultar o header inteiro — ele contém o botão de toggle da sidebar     */
+#MainMenu { visibility: hidden !important; }
+footer    { visibility: hidden !important; }
+
+/* Oculta apenas o conteúdo decorativo do header, preserva o toggle button    */
+header[data-testid="stHeader"] {
+    background-color: transparent !important;
+    border-bottom: none !important;
+}
+header[data-testid="stHeader"] > div:not(:has(button)) {
+    visibility: hidden !important;
+}
 
 /* ── Main content padding ─────────────────────────────────────────────────── */
 .main .block-container {
