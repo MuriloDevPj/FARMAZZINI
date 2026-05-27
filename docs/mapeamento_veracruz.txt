@@ -1,8 +1,0 @@
-EAN/GTIN: /html/head/script[18]/text() 
-Nome: //*[@id="content-product"]/div/div/div[2]/h1
-Marca: //*[@id="content-product"]/div/div/div[2]/div[2]/a[1]
-Preço com PIX: //*[@id="content-product"]/div/div/div[2]/form/div[2]/div[1]/div/div/span[1]/p[2]/strong
-Preço Sem Desconto: //*[@id="content-product"]/div/div/div[2]/form/div[2]/div[1]/div/div/span[1]/p[1]
-Preço com Cartão: //*[@id="content-product"]/div/div/div[2]/form/div[2]/div[1]/div/p/strong
-Descontos: //*[@id="content-product"]/div/div/div[2]/form/div[2]/div[1]/div/div/span[2]
-Farmácia: "Vera Cruz" (Valor Estático)

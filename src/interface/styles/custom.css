@@ -27,18 +27,10 @@ h2, h3, h4 {
     color: #FFFFFF !important;
 }
 
-/* ── Sidebar — largura fixa + controles sempre visíveis ─────────────────── */
+/* ── Sidebar — cor e borda (largura controlada pelo sidebar.py) ──────────── */
 [data-testid="stSidebar"] {
     background-color: #111111 !important;
     border-right: 1px solid #2A2A2A !important;
-    min-width: 260px !important;  /* ← ajuste aqui para deixar mais fina ou grossa */
-    max-width: 260px !important;  /* ← mantenha igual ao min-width                 */
-    width: 260px !important;
-}
-
-[data-testid="stSidebar"] > div:first-child {
-    width: 260px !important;      /* ← mesmo valor dos três acima */
-    min-width: 260px !important;
 }
 
 [data-testid="stSidebar"] h1,

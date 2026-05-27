@@ -6,8 +6,35 @@
 import streamlit as st
 from utils.config import FARMACIAS_VALIDAS, DEFAULT_ANO, DEFAULT_MES, DEFAULT_DIA
 
+LARGURAS = {
+    "Fina":   220,
+    "Normal": 300,
+    "Larga":  400,
+}
+
+
+def _inject_sidebar_width():
+    """Injeta CSS com a largura atual salva no session_state."""
+    largura = LARGURAS[st.session_state.get("sidebar_largura", "Normal")]
+    st.markdown(f"""
+    <style>
+        [data-testid="stSidebar"] {{
+            min-width: {largura}px !important;
+            max-width: {largura}px !important;
+            width:     {largura}px !important;
+        }}
+        [data-testid="stSidebar"] > div:first-child {{
+            min-width: {largura}px !important;
+            width:     {largura}px !important;
+        }}
+    </style>
+    """, unsafe_allow_html=True)
+
 
 def render_sidebar() -> dict:
+    # Injeta a largura ANTES de renderizar a sidebar
+    _inject_sidebar_width()
+
     with st.sidebar:
         # ── Logo ───────────────────────────────────────────────────────────
         st.markdown("""
@@ -22,6 +49,26 @@ def render_sidebar() -> dict:
             </p>
         </div>
         """, unsafe_allow_html=True)
+
+        st.markdown("---")
+
+        # ── Controle de largura ────────────────────────────────────────────
+        st.markdown("##### ↔️ Largura da Barra")
+        cols = st.columns(3)
+        opcoes = list(LARGURAS.keys())
+        atual = st.session_state.get("sidebar_largura", "Normal")
+
+        for i, opcao in enumerate(opcoes):
+            with cols[i]:
+                selecionado = opcao == atual
+                if st.button(
+                    opcao,
+                    key=f"largura_{opcao}",
+                    use_container_width=True,
+                    type="primary" if selecionado else "secondary",
+                ):
+                    st.session_state["sidebar_largura"] = opcao
+                    st.rerun()
 
         st.markdown("---")
 
@@ -63,7 +110,6 @@ def render_sidebar() -> dict:
 
         for ex in exemplos:
             if st.button(ex, key=f"ex_{ex[:25]}", use_container_width=True):
-                # Salva o texto E marca para executar imediatamente
                 st.session_state["exemplo_selecionado"] = ex
                 st.session_state["executar_exemplo"] = True
 
