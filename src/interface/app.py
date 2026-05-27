@@ -20,8 +20,8 @@ st.set_page_config(
 )
 
 # Injeta credenciais AWS vindas dos Secrets do Streamlit Cloud
-os.environ["AWS_ACCESS_KEY_ID"]     = st.secrets.get("AWS_ACCESS_KEY_ID", "")
-os.environ["AWS_SECRET_ACCESS_KEY"] = st.secrets.get("AWS_SECRET_ACCESS_KEY", "")
+os.environ["AWS_ACCESS_KEY_ID"]     = st.secrets.get("AKIA5GEDNRAITXHZNSXF", "")
+os.environ["AWS_SECRET_ACCESS_KEY"] = st.secrets.get("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", "")
 os.environ["AWS_DEFAULT_REGION"]    = st.secrets.get("AWS_DEFAULT_REGION", "us-east-2")
 
 # ── CSS do arquivo externo ────────────────────────────────────────────────────
