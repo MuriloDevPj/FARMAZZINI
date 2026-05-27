@@ -20,9 +20,17 @@ st.set_page_config(
 )
 
 # Injeta credenciais AWS vindas dos Secrets do Streamlit Cloud
-os.environ["AWS_ACCESS_KEY_ID"]     = st.secrets.get("AKIA5GEDNRAITXHZNSXF", "")
-os.environ["AWS_SECRET_ACCESS_KEY"] = st.secrets.get("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", "")
-os.environ["AWS_DEFAULT_REGION"]    = st.secrets.get("AWS_DEFAULT_REGION", "us-east-2")
+aws_key    = st.secrets.get("AWS_ACCESS_KEY_ID", "")
+aws_secret = st.secrets.get("AWS_SECRET_ACCESS_KEY", "")
+aws_region = st.secrets.get("AWS_DEFAULT_REGION", "us-east-2")
+
+if not aws_key or not aws_secret:
+    st.error("❌ Credenciais AWS não configuradas. Acesse Settings → Secrets no Streamlit Cloud.")
+    st.stop()
+
+os.environ["AWS_ACCESS_KEY_ID"]     = aws_key
+os.environ["AWS_SECRET_ACCESS_KEY"] = aws_secret
+os.environ["AWS_DEFAULT_REGION"]    = aws_region
 
 # ── CSS do arquivo externo ────────────────────────────────────────────────────
 _css_path = os.path.join(_here, "styles", "custom.css")
