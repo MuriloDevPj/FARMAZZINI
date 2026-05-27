@@ -1,0 +1,38 @@
+<<<<<<< HEAD
+venv/ 
+.env 
+
+# Ignorar todos os arquivos CSV gerados pela raspagem
+*.csv
+*.log
+
+# Ignorar a lista de URLs coletadas (opcional, mas recomendado para manter o repositório limpo)
+*.txt
+
+#ignorar arquivos do ocultos do MAC
+*.DS_Store
+
+# Ignorar pastas automáticas do Python e do Selenium
+__pycache__/
+.pytest_cache/
+.vscode/
+=======
+venv/
+.env
+
+# Dados e logs
+*.csv
+*.log
+*.txt
+*.json
+*.parquet
+
+# Sistema (Mac)
+.DS_Store
+
+# Python / ferramentas
+__pycache__/
+.pytest_cache/
+.vscode/
+>>>>>>> efb9486ebff8a468eb121cb3c05e97735cc2c66e
+.DS_Store 
