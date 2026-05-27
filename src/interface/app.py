@@ -19,26 +19,15 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# ── CSS do arquivo externo ────────────────────────────────────────────────────
+# Injeta credenciais AWS vindas dos Secrets do Streamlit Cloud
+os.environ["AWS_ACCESS_KEY_ID"]     = st.secrets.get("AWS_ACCESS_KEY_ID", "")
+os.environ["AWS_SECRET_ACCESS_KEY"] = st.secrets.get("AWS_SECRET_ACCESS_KEY", "")
+os.environ["AWS_DEFAULT_REGION"]    = st.secrets.get("AWS_DEFAULT_REGION", "us-east-2")
+
+# ── CSS do arquivo externo (sem bloqueios de sidebar) ─────────────────────────
 _css_path = os.path.join(_here, "styles", "custom.css")
 with open(_css_path, "r", encoding="utf-8") as f:
     st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
-
-# ── CSS inline para forçar sidebar sempre visível ─────────────────────────────
-st.markdown("""
-<style>
-section[data-testid="stSidebar"] {
-    display: flex !important;
-    visibility: visible !important;
-    width: 280px !important;
-    min-width: 280px !important;
-    transform: none !important;
-}
-[data-testid="stSidebarCollapsedControl"] {
-    display: none !important;
-}
-</style>
-""", unsafe_allow_html=True)
 
 from components.sidebar import render_sidebar
 from components.chat import render_chat
