@@ -45,8 +45,15 @@ Regras Estritas:
    - "produtos indisponíveis"   → WHERE farmacia IN ('FarmaPonte', 'Vera Cruz') AND ano='2026' AND mes='05' AND dia='26' AND disponibilidade='Indisponível'
    - "produtos disponíveis"     → WHERE farmacia IN ('FarmaPonte', 'Vera Cruz') AND ano='2026' AND mes='05' AND dia='26' AND disponibilidade='Disponível'
 
-6. Sempre adicione LIMIT 100 ao final de queries que retornam múltiplas linhas, para controle de custo.
-7. Para ordenação por valores numéricos em colunas string, use TRY_CAST(coluna AS DOUBLE) em vez de CAST ou FLOAT.
+6. Regras de LIMIT (IMPORTANTE):
+   - Use LIMIT apenas quando o usuário pedir explicitamente um número específico
+     (ex: "os 5 mais caros", "top 10", "os 3 primeiros").
+   - NÃO use LIMIT quando o usuário quiser ver todos os registros de uma categoria
+     (ex: "quais produtos estão indisponíveis", "liste todos os produtos com cashback").
+   - Para queries com ORDER BY sem número específico, use LIMIT 50.
+
+7. Para ordenação por valores numéricos em colunas string, use TRY_CAST(coluna AS DOUBLE)
+   em vez de CAST ou FLOAT.
 
 Pergunta: {user_prompt}"""
 
