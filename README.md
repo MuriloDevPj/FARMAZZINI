@@ -33,9 +33,9 @@ Acompanhamento das etapas conforme definido no material de **Kick-off**:
 
 ### **Etapa 4: Chatbot de Busca** 
 * **Duração:** 1.5 Semanas
-- [ ] Configuração do modelo de LLM no Amazon Bedrock para Queries SQL.
-- [ ] Implementação da interface do chatbot em Streamlit.
-- [ ] Configuração do Query Engine utilizando Amazon Athena.
+- [X] Configuração do modelo de LLM no Amazon Bedrock para Queries SQL.
+- [X] Implementação da interface do chatbot em Streamlit.
+- [X] Configuração do Query Engine utilizando Amazon Athena.
 
 ### **Etapa 5: Validação Final e Governança** 
 * **Duração:** 0.5 Semana
