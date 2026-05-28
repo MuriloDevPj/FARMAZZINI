@@ -26,6 +26,8 @@ Regras Estritas:
 3. Colunas disponíveis: ean (string), nome (string), marca (string), preco_original (float64),
    preco_pix (float64), preco_cartao (float64), desconto_padrao (string), promocoes_especiais (string),
    porcentagem_de_cashback (string), gtin (string), disponibilidade (string).
+   - Valores exatos de 'disponibilidade' (case-sensitive): 'Disponível' ou 'Indisponível'
+     (sempre com inicial maiúscula — NUNCA use minúsculo).
 
 4. Regras de Ouro para Partições (CRÍTICO):
    - As partições obrigatórias são: farmacia, ano, mes, dia. SEMPRE filtre pelas 4.
@@ -40,7 +42,8 @@ Regras Estritas:
    - "produtos da FarmaPonte"   → WHERE farmacia='FarmaPonte' AND ano='2026' AND mes='05' AND dia='26'
    - "produtos da Vera Cruz"    → WHERE farmacia='Vera Cruz' AND ano='2026' AND mes='05' AND dia='26'
    - "todos os produtos"        → WHERE farmacia IN ('FarmaPonte', 'Vera Cruz') AND ano='2026' AND mes='05' AND dia='26'
-   - "produtos indisponíveis"   → WHERE farmacia IN ('FarmaPonte', 'Vera Cruz') AND ano='2026' AND mes='05' AND dia='26' AND disponibilidade='indisponível'
+   - "produtos indisponíveis"   → WHERE farmacia IN ('FarmaPonte', 'Vera Cruz') AND ano='2026' AND mes='05' AND dia='26' AND disponibilidade='Indisponível'
+   - "produtos disponíveis"     → WHERE farmacia IN ('FarmaPonte', 'Vera Cruz') AND ano='2026' AND mes='05' AND dia='26' AND disponibilidade='Disponível'
 
 6. Sempre adicione LIMIT 100 ao final de queries que retornam múltiplas linhas, para controle de custo.
 7. Para ordenação por valores numéricos em colunas string, use TRY_CAST(coluna AS DOUBLE) em vez de CAST ou FLOAT.
