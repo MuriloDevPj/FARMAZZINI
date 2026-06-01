@@ -28,9 +28,35 @@ st.set_page_config(
 # Oculta chrome padrão do Streamlit
 st.markdown("""
 <style>
-#MainMenu, footer, header, [data-testid="stToolbar"] { visibility: hidden !important; }
-.main .block-container { padding: 0 !important; max-width: 100% !important; }
-[data-testid="stAppViewContainer"] { background: #080809; }
+/* Kill ALL Streamlit chrome */
+#MainMenu, footer, header,
+[data-testid="stToolbar"],
+[data-testid="stDecoration"],
+[data-testid="stStatusWidget"] { visibility: hidden !important; display: none !important; }
+
+/* Remove every gap/padding in the Streamlit shell */
+html, body { margin: 0 !important; padding: 0 !important; overflow: hidden !important; }
+[data-testid="stAppViewContainer"],
+[data-testid="stMain"],
+[data-testid="stMainBlockContainer"],
+.main, .block-container,
+section.main,
+section.main > div:first-child,
+.stApp { 
+    padding: 0 !important; 
+    margin: 0 !important; 
+    max-width: 100vw !important;
+    width: 100vw !important;
+}
+/* Make the iframe itself fill full viewport */
+iframe {
+    border: none !important;
+    display: block !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    position: fixed !important;
+    top: 0 !important; left: 0 !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -170,12 +196,14 @@ if "action" in query_params:
                         "csv": df.to_csv(index=False),
                         "empty": False,
                     }
-        st.json(result)
+        import json as _json
+        st.text(_json.dumps(result))
         st.stop()
 
     elif action == "attack" and pergunta:
         texto = gerar_contra_ataque(pergunta)
-        st.json({"ok": True, "texto": texto})
+        import json as _json
+        st.text(_json.dumps({"ok": True, "texto": texto}))
         st.stop()
 
 
@@ -844,13 +872,26 @@ async function callBackend(action, pergunta) {
     action, pergunta,
     farmacia: activeDb === 'todas' ? '' : activeDb,
   });
-  const url = window.location.href.split('?')[0] + '?' + params.toString();
+  const baseUrl = window.location.href.split('?')[0];
+  const url = baseUrl + '?' + params.toString();
   try {
     const resp = await fetch(url);
     const text = await resp.text();
+    // st.write() outputs plain text wrapped in Streamlit's HTML — extract the JSON
+    // Try direct parse first (pure JSON response)
+    try { return JSON.parse(text); } catch(_) {}
+    // Fallback: extract outermost JSON object from HTML
     const match = text.match(/\{[\s\S]*\}/);
-    if (match) return JSON.parse(match[0]);
-    return { ok: false, error: 'Resposta inválida do servidor.' };
+    if (match) {
+      try { return JSON.parse(match[0]); } catch(_) {}
+    }
+    // Try to find JSON in script tags or data attributes
+    const jsonMatch = text.match(/<[^>]*>([^<]*\{[^<]*"ok"[^<]*\}[^<]*)<\/[^>]*>/);
+    if (jsonMatch) {
+      try { return JSON.parse(jsonMatch[1].trim()); } catch(_) {}
+    }
+    console.error('Raw response:', text.substring(0, 500));
+    return { ok: false, error: 'Resposta inválida do servidor. Verifique o console.' };
   } catch(e) {
     return { ok: false, error: String(e) };
   }
@@ -959,9 +1000,22 @@ function hotTrigger(type) {
 // ── Init ──────────────────────────────────────────────────────────────────────
 renderList();
 renderChat();
+
+// ── Auto-resize: fill parent viewport ─────────────────────────────────────────
+(function() {
+  function fillViewport() {
+    // Notify Streamlit parent to resize iframe
+    window.parent.postMessage({ type: 'streamlit:setFrameHeight', height: window.screen.height }, '*');
+    // Also set our own body/html to fill whatever height we have
+    document.documentElement.style.height = '100%';
+    document.body.style.height = '100%';
+  }
+  fillViewport();
+  window.addEventListener('resize', fillViewport);
+})();
 </script>
 </body>
 </html>
 """
 
-components.html(html_interface, height=820, scrolling=False)
+components.html(html_interface, height=10000, scrolling=False)
