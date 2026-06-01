@@ -8,6 +8,10 @@ import pandas as pd
 
 
 def render_metrics(df: pd.DataFrame, key: str = "0"):
+    """
+    Exibe cards de métricas resumidas a partir do DataFrame de resultado.
+    O parâmetro key deve ser único por chamada (usar o idx da mensagem).
+    """
     if df is None or df.empty:
         return
 
@@ -20,36 +24,28 @@ def render_metrics(df: pd.DataFrame, key: str = "0"):
 
     with col2:
         if "preco_original" in df.columns:
-            serie = pd.to_numeric(df["preco_original"], errors="coerce").dropna()
-            if not serie.empty:
-                st.metric("Preço Médio (Original)", f"R$ {serie.mean():,.2f}")
-            else:
-                st.metric("Preço Médio (Original)", "—")
+            media = pd.to_numeric(df["preco_original"], errors="coerce").mean()
+            st.metric("Preço Médio (Original)", f"R$ {media:,.2f}")
         else:
             st.metric("Colunas", str(len(df.columns)))
 
     with col3:
         if "preco_pix" in df.columns:
-            serie = pd.to_numeric(df["preco_pix"], errors="coerce").dropna()
-            if not serie.empty:
-                st.metric("Menor Preço (PIX)", f"R$ {serie.min():,.2f}")
-            else:
-                st.metric("Menor Preço (PIX)", "—")
+            minimo = pd.to_numeric(df["preco_pix"], errors="coerce").min()
+            st.metric("Menor Preço (PIX)", f"R$ {minimo:,.2f}")
         elif "preco_original" in df.columns:
-            serie = pd.to_numeric(df["preco_original"], errors="coerce").dropna()
-            if not serie.empty:
-                st.metric("Menor Preço", f"R$ {serie.min():,.2f}")
-            else:
-                st.metric("Menor Preço", "—")
+            minimo = pd.to_numeric(df["preco_original"], errors="coerce").min()
+            st.metric("Menor Preço", f"R$ {minimo:,.2f}")
         else:
             st.metric("Linhas", str(len(df)))
 
     with col4:
         if "disponibilidade" in df.columns:
-            disponiveis = df["disponibilidade"].eq("Disponível").sum()
+            disponiveis = df["disponibilidade"].str.lower().eq("disponível").sum()
             st.metric("Disponíveis", f"{disponiveis:,}")
         elif "farmacia" in df.columns:
-            st.metric("Farmácias", str(df["farmacia"].nunique()))
+            n_farmacias = df["farmacia"].nunique()
+            st.metric("Farmácias", str(n_farmacias))
         else:
             st.metric("Status", "✅ OK")
 

@@ -63,6 +63,7 @@ def render_sidebar() -> dict:
 
         for ex in exemplos:
             if st.button(ex, key=f"ex_{ex[:25]}", use_container_width=True):
+                # Salva o texto E marca para executar imediatamente
                 st.session_state["exemplo_selecionado"] = ex
                 st.session_state["executar_exemplo"] = True
 

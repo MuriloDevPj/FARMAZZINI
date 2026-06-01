@@ -27,7 +27,7 @@ h2, h3, h4 {
     color: #FFFFFF !important;
 }
 
-/* ── Sidebar — cor e borda (largura controlada pelo sidebar.py) ──────────── */
+/* ── Sidebar — estilo sem travar largura ou esconder controles ───────────── */
 [data-testid="stSidebar"] {
     background-color: #111111 !important;
     border-right: 1px solid #2A2A2A !important;
@@ -41,15 +41,13 @@ h2, h3, h4 {
     color: #E8E8E8 !important;
 }
 
-/* Garante que o botão de toggle da sidebar seja sempre visível */
+/* Garante que o botão de toggle da sidebar seja sempre visível (Streamlit 1.57) */
 [data-testid="stSidebarCollapseButton"],
 [data-testid="collapsedControl"],
-[data-testid="stSidebarCollapsedControl"],
-button[data-testid="baseButton-headerNoPadding"] {
+[data-testid="stSidebarCollapsedControl"] {
     display: flex !important;
     visibility: visible !important;
     opacity: 1 !important;
-    z-index: 999 !important;
 }
 
 /* ── Botão primário ───────────────────────────────────────────────────────── */
@@ -196,18 +194,7 @@ hr {
 ::-webkit-scrollbar-thumb:hover { background: #8B1A1A; }
 
 /* ── Ocultar elementos padrão do Streamlit ────────────────────────────────── */
-/* NÃO ocultar o header inteiro — ele contém o botão de toggle da sidebar     */
-#MainMenu { visibility: hidden !important; }
-footer    { visibility: hidden !important; }
-
-/* Oculta apenas o conteúdo decorativo do header, preserva o toggle button    */
-header[data-testid="stHeader"] {
-    background-color: transparent !important;
-    border-bottom: none !important;
-}
-header[data-testid="stHeader"] > div:not(:has(button)) {
-    visibility: hidden !important;
-}
+#MainMenu, footer, header { visibility: hidden !important; }
 
 /* ── Main content padding ─────────────────────────────────────────────────── */
 .main .block-container {
