@@ -8,12 +8,73 @@ import pandas as pd
 import uuid
 from datetime import datetime
 from components.metrics import render_metrics
-from components.painel_alertas import render_painel_alertas
 from utils.aws_client import (
     gerar_sql_com_bedrock,
     executar_via_step_functions,
     buscar_resultado_s3,
 )
+
+# Import seguro do painel de alertas — não quebra o app se o módulo faltar
+try:
+    from utils.alertas import buscar_alertas_comerciais
+    _ALERTAS_DISPONIVEL = True
+except ImportError:
+    _ALERTAS_DISPONIVEL = False
+
+
+# ── Painel de Alertas (inline, sem dependência de arquivo externo) ────────────
+
+def render_painel_alertas():
+    if not _ALERTAS_DISPONIVEL:
+        return
+
+    if "alertas_comerciais" not in st.session_state:
+        with st.spinner("🔍 Verificando alertas de mercado..."):
+            try:
+                st.session_state["alertas_comerciais"] = buscar_alertas_comerciais()
+            except Exception:
+                st.session_state["alertas_comerciais"] = []
+
+    alertas = st.session_state.get("alertas_comerciais", [])
+
+    if not alertas:
+        st.info("✅ Nenhuma anomalia de preço detectada nas últimas 48 horas.")
+        return
+
+    st.markdown(f"### 🚨 Alertas Comerciais — {len(alertas)} anomalia(s) detectada(s)")
+
+    for alerta in alertas:
+        queda   = alerta.get("queda_pct", 0)
+        ref     = alerta.get("preco_ref", 0)
+        atual   = alerta.get("preco_concorrente", 0)
+        diff    = alerta.get("diferenca_reais")
+        ean     = alerta.get("ean", "—")
+        ean_str = f"&nbsp;&nbsp;|&nbsp;&nbsp;EAN: <span style='color:#666;'>{ean}</span>" if ean and ean != "—" else ""
+        diff_str = f"<div style='font-size:0.82rem;color:#F5A623;margin-top:0.4rem;'>⚡ Seu preço está R$ {diff:.2f} acima deles.</div>" if diff else ""
+
+        st.markdown(f"""
+        <div style="background:linear-gradient(135deg,#2E0D0D,#1A0A0A);
+                    border:1px solid #8B1A1A;border-left:4px solid #C0392B;
+                    border-radius:10px;padding:1rem 1.25rem;margin-bottom:0.75rem;">
+            <div style="font-size:0.75rem;color:#888;text-transform:uppercase;
+                        letter-spacing:0.08em;margin-bottom:0.4rem;">
+                ⚠️ Alerta Comercial · {alerta.get('farmacia','')}
+            </div>
+            <div style="font-size:1rem;color:#F0F0F0;font-weight:600;">{alerta.get('nome','')}</div>
+            <div style="font-size:0.85rem;color:#CCC;margin-top:0.3rem;">
+                Queda de <span style="color:#FF6B6B;font-weight:700;">{queda:.1f}%</span>
+                nas últimas 48h —
+                de <span style="color:#AAA;">R$ {ref:.2f}</span>
+                → <span style="color:#FF6B6B;font-weight:600;">R$ {atual:.2f}</span>
+                {ean_str}
+            </div>
+            {diff_str}
+        </div>
+        """, unsafe_allow_html=True)
+
+    if st.button("🔄 Atualizar alertas", key="btn_atualizar_alertas"):
+        del st.session_state["alertas_comerciais"]
+        st.rerun()
 
 
 # ── Gerenciamento de sessões múltiplas ────────────────────────────────────────
@@ -30,7 +91,6 @@ def _init_session():
         }
         st.session_state["chat_ativo"] = primeiro_id
 
-    # Garante chat_ativo válido mesmo após rerun
     if "chat_ativo" not in st.session_state or \
        st.session_state["chat_ativo"] not in st.session_state["chats"]:
         st.session_state["chat_ativo"] = list(st.session_state["chats"].keys())[0]
@@ -57,17 +117,12 @@ def _novo_chat():
 # ── Renderização de gráficos ──────────────────────────────────────────────────
 
 def _tentar_grafico(df: pd.DataFrame, key: str):
-    """Detecta se o DataFrame é adequado para gráfico e oferece opções visuais."""
     colunas_numericas = df.select_dtypes(include="number").columns.tolist()
     if not colunas_numericas:
         return
 
     with st.expander("📈 Gerar gráfico", expanded=False):
-        tipo = st.selectbox(
-            "Tipo de gráfico",
-            ["Barras", "Linha", "Dispersão"],
-            key=f"tipo_grafico_{key}",
-        )
+        tipo  = st.selectbox("Tipo de gráfico", ["Barras", "Linha", "Dispersão"], key=f"tipo_grafico_{key}")
         col_x = st.selectbox("Eixo X", df.columns.tolist(), key=f"eixo_x_{key}")
         col_y = st.selectbox("Eixo Y (valor)", colunas_numericas, key=f"eixo_y_{key}")
 
@@ -119,7 +174,6 @@ def _processar_pergunta(user_input: str, filtros: dict):
     chat = _chat_atual()
     chat["historico"].append({"role": "user", "content": user_input})
 
-    # Enriquece o prompt com filtro de farmácia se selecionado
     prompt_enriquecido = user_input
     if filtros.get("farmacia"):
         prompt_enriquecido = (
@@ -130,12 +184,7 @@ def _processar_pergunta(user_input: str, filtros: dict):
         sql, erro = gerar_sql_com_bedrock(prompt_enriquecido)
 
     if erro:
-        chat["historico"].append({
-            "role": "assistant",
-            "content": f"❌ Erro ao gerar SQL: `{erro}`",
-            "sql": None,
-            "df": None,
-        })
+        chat["historico"].append({"role": "assistant", "content": f"❌ Erro ao gerar SQL: `{erro}`", "sql": None, "df": None})
         return
 
     with st.spinner("🛡️ Validando e executando no Athena..."):
@@ -143,31 +192,20 @@ def _processar_pergunta(user_input: str, filtros: dict):
 
     if erro or status != "SUCCEEDED":
         mensagem = erro or f"Execução bloqueada. Status: `{status}`"
-        chat["historico"].append({
-            "role": "assistant",
-            "content": f"❌ {mensagem}",
-            "sql": sql,
-            "df": None,
-        })
+        chat["historico"].append({"role": "assistant", "content": f"❌ {mensagem}", "sql": sql, "df": None})
         return
 
     with st.spinner("📦 Buscando dados no S3..."):
         df, erro = buscar_resultado_s3(status_resp)
 
     if erro:
-        chat["historico"].append({
-            "role": "assistant",
-            "content": f"✅ Consulta executada, mas erro ao carregar dados: `{erro}`",
-            "sql": sql,
-            "df": None,
-        })
+        chat["historico"].append({"role": "assistant", "content": f"✅ Consulta executada, mas erro ao carregar dados: `{erro}`", "sql": sql, "df": None})
         return
 
     sem_dados = df is None or df.empty
     chat["historico"].append({
         "role": "assistant",
-        "content": "✅ Consulta executada com sucesso!" if not sem_dados
-                   else "✅ Nenhum registro correspondeu.",
+        "content": "✅ Consulta executada com sucesso!" if not sem_dados else "✅ Nenhum registro correspondeu.",
         "sql": sql,
         "df": df if not sem_dados else None,
         "sem_dados": sem_dados,
@@ -177,9 +215,9 @@ def _processar_pergunta(user_input: str, filtros: dict):
 # ── Abas de chat ──────────────────────────────────────────────────────────────
 
 def _render_abas():
-    chats     = st.session_state["chats"]
+    chats      = st.session_state["chats"]
     chat_ativo = st.session_state["chat_ativo"]
-    ids       = list(chats.keys())
+    ids        = list(chats.keys())
 
     cols = st.columns(len(ids) + 1)
     for i, cid in enumerate(ids):
@@ -208,7 +246,6 @@ def render_chat(filtros: dict):
     </div>
     """, unsafe_allow_html=True)
 
-    # ── Painel de Alertas Comerciais (carregado uma vez por sessão) ──────────
     render_painel_alertas()
     st.markdown("---")
 
@@ -217,21 +254,18 @@ def render_chat(filtros: dict):
 
     chat = _chat_atual()
 
-    # Histórico do chat ativo
     for idx, msg in enumerate(chat["historico"]):
         _render_mensagem(msg, idx)
 
     if chat["historico"]:
         st.markdown("---")
 
-    # Lê e limpa flags de exemplo da sidebar
     executar_agora = st.session_state.get("executar_exemplo", False)
     valor_inicial  = st.session_state.get("exemplo_selecionado") or ""
     if executar_agora:
-        st.session_state["executar_exemplo"]  = False
+        st.session_state["executar_exemplo"]    = False
         st.session_state["exemplo_selecionado"] = None
 
-    # ── Input principal ───────────────────────────────────────────────────────
     col_input, col_btn = st.columns([5, 1])
     with col_input:
         user_input = st.text_input(
@@ -244,7 +278,6 @@ def render_chat(filtros: dict):
     with col_btn:
         executar = st.button("Analisar", type="primary", use_container_width=True)
 
-    # ── Ações do chat ─────────────────────────────────────────────────────────
     col_limpar, col_renomear, col_exportar = st.columns([1, 1, 1])
 
     with col_limpar:
@@ -280,7 +313,6 @@ def render_chat(filtros: dict):
                 key=f"export_{st.session_state['chat_ativo']}",
             )
 
-    # ── Disparo ───────────────────────────────────────────────────────────────
     pergunta_final = (user_input or valor_inicial).strip()
     if (executar or executar_agora) and pergunta_final:
         _processar_pergunta(pergunta_final, filtros)
