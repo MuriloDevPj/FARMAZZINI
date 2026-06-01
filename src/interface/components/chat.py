@@ -5,10 +5,10 @@
 
 import streamlit as st
 import pandas as pd
-import json
 import uuid
 from datetime import datetime
 from components.metrics import render_metrics
+from components.painel_alertas import render_painel_alertas
 from utils.aws_client import (
     gerar_sql_com_bedrock,
     executar_via_step_functions,
@@ -20,7 +20,6 @@ from utils.aws_client import (
 
 def _init_session():
     if "chats" not in st.session_state:
-        # dict: {chat_id: {nome, historico, criado_em}}
         primeiro_id = str(uuid.uuid4())[:8]
         st.session_state["chats"] = {
             primeiro_id: {
@@ -31,16 +30,16 @@ def _init_session():
         }
         st.session_state["chat_ativo"] = primeiro_id
 
-    if "chat_ativo" not in st.session_state:
+    # Garante chat_ativo válido mesmo após rerun
+    if "chat_ativo" not in st.session_state or \
+       st.session_state["chat_ativo"] not in st.session_state["chats"]:
         st.session_state["chat_ativo"] = list(st.session_state["chats"].keys())[0]
 
-    if "exemplo_selecionado" not in st.session_state:
-        st.session_state["exemplo_selecionado"] = None
-    if "executar_exemplo" not in st.session_state:
-        st.session_state["executar_exemplo"] = False
+    st.session_state.setdefault("exemplo_selecionado", None)
+    st.session_state.setdefault("executar_exemplo", False)
 
 
-def _chat_atual():
+def _chat_atual() -> dict:
     return st.session_state["chats"][st.session_state["chat_ativo"]]
 
 
@@ -58,9 +57,9 @@ def _novo_chat():
 # ── Renderização de gráficos ──────────────────────────────────────────────────
 
 def _tentar_grafico(df: pd.DataFrame, key: str):
-    """Detecta se o DataFrame é adequado para gráfico e oferece opções."""
+    """Detecta se o DataFrame é adequado para gráfico e oferece opções visuais."""
     colunas_numericas = df.select_dtypes(include="number").columns.tolist()
-    if len(colunas_numericas) == 0:
+    if not colunas_numericas:
         return
 
     with st.expander("📈 Gerar gráfico", expanded=False):
@@ -69,21 +68,16 @@ def _tentar_grafico(df: pd.DataFrame, key: str):
             ["Barras", "Linha", "Dispersão"],
             key=f"tipo_grafico_{key}",
         )
-        col_x_opcoes = df.columns.tolist()
-        col_y_opcoes = colunas_numericas
-
-        col_x = st.selectbox("Eixo X", col_x_opcoes, key=f"eixo_x_{key}")
-        col_y = st.selectbox("Eixo Y (valor)", col_y_opcoes, key=f"eixo_y_{key}")
+        col_x = st.selectbox("Eixo X", df.columns.tolist(), key=f"eixo_x_{key}")
+        col_y = st.selectbox("Eixo Y (valor)", colunas_numericas, key=f"eixo_y_{key}")
 
         if st.button("Gerar", key=f"btn_grafico_{key}"):
-            df_plot = df[[col_x, col_y]].dropna()
-            df_plot = df_plot.set_index(col_x)
-
+            df_plot = df[[col_x, col_y]].dropna().set_index(col_x)
             if tipo == "Barras":
                 st.bar_chart(df_plot)
             elif tipo == "Linha":
                 st.line_chart(df_plot)
-            elif tipo == "Dispersão":
+            else:
                 st.scatter_chart(df_plot)
 
 
@@ -125,14 +119,23 @@ def _processar_pergunta(user_input: str, filtros: dict):
     chat = _chat_atual()
     chat["historico"].append({"role": "user", "content": user_input})
 
+    # Enriquece o prompt com filtro de farmácia se selecionado
+    prompt_enriquecido = user_input
+    if filtros.get("farmacia"):
+        prompt_enriquecido = (
+            f"{user_input} (considere apenas a farmácia '{filtros['farmacia']}')"
+        )
+
     with st.spinner("🧠 Claude Haiku 4.5 gerando o SQL..."):
-        prompt_enriquecido = user_input
-        if filtros.get("farmacia"):
-            prompt_enriquecido = f"{user_input} (considere apenas a farmácia '{filtros['farmacia']}')"
         sql, erro = gerar_sql_com_bedrock(prompt_enriquecido)
 
     if erro:
-        chat["historico"].append({"role": "assistant", "content": f"❌ Erro ao gerar SQL: `{erro}`", "sql": None, "df": None})
+        chat["historico"].append({
+            "role": "assistant",
+            "content": f"❌ Erro ao gerar SQL: `{erro}`",
+            "sql": None,
+            "df": None,
+        })
         return
 
     with st.spinner("🛡️ Validando e executando no Athena..."):
@@ -140,37 +143,47 @@ def _processar_pergunta(user_input: str, filtros: dict):
 
     if erro or status != "SUCCEEDED":
         mensagem = erro or f"Execução bloqueada. Status: `{status}`"
-        chat["historico"].append({"role": "assistant", "content": f"❌ {mensagem}", "sql": sql, "df": None})
+        chat["historico"].append({
+            "role": "assistant",
+            "content": f"❌ {mensagem}",
+            "sql": sql,
+            "df": None,
+        })
         return
 
     with st.spinner("📦 Buscando dados no S3..."):
         df, erro = buscar_resultado_s3(status_resp)
 
     if erro:
-        chat["historico"].append({"role": "assistant", "content": f"✅ Consulta executada, mas erro ao carregar dados: `{erro}`", "sql": sql, "df": None})
+        chat["historico"].append({
+            "role": "assistant",
+            "content": f"✅ Consulta executada, mas erro ao carregar dados: `{erro}`",
+            "sql": sql,
+            "df": None,
+        })
         return
 
     sem_dados = df is None or df.empty
     chat["historico"].append({
         "role": "assistant",
-        "content": "✅ Consulta executada com sucesso!" if not sem_dados else "✅ Nenhum registro correspondeu.",
+        "content": "✅ Consulta executada com sucesso!" if not sem_dados
+                   else "✅ Nenhum registro correspondeu.",
         "sql": sql,
         "df": df if not sem_dados else None,
         "sem_dados": sem_dados,
     })
 
 
-# ── Abas de chat (topo da área principal) ────────────────────────────────────
+# ── Abas de chat ──────────────────────────────────────────────────────────────
 
 def _render_abas():
-    chats = st.session_state["chats"]
+    chats     = st.session_state["chats"]
     chat_ativo = st.session_state["chat_ativo"]
-    ids = list(chats.keys())
+    ids       = list(chats.keys())
 
     cols = st.columns(len(ids) + 1)
-
     for i, cid in enumerate(ids):
-        chat = chats[cid]
+        chat  = chats[cid]
         label = f"{'▶ ' if cid == chat_ativo else ''}{chat['nome']} {chat['criado_em']}"
         if cols[i].button(label, key=f"aba_{cid}", use_container_width=True):
             st.session_state["chat_ativo"] = cid
@@ -195,7 +208,10 @@ def render_chat(filtros: dict):
     </div>
     """, unsafe_allow_html=True)
 
-    # Abas de múltiplos chats
+    # ── Painel de Alertas Comerciais (carregado uma vez por sessão) ──────────
+    render_painel_alertas()
+    st.markdown("---")
+
     _render_abas()
     st.markdown("---")
 
@@ -208,13 +224,14 @@ def render_chat(filtros: dict):
     if chat["historico"]:
         st.markdown("---")
 
-    # Verifica exemplo clicado na sidebar
-    executar_agora = st.session_state.pop("executar_exemplo", False)
-    valor_inicial = st.session_state.get("exemplo_selecionado") or ""
+    # Lê e limpa flags de exemplo da sidebar
+    executar_agora = st.session_state.get("executar_exemplo", False)
+    valor_inicial  = st.session_state.get("exemplo_selecionado") or ""
     if executar_agora:
+        st.session_state["executar_exemplo"]  = False
         st.session_state["exemplo_selecionado"] = None
 
-    # Input
+    # ── Input principal ───────────────────────────────────────────────────────
     col_input, col_btn = st.columns([5, 1])
     with col_input:
         user_input = st.text_input(
@@ -227,7 +244,7 @@ def render_chat(filtros: dict):
     with col_btn:
         executar = st.button("Analisar", type="primary", use_container_width=True)
 
-    # Botões de ação do chat
+    # ── Ações do chat ─────────────────────────────────────────────────────────
     col_limpar, col_renomear, col_exportar = st.columns([1, 1, 1])
 
     with col_limpar:
@@ -244,14 +261,14 @@ def render_chat(filtros: dict):
             label_visibility="collapsed",
             placeholder="Nome do chat...",
         )
-        if novo_nome != chat["nome"]:
+        if novo_nome and novo_nome != chat["nome"]:
             chat["nome"] = novo_nome
 
     with col_exportar:
         if chat["historico"]:
             historico_txt = "\n\n".join([
                 f"[{m['role'].upper()}] {m['content']}"
-                + (f"\nSQL: {m['sql']}" if m.get('sql') else "")
+                + (f"\nSQL: {m['sql']}" if m.get("sql") else "")
                 for m in chat["historico"]
             ])
             st.download_button(
@@ -263,8 +280,8 @@ def render_chat(filtros: dict):
                 key=f"export_{st.session_state['chat_ativo']}",
             )
 
-    # Disparo
-    pergunta_final = user_input.strip() or valor_inicial.strip()
+    # ── Disparo ───────────────────────────────────────────────────────────────
+    pergunta_final = (user_input or valor_inicial).strip()
     if (executar or executar_agora) and pergunta_final:
         _processar_pergunta(pergunta_final, filtros)
         st.rerun()
