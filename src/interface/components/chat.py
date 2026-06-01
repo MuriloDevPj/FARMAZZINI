@@ -1,12 +1,15 @@
 # ==============================================================================
-# chat.py — Chat Farmazzini 2.0 com múltiplas sessões e gráficos
+# chat.py — Chat Farmazzini Intel 2.0  |  Design refresh
 # Projeto Farmazzini | Poli Júnior | Equipe 06
 # ==============================================================================
 
 import streamlit as st
 import pandas as pd
 import uuid
+import boto3
+import json
 from datetime import datetime
+
 from components.metrics import render_metrics
 from utils.aws_client import (
     gerar_sql_com_bedrock,
@@ -15,27 +18,24 @@ from utils.aws_client import (
 )
 
 
-# ── Gerenciamento de múltiplos chats ─────────────────────────────────────────
+# ── Session init ──────────────────────────────────────────────────────────────
 
 def _init_session():
     if "chats" not in st.session_state:
-        primeiro_id = str(uuid.uuid4())[:8]
+        pid = str(uuid.uuid4())[:8]
         st.session_state["chats"] = {
-            primeiro_id: {
+            pid: {
                 "nome": "Análise Inicial",
                 "historico": [],
                 "criado_em": datetime.now().strftime("%H:%M"),
             }
         }
-        st.session_state["chat_ativo"] = primeiro_id
+        st.session_state["chat_ativo"] = pid
     if "chat_ativo" not in st.session_state:
         st.session_state["chat_ativo"] = list(st.session_state["chats"].keys())[0]
-    if "exemplo_selecionado" not in st.session_state:
-        st.session_state["exemplo_selecionado"] = None
-    if "executar_exemplo" not in st.session_state:
-        st.session_state["executar_exemplo"] = False
-    if "busca_chat" not in st.session_state:
-        st.session_state["busca_chat"] = ""
+    for key in ("exemplo_selecionado", "executar_exemplo"):
+        if key not in st.session_state:
+            st.session_state[key] = None if key == "exemplo_selecionado" else False
 
 
 def _chat_atual():
@@ -43,29 +43,29 @@ def _chat_atual():
 
 
 def _novo_chat():
-    novo_id = str(uuid.uuid4())[:8]
+    nid = str(uuid.uuid4())[:8]
     n = len(st.session_state["chats"]) + 1
-    st.session_state["chats"][novo_id] = {
+    st.session_state["chats"][nid] = {
         "nome": f"Nova Consulta #{n}",
         "historico": [],
         "criado_em": datetime.now().strftime("%H:%M"),
     }
-    st.session_state["chat_ativo"] = novo_id
+    st.session_state["chat_ativo"] = nid
 
 
-# ── Gráficos dinâmicos ────────────────────────────────────────────────────────
+# ── Gráficos ──────────────────────────────────────────────────────────────────
 
 def _render_grafico(df: pd.DataFrame, key: str):
     colunas_num = df.select_dtypes(include="number").columns.tolist()
     if not colunas_num:
         return
     with st.expander("📊 Gerar Gráfico", expanded=False):
-        col1, col2, col3 = st.columns(3)
-        with col1:
+        c1, c2, c3 = st.columns(3)
+        with c1:
             tipo = st.selectbox("Tipo", ["Barras", "Linha", "Dispersão"], key=f"tipo_{key}")
-        with col2:
+        with c2:
             col_x = st.selectbox("Eixo X", df.columns.tolist(), key=f"x_{key}")
-        with col3:
+        with c3:
             col_y = st.selectbox("Eixo Y", colunas_num, key=f"y_{key}")
 
         if st.button("📈 Renderizar", key=f"render_{key}", type="primary"):
@@ -78,7 +78,7 @@ def _render_grafico(df: pd.DataFrame, key: str):
                 st.scatter_chart(df_plot)
 
 
-# ── Renderização de mensagem individual ──────────────────────────────────────
+# ── Render mensagem individual ────────────────────────────────────────────────
 
 def _render_mensagem(msg: dict, idx: int):
     if msg["role"] == "user":
@@ -101,23 +101,20 @@ def _render_mensagem(msg: dict, idx: int):
             render_metrics(msg["df"], key=str(idx))
             _render_grafico(msg["df"], key=str(idx))
 
-            # Botão de contra-ataque estratégico
             if st.button("⚡ Sugerir Contra-Ataque", key=f"ataque_{idx}"):
                 st.session_state[f"mostrar_ataque_{idx}"] = True
 
             if st.session_state.get(f"mostrar_ataque_{idx}"):
-                with st.spinner("✨ Claude analisando estratégia de contra-ataque..."):
+                with st.spinner("✨ Claude analisando estratégia de contra-ataque…"):
                     df = msg["df"]
                     resumo = df.to_string(index=False, max_rows=5)
                     prompt_ataque = (
                         f"Com base nestes dados de mercado farmacêutico:\n{resumo}\n\n"
                         "Gere 2 planos de ação rápidos e práticos de marketing ou precificação "
                         "para a Farmazzini contra-atacar e preservar sua margem de lucro. "
-                        "Seja direto, executivo e focado em táticas reais de farmácia."
+                        "Seja direto, executivo e focado em táticas reais de farmácia. "
+                        "Use negrito com ** para destacar pontos importantes."
                     )
-                    from utils.aws_client import gerar_sql_com_bedrock as chamar_claude
-                    # Chamada direta ao Bedrock para resposta em linguagem natural
-                    import boto3, json
                     client = boto3.client("bedrock-runtime", region_name="us-east-2")
                     body = json.dumps({
                         "anthropic_version": "bedrock-2023-05-31",
@@ -129,12 +126,25 @@ def _render_mensagem(msg: dict, idx: int):
                         body=body,
                     )
                     ataque = json.loads(resp["body"].read())["content"][0]["text"]
+
+                ataque_fmt = (
+                    ataque
+                    .replace("\n", "<br>")
+                    .replace("**", "<strong>", 1)
+                )
+                # Simpler but robust bold replace
+                import re
+                ataque_fmt = re.sub(r"\*\*(.*?)\*\*", r"<strong>\1</strong>", ataque)
+                ataque_fmt = ataque_fmt.replace("\n", "<br>")
+
                 st.markdown(f"""
                 <div style="border-left:3px solid #E63946;padding:12px 16px;
-                            background:rgba(230,57,70,0.06);border-radius:0 12px 12px 0;
-                            margin-top:10px;">
-                    <b style="color:#E63946;">⚡ Contra-Ataque Estratégico:</b><br><br>
-                    {ataque.replace(chr(10), '<br>')}
+                            background:rgba(230,57,70,0.05);border-radius:0 12px 12px 0;
+                            margin-top:10px;font-size:13px;line-height:1.75;">
+                    <strong style="color:#E63946;display:block;margin-bottom:8px;">
+                        ⚡ Contra-Ataque Estratégico:
+                    </strong>
+                    {ataque_fmt}
                 </div>
                 """, unsafe_allow_html=True)
 
@@ -147,58 +157,67 @@ def _render_mensagem(msg: dict, idx: int):
 def _processar_pergunta(user_input: str, filtros: dict):
     chat = _chat_atual()
 
-    # Renomeia o chat automaticamente com base na primeira pergunta
     if not chat["historico"] and chat["nome"].startswith("Nova Consulta"):
-        chat["nome"] = (user_input[:22] + "...") if len(user_input) > 22 else user_input
+        chat["nome"] = (user_input[:22] + "…") if len(user_input) > 22 else user_input
 
     chat["historico"].append({"role": "user", "content": user_input})
 
-    with st.spinner("🧠 Claude Haiku 4.5 gerando o SQL..."):
+    with st.spinner("🧠 Claude Haiku 4.5 gerando o SQL…"):
         prompt = user_input
         if filtros.get("farmacia"):
             prompt = f"{user_input} (considere apenas a farmácia '{filtros['farmacia']}')"
         sql, erro = gerar_sql_com_bedrock(prompt)
 
     if erro:
-        chat["historico"].append({"role": "assistant", "content": f"❌ Erro ao gerar SQL: `{erro}`", "sql": None, "df": None})
+        chat["historico"].append({
+            "role": "assistant", "content": f"❌ Erro ao gerar SQL: `{erro}`",
+            "sql": None, "df": None,
+        })
         return
 
-    with st.spinner("🛡️ Validando e executando no Athena..."):
+    with st.spinner("🛡️ Validando e executando no Athena…"):
         status, erro, status_resp = executar_via_step_functions(sql)
 
     if erro or status != "SUCCEEDED":
-        chat["historico"].append({"role": "assistant", "content": f"❌ {erro or f'Status: `{status}`'}", "sql": sql, "df": None})
+        chat["historico"].append({
+            "role": "assistant",
+            "content": f"❌ {erro or f'Status: `{status}`'}",
+            "sql": sql, "df": None,
+        })
         return
 
-    with st.spinner("📦 Buscando dados no S3..."):
+    with st.spinner("📦 Buscando dados no S3…"):
         df, erro = buscar_resultado_s3(status_resp)
 
     if erro:
-        chat["historico"].append({"role": "assistant", "content": f"✅ Executado, mas erro ao carregar dados: `{erro}`", "sql": sql, "df": None})
+        chat["historico"].append({
+            "role": "assistant",
+            "content": f"✅ Executado, mas erro ao carregar dados: `{erro}`",
+            "sql": sql, "df": None,
+        })
         return
 
     sem_dados = df is None or df.empty
     chat["historico"].append({
         "role": "assistant",
-        "content": "✅ Consulta executada com sucesso!" if not sem_dados else "✅ Nenhum registro correspondeu.",
+        "content": "✅ Consulta executada com sucesso!" if not sem_dados else "✅ Nenhum registro encontrado.",
         "sql": sql,
         "df": df if not sem_dados else None,
         "sem_dados": sem_dados,
     })
 
 
-# ── Seletor de chats na área principal ───────────────────────────────────────
+# ── Gerenciador de chats ──────────────────────────────────────────────────────
 
 def _render_gerenciador_chats():
     chats = st.session_state["chats"]
     chat_ativo = st.session_state["chat_ativo"]
 
-    # Barra de busca + botão novo chat
     col_busca, col_novo = st.columns([4, 1])
     with col_busca:
         busca = st.text_input(
             "busca",
-            placeholder="🔍  Buscar chats...",
+            placeholder="🔍  Buscar chats…",
             label_visibility="collapsed",
             key="busca_chat_input",
         )
@@ -207,12 +226,10 @@ def _render_gerenciador_chats():
             _novo_chat()
             st.rerun()
 
-    # Lista de chats filtrada
     ids_filtrados = [
         cid for cid, c in chats.items()
         if busca.lower() in c["nome"].lower()
     ]
-
     if not ids_filtrados:
         st.caption("Nenhum chat encontrado.")
         return
@@ -223,8 +240,10 @@ def _render_gerenciador_chats():
         ativo = cid == chat_ativo
         label = f"{'▶ ' if ativo else ''}{c['nome']}\n{c['criado_em']}"
         with cols[i % 4]:
-            if st.button(label, key=f"sel_{cid}", use_container_width=True,
-                         type="primary" if ativo else "secondary"):
+            if st.button(
+                label, key=f"sel_{cid}", use_container_width=True,
+                type="primary" if ativo else "secondary",
+            ):
                 st.session_state["chat_ativo"] = cid
                 st.rerun()
 
@@ -234,42 +253,44 @@ def _render_gerenciador_chats():
 def render_chat(filtros: dict):
     _init_session()
 
-    # ── Cabeçalho ──────────────────────────────────────────────────────────
-    col_titulo, col_badge = st.columns([3, 1])
-    with col_titulo:
+    # ── Cabeçalho ──────────────────────────────────────────────────────────────
+    col_t, col_b = st.columns([3, 1])
+    with col_t:
         st.markdown("""
         <div>
-            <span style="font-size:1.8rem;font-weight:700;letter-spacing:2px;">
-                FARMAZZINI <span style="color:#E63946;">INTEL</span>
+            <span style="font-family:'Space Grotesk',sans-serif;
+                         font-size:1.75rem;font-weight:700;letter-spacing:2px;
+                         text-transform:uppercase;">
+                Farmazzini <span style="color:#E63946;">Intel</span>
             </span>
         </div>
-        <p style="color:#9a9a9f;font-size:0.9rem;margin:0;">
+        <p style="font-family:'DM Sans',sans-serif;color:#7a7a85;font-size:0.88rem;margin:2px 0 0;">
             Console de Inteligência de Mercado — Powered by Claude Haiku 4.5
         </p>
         """, unsafe_allow_html=True)
-    with col_badge:
+    with col_b:
         st.markdown("""
-        <div style="text-align:right;padding-top:10px;">
+        <div style="text-align:right;padding-top:12px;">
             <span class="badge-green">✨ Bedrock Conectado</span>
         </div>
         """, unsafe_allow_html=True)
 
     st.markdown("---")
 
-    # ── Gerenciador de chats ───────────────────────────────────────────────
+    # ── Seletor de chats ────────────────────────────────────────────────────────
     _render_gerenciador_chats()
     st.markdown("---")
 
     chat = _chat_atual()
 
-    # ── Ações do chat ativo ────────────────────────────────────────────────
+    # ── Ações do chat ativo ─────────────────────────────────────────────────────
     col_nome, col_del, col_exp = st.columns([3, 1, 1])
     with col_nome:
         novo_nome = st.text_input(
             "Renomear",
             value=chat["nome"],
             label_visibility="collapsed",
-            placeholder="Nome do chat...",
+            placeholder="Nome do chat…",
             key=f"rename_{st.session_state['chat_ativo']}",
         )
         if novo_nome != chat["nome"]:
@@ -300,7 +321,7 @@ def render_chat(filtros: dict):
 
     st.markdown("---")
 
-    # ── Histórico de mensagens ─────────────────────────────────────────────
+    # ── Histórico de mensagens ──────────────────────────────────────────────────
     for idx, msg in enumerate(chat["historico"]):
         _render_mensagem(msg, idx)
 
@@ -310,25 +331,24 @@ def render_chat(filtros: dict):
             chat["historico"] = []
             st.rerun()
 
-    # ── Input de consulta ──────────────────────────────────────────────────
+    # ── Input ───────────────────────────────────────────────────────────────────
     executar_agora = st.session_state.pop("executar_exemplo", False)
-    valor_inicial = st.session_state.get("exemplo_selecionado") or ""
+    valor_inicial  = st.session_state.get("exemplo_selecionado") or ""
     if executar_agora:
         st.session_state["exemplo_selecionado"] = None
 
-    col_input, col_btn = st.columns([5, 1])
-    with col_input:
+    col_inp, col_btn = st.columns([5, 1])
+    with col_inp:
         user_input = st.text_input(
             label="Consulta",
             value=valor_inicial,
-            placeholder="Faça uma consulta estratégica ao mercado...",
+            placeholder="Faça uma consulta estratégica ao mercado…",
             label_visibility="collapsed",
             key="user_input_field",
         )
     with col_btn:
         executar = st.button("Analisar", type="primary", use_container_width=True)
 
-    # ── Disparo ────────────────────────────────────────────────────────────
     pergunta_final = user_input.strip() or valor_inicial.strip()
     if (executar or executar_agora) and pergunta_final:
         _processar_pergunta(pergunta_final, filtros)

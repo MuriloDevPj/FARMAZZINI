@@ -1,5 +1,5 @@
 # ==============================================================================
-# sidebar.py — Sidebar Farmazzini 2.0
+# sidebar.py — Sidebar Farmazzini Intel 2.0  |  Design refresh
 # Projeto Farmazzini | Poli Júnior | Equipe 06
 # ==============================================================================
 
@@ -9,23 +9,27 @@ from utils.config import FARMACIAS_VALIDAS, DEFAULT_ANO, DEFAULT_MES, DEFAULT_DI
 
 def render_sidebar() -> dict:
     with st.sidebar:
-        # ── Logo ───────────────────────────────────────────────────────────
+
+        # ── Logo ───────────────────────────────────────────────────────────────
         st.markdown("""
-        <div style="padding:1rem 0 0.5rem 0;">
-            <div style="font-size:1.3rem;font-weight:700;letter-spacing:3px;color:#fff;">
-                FARMA<span style="color:#E63946;">ZZINI</span>
-                <span style="margin-left:8px;" class="badge-red">INTEL</span>
+        <div style="padding:0.8rem 0 0.4rem;">
+            <div style="font-family:'Space Grotesk',sans-serif;
+                        font-size:1.2rem;font-weight:700;letter-spacing:2.5px;
+                        text-transform:uppercase;color:#f0f0f2;">
+                Farma<span style="color:#E63946;">zzini</span>
+                <span style="margin-left:8px;" class="badge-red">Intel</span>
             </div>
-            <div style="font-size:11px;text-transform:uppercase;letter-spacing:2.5px;
+            <div style="font-family:'Space Grotesk',sans-serif;
+                        font-size:10px;text-transform:uppercase;letter-spacing:2.5px;
                         color:#E63946;font-weight:700;margin-top:6px;">
-                Chats & Consultas
+                Chats &amp; Consultas
             </div>
         </div>
         """, unsafe_allow_html=True)
 
         st.markdown("---")
 
-        # ── Seletor de base de dados (pills) ───────────────────────────────
+        # ── Seletor de base (pills emuladas via radio) ─────────────────────────
         st.markdown('<div class="sidebar-section-title">Base de Dados Ativa</div>',
                     unsafe_allow_html=True)
 
@@ -39,13 +43,18 @@ def render_sidebar() -> dict:
 
         st.markdown("---")
 
-        # ── Informações do modelo ──────────────────────────────────────────
+        # ── Info do modelo ──────────────────────────────────────────────────────
         st.markdown(f"""
-        <div style="font-size:0.78rem;color:#9a9a9f;line-height:1.8;">
-            <b style="color:#ccc;">Dados</b> {DEFAULT_DIA}/{DEFAULT_MES}/{DEFAULT_ANO}<br>
-            <b style="color:#ccc;">Modelo</b> Claude Haiku 4.5<br>
-            <b style="color:#ccc;">Região</b> us-east-2 (Ohio)<br>
-            <b style="color:#ccc;">Equipe</b> 06 — Poli Júnior
+        <div style="font-family:'DM Sans',sans-serif;
+                    font-size:0.76rem;color:#7a7a85;line-height:2;">
+            <span style="color:#ccc;font-weight:600;">Dados</span>
+            &nbsp;{DEFAULT_DIA}/{DEFAULT_MES}/{DEFAULT_ANO}<br>
+            <span style="color:#ccc;font-weight:600;">Modelo</span>
+            &nbsp;Claude Haiku 4.5<br>
+            <span style="color:#ccc;font-weight:600;">Região</span>
+            &nbsp;us-east-2 (Ohio)<br>
+            <span style="color:#ccc;font-weight:600;">Equipe</span>
+            &nbsp;06 — Poli Júnior
         </div>
         <div style="margin-top:10px;">
             <span class="badge-green">✨ Bedrock Conectado</span>
@@ -54,17 +63,17 @@ def render_sidebar() -> dict:
 
         st.markdown("---")
 
-        # ── Atalhos rápidos ────────────────────────────────────────────────
+        # ── Atalhos rápidos ─────────────────────────────────────────────────────
         st.markdown('<div class="sidebar-section-title">Atalhos Rápidos</div>',
                     unsafe_allow_html=True)
         st.caption("Clique para executar diretamente.")
 
         atalhos = {
-            "📦 Estoque Crítico": "Quais produtos estão Indisponíveis hoje nas farmácias?",
-            "🏷️ Achar Mais Barato": "Qual a dipirona mais barata disponível nas farmácias?",
+            "📦 Estoque Crítico":  "Quais produtos estão Indisponíveis hoje nas farmácias?",
+            "🏷️ Achar Mais Barato": "Qual o produto mais barato disponível por farmácia?",
             "🔥 Maiores Promoções": "Liste os 10 produtos com maior desconto padrão.",
-            "💊 Preço Médio": "Qual o preço médio dos produtos disponíveis por farmácia?",
-            "💳 Comparar PIX": "Compare os preços PIX médios entre FarmaPonte e Vera Cruz.",
+            "💊 Preço Médio":       "Qual o preço médio dos produtos disponíveis por farmácia?",
+            "💳 Comparar PIX":      "Compare os preços PIX médios entre FarmaPonte e Vera Cruz.",
         }
 
         for label, pergunta in atalhos.items():
@@ -74,11 +83,12 @@ def render_sidebar() -> dict:
 
         st.markdown("---")
 
-        # ── Créditos ───────────────────────────────────────────────────────
+        # ── Créditos ────────────────────────────────────────────────────────────
         st.markdown("""
-        <div style="text-align:center;font-size:0.7rem;color:#444;padding-top:0.5rem;">
-            Desenvolvido pela <b style="color:#666;">Poli Júnior</b><br>
-            para <b style="color:#666;">Farmazzini</b> © 2026
+        <div style="text-align:center;font-size:0.68rem;color:#3a3a42;padding-top:0.4rem;
+                    font-family:'DM Sans',sans-serif;">
+            Desenvolvido pela <b style="color:#555;">Poli Júnior</b><br>
+            para <b style="color:#555;">Farmazzini</b> © 2026
         </div>
         """, unsafe_allow_html=True)
 

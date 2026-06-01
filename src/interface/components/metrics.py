@@ -1,5 +1,5 @@
 # ==============================================================================
-# metrics.py — Cards de métricas rápidas do mercado
+# metrics.py — Cards de métricas de mercado  |  Design refresh
 # Projeto Farmazzini | Poli Júnior | Equipe 06
 # ==============================================================================
 
@@ -11,7 +11,13 @@ def render_metrics(df: pd.DataFrame, key: str = "0"):
     if df is None or df.empty:
         return
 
-    st.markdown("#### 📊 Resultado da Análise de Mercado")
+    st.markdown(
+        "<div style='font-family:\"Space Grotesk\",sans-serif;"
+        "font-size:13px;font-weight:700;text-transform:uppercase;"
+        "letter-spacing:1.5px;color:#E63946;margin-bottom:12px;'>"
+        "📊 Resultado da Análise de Mercado</div>",
+        unsafe_allow_html=True,
+    )
 
     col1, col2, col3, col4 = st.columns(4)
 
@@ -37,10 +43,7 @@ def render_metrics(df: pd.DataFrame, key: str = "0"):
                 st.metric("Menor Preço (PIX)", "—")
         elif "preco_original" in df.columns:
             serie = pd.to_numeric(df["preco_original"], errors="coerce").dropna()
-            if not serie.empty:
-                st.metric("Menor Preço", f"R$ {serie.min():,.2f}")
-            else:
-                st.metric("Menor Preço", "—")
+            st.metric("Menor Preço", f"R$ {serie.min():,.2f}" if not serie.empty else "—")
         else:
             st.metric("Linhas", str(len(df)))
 
