@@ -1,147 +1,82 @@
 # ==============================================================================
-# components/sidebar.py — Gerenciador Lateral de Filtros e Histórico de Consultas
-# Design fiel ao HTML sandbox (dark premium, pills)
+# sidebar.py — Componente da barra lateral
 # Projeto Farmazzini | Poli Júnior | Equipe 06
 # ==============================================================================
 
 import streamlit as st
-import time
-from utils.config import FARMACIAS_VALIDAS
+from utils.config import FARMACIAS_VALIDAS, DEFAULT_ANO, DEFAULT_MES, DEFAULT_DIA
 
-def render_sidebar() -> tuple[str, str]:
-    """
-    Renderiza a barra lateral e retorna (db_key, chat_id_ativo).
-    Garante a persistência e chaveamento correto dos chats em tempo de execução.
-    """
+
+def render_sidebar() -> dict:
     with st.sidebar:
-        # ── LOGO & TÍTULO PREMIUM ───────────────────────────────────────────
-        st.markdown(
-            """
-            <div style="padding: 0.4rem 0 0.8rem 0;">
-                <div class="sidebar-section-title">🕐 &nbsp; Chats &amp; Consultas</div>
-            </div>
-            """,
-            unsafe_allow_html=True,
+        # ── Logo ───────────────────────────────────────────────────────────
+        st.markdown("""
+        <div style="text-align:center; padding: 1rem 0 0.5rem 0;">
+            <span style="font-family:'Syne',sans-serif; font-size:1.6rem;
+                         font-weight:800; color:#FFFFFF; letter-spacing:-0.02em;">
+                💊 FARMA<span style="color:#C0392B;">ZZINI</span>
+            </span>
+            <p style="color:#666; font-size:0.72rem; margin:0.2rem 0 0 0;
+                      text-transform:uppercase; letter-spacing:0.12em;">
+                Intelligence Platform
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+
+        st.markdown("---")
+
+        # ── Filtros ────────────────────────────────────────────────────────
+        st.markdown("##### 🔎 Filtros Contextuais")
+        st.caption("Esses filtros orientam a IA na geração do SQL.")
+
+        farmacia_selecionada = st.selectbox(
+            "Farmácia concorrente",
+            options=["Todas"] + FARMACIAS_VALIDAS,
         )
 
-        # ── SELETOR DE BASE DE DADOS (FARMÁCIA) ──────────────────────────────
-        st.markdown(
-            """
-            <div style="margin-bottom: 6px;">
-                <span style="font-size: 11px; font-weight: 600; color: #7a7a85; 
-                             text-transform: uppercase; letter-spacing: 1px;">
-                    Base de Dados Ativa
-                </span>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
+        st.markdown("---")
 
-        # Utiliza a lista real exportada pelo seu config.py (FARMACIAS_VALIDAS)
-        selected_db_label = st.radio(
-            label="base_selector",
-            options=FARMACIAS_VALIDAS,
-            index=FARMACIAS_VALIDAS.index("Todas") if "Todas" in FARMACIAS_VALIDAS else 0,
-            horizontal=True,
-            label_visibility="collapsed",
-            key="db_selector",
-        )
-        db_key = selected_db_label
+        # ── Informações do projeto ─────────────────────────────────────────
+        st.markdown("##### 📋 Projeto")
+        st.markdown(f"""
+        <div style="font-size:0.8rem; color:#888; line-height:1.7;">
+            <b style="color:#CCC;">Equipe</b> 06 — Poli Júnior<br>
+            <b style="color:#CCC;">Dados</b> {DEFAULT_DIA}/{DEFAULT_MES}/{DEFAULT_ANO}<br>
+            <b style="color:#CCC;">Modelo IA</b> Claude Haiku 4.5<br>
+            <b style="color:#CCC;">Região AWS</b> us-east-2 (Ohio)
+        </div>
+        """, unsafe_allow_html=True)
 
-        st.markdown(
-            f"""
-            <div style="font-size: 11px; color: #9a9a9f; margin-top: 4px; margin-bottom: 12px;">
-                Filtrando: <strong style="color: #E63946;">{selected_db_label}</strong>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
+        st.markdown("---")
 
-        st.markdown("<div style='height:4px'></div>", unsafe_allow_html=True)
+        # ── Exemplos de perguntas ──────────────────────────────────────────
+        st.markdown("##### 💡 Exemplos de Perguntas")
+        st.caption("Clique para executar diretamente.")
 
-        # ── BUSCA DE CONSULTAS NO HISTÓRICO ──────────────────────────────────
-        search = st.text_input(
-            "search",
-            placeholder="🔍  Buscar chats...",
-            label_visibility="collapsed",
-            key="search_chats",
-        )
+        exemplos = [
+            "Qual o produto mais caro da FarmaPonte?",
+            "Quais itens têm cashback ativo na Vera Cruz?",
+            "Liste os 10 produtos com maior desconto padrão.",
+            "Compare os preços PIX entre as farmácias.",
+            "Quais produtos estão indisponíveis hoje?",
+        ]
 
-        st.divider()
+        for ex in exemplos:
+            if st.button(ex, key=f"ex_{ex[:25]}", use_container_width=True):
+                # Salva o texto E marca para executar imediatamente
+                st.session_state["exemplo_selecionado"] = ex
+                st.session_state["executar_exemplo"] = True
 
-        # ── INICIALIZAÇÃO DE SEGURANÇA DO SESSION STATE ──────────────────────
-        if "chats" not in st.session_state or not st.session_state.chats:
-            st.session_state.chats = {
-                "chat_1": {
-                    "title": "Análise de Preço: Dipirona",
-                    "messages": [],
-                }
-            }
-        if "active_chat" not in st.session_state:
-            st.session_state.active_chat = list(st.session_state.chats.keys())[0]
+        st.markdown("---")
 
-        chats = st.session_state.chats
-        active = st.session_state.active_chat
-        search_lower = search.lower().strip()
+        # ── Créditos ───────────────────────────────────────────────────────
+        st.markdown("""
+        <div style="text-align:center; font-size:0.7rem; color:#555; padding-top:0.5rem;">
+            Desenvolvido com ❤️ pela<br>
+            <b style="color:#888;">Poli Júnior</b> × <b style="color:#888;">Farmazzini</b>
+        </div>
+        """, unsafe_allow_html=True)
 
-        # ── RENDERIZAÇÃO DO HISTÓRICO DE CHATS ────────────────────────────────
-        st.markdown('<div class="sidebar-section-title" style="margin-bottom: 12px;">Histórico</div>', unsafe_allow_html=True)
-
-        # Convertido para lista para evitar RuntimeError ao deletar chaves do dicionário em loop
-        for chat_id, chat_data in list(chats.items()):
-            # Filtro reativo de busca por título do chat
-            if search_lower and search_lower not in chat_data.get("title", "").lower():
-                continue
-
-            is_active = (chat_id == active)
-            icon = "💬" if is_active else "🗨️"
-            label_botao = f"{icon} {chat_data.get('title', 'Consulta')}"
-
-            col_btn, col_del = st.columns([5, 1])
-
-            with col_btn:
-                # Troca dinamicamente o comportamento visual baseado no chat focado pelo analista
-                if st.button(
-                    label_botao,
-                    key=f"select_{chat_id}",
-                    use_container_width=True,
-                    type="primary" if is_active else "secondary",
-                ):
-                    st.session_state.active_chat = chat_id
-                    st.rerun()
-
-            with col_del:
-                # Impede que o usuário delete se for o único chat ativo na memória
-                if len(chats) > 1:
-                    if st.button("🗑", key=f"del_{chat_id}", help="Excluir consulta histórica"):
-                        del st.session_state.chats[chat_id]
-                        remaining = list(st.session_state.chats.keys())
-                        st.session_state.active_chat = remaining[0]
-                        st.rerun()
-
-        st.divider()
-
-        # ── BOTÃO OPERACIONAL: CRIAR NOVO CHAT ───────────────────────────────
-        if st.button("＋  Novo Chat", use_container_width=True, key="new_chat_btn", type="secondary"):
-            new_id = f"chat_{int(time.time())}"
-            count = len(st.session_state.chats) + 1
-            st.session_state.chats[new_id] = {
-                "title": f"Nova Consulta #{count}",
-                "messages": [],
-            }
-            st.session_state.active_chat = new_id
-            st.rerun()
-
-        # Footer flutuante da barra lateral
-        st.markdown(
-            """
-            <div style="margin-top: auto; padding-top: 30px; font-size: 10px; 
-                        color: rgba(255,255,255,0.12); text-align: center; letter-spacing: 1.5px;
-                        font-family: 'Space Grotesk', sans-serif;">
-                FARMAZZINI INTEL v2.0
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-
-    return db_key, st.session_state.active_chat
+    return {
+        "farmacia": None if farmacia_selecionada == "Todas" else farmacia_selecionada,
+    }

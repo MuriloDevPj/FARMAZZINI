@@ -1,128 +1,96 @@
-"""
-Cliente AWS Bedrock para integração com Claude via Amazon Bedrock.
-Substitui a API do Gemini pelo Claude (Anthropic) via AWS.
+# ==============================================================================
+# aws_client.py — Integração com Amazon Bedrock, Step Functions e S3
+# Projeto Farmazzini | Poli Júnior | Equipe 06
+# ==============================================================================
 
-Configuração necessária:
-  - AWS_ACCESS_KEY_ID
-  - AWS_SECRET_ACCESS_KEY
-  - AWS_DEFAULT_REGION (ex: us-east-1)
-
-Ou via variáveis de ambiente / st.secrets no Streamlit Cloud.
-"""
-
-import os
-import json
 import boto3
-import streamlit as st
-from typing import Optional
+import json
+import time
+import pandas as pd
+from io import StringIO
+
+# Importa constantes diretamente — sem importar deste mesmo arquivo
+REGION         = "us-east-2"
+MODEL_ID       = "us.anthropic.claude-haiku-4-5-20251001-v1:0"
+MAX_TOKENS     = 500
+API_VERSION    = "bedrock-2023-05-31"
+STATE_MACHINE  = "arn:aws:states:us-east-2:906513713169:stateMachine:StateMachine_farmazzini_equipe6"
+BUCKET         = "farmazzini-equipe6-ohio"
+PREFIXO        = "athena-results/"
+
+SQL_PROMPT = """Você é o assistente inteligente de inteligência de mercado da rede Farmazzini.
+Sua tarefa é transformar a pergunta em português em uma consulta SQL válida para o Amazon Athena.
+
+Regras Estritas:
+1. Retorne APENAS o código SQL puro. Sem explicações, saudações ou markdown (NÃO use ```sql).
+2. Banco de dados: "db_farmazzini_gold_equipe6" | Tabela: "tb_processed".
+3. Colunas disponíveis: ean (string), nome (string), marca (string), preco_original (float64),
+   preco_pix (float64), preco_cartao (float64), desconto_padrao (string), promocoes_especiais (string),
+   porcentagem_de_cashback (string), gtin (string), disponibilidade (string).
+
+4. Regras de Ouro para Partições (CRÍTICO):
+   - As partições são: farmacia, ano, mes, dia. SEMPRE filtre pelas 4 quando aplicável.
+   - Valores exatos da partição 'farmacia' (case-sensitive): 'FarmaPonte' ou 'Vera Cruz'.
+     Se o usuário escrever variações como 'farmaponte', 'farma ponte', 'vera cruz', normalize
+     automaticamente para o valor exato correto.
+   - Se o usuário não especificar a farmácia, NÃO filtre por farmacia (busque as duas).
+   - Se o usuário não especificar data, use SEMPRE: ano='2026' AND mes='05' AND dia='26'.
+
+5. Exemplos de filtro correto:
+   - "produtos da FarmaPonte" -> WHERE farmacia='FarmaPonte' AND ano='2026' AND mes='05' AND dia='26'
+   - "produtos da Vera Cruz"  -> WHERE farmacia='Vera Cruz'  AND ano='2026' AND mes='05' AND dia='26'
+   - "todos os produtos"      -> WHERE ano='2026' AND mes='05' AND dia='26'
+
+Pergunta: {user_prompt}"""
 
 
-def get_bedrock_client():
-    """
-    Cria e retorna um cliente boto3 para o Amazon Bedrock Runtime.
-    Tenta ler credenciais do st.secrets primeiro, depois das variáveis de ambiente.
-    """
+def gerar_sql_com_bedrock(user_prompt: str) -> tuple:
+    client = boto3.client(service_name="bedrock-runtime", region_name=REGION)
+    prompt = SQL_PROMPT.replace("{user_prompt}", user_prompt)
+    body = json.dumps({
+        "anthropic_version": API_VERSION,
+        "max_tokens": MAX_TOKENS,
+        "messages": [{"role": "user", "content": prompt}],
+    })
     try:
-        # Tenta via Streamlit Secrets (produção no Streamlit Cloud)
-        aws_access_key = st.secrets.get("AWS_ACCESS_KEY_ID") or os.getenv("AWS_ACCESS_KEY_ID")
-        aws_secret_key = st.secrets.get("AWS_SECRET_ACCESS_KEY") or os.getenv("AWS_SECRET_ACCESS_KEY")
-        aws_region = (
-            st.secrets.get("AWS_DEFAULT_REGION")
-            or os.getenv("AWS_DEFAULT_REGION")
-            or "us-east-1"
-        )
-
-        if aws_access_key and aws_secret_key:
-            client = boto3.client(
-                "bedrock-runtime",
-                region_name=aws_region,
-                aws_access_key_id=aws_access_key,
-                aws_secret_access_key=aws_secret_key,
-            )
-        else:
-            # Usa credenciais padrão da máquina (IAM Role ou ~/.aws/credentials)
-            client = boto3.client("bedrock-runtime", region_name=aws_region)
-
-        return client
-
-    except Exception as e:
-        st.error(f"❌ Erro ao conectar ao AWS Bedrock: {e}")
-        return None
-
-
-def query_claude_bedrock(
-    client,
-    user_prompt: str,
-    system_prompt: str,
-    db_filter_prompt: str = "",
-    model_id: str = "anthropic.claude-3-5-sonnet-20241022-v2:0",
-    max_tokens: int = 1024,
-) -> str:
-    """
-    Envia uma mensagem ao Claude via Amazon Bedrock e retorna o texto da resposta.
-
-    Args:
-        client: boto3 bedrock-runtime client
-        user_prompt: Mensagem do usuário
-        system_prompt: Instrução de sistema com contexto da Farmazzini
-        db_filter_prompt: Filtro de base de dados (Todas / Ponte / Vera Cruz)
-        model_id: ID do modelo Claude no Bedrock
-        max_tokens: Número máximo de tokens na resposta
-
-    Returns:
-        Texto da resposta do modelo
-    """
-    if not client:
-        return "❌ **Erro:** Cliente AWS Bedrock não inicializado. Verifique as credenciais."
-
-    full_user_message = f"{db_filter_prompt}\n\nPergunta do Pedro Mazini: {user_prompt}" if db_filter_prompt else user_prompt
-
-    body = {
-        "anthropic_version": "bedrock-2023-05-31",
-        "max_tokens": max_tokens,
-        "system": system_prompt,
-        "messages": [
-            {
-                "role": "user",
-                "content": full_user_message,
-            }
-        ],
-    }
-
-    try:
-        response = client.invoke_model(
-            modelId=model_id,
-            body=json.dumps(body),
-            contentType="application/json",
-            accept="application/json",
-        )
-
+        response = client.invoke_model(modelId=MODEL_ID, body=body)
         response_body = json.loads(response["body"].read())
-        return response_body["content"][0]["text"]
-
-    except client.exceptions.ThrottlingException:
-        return "⚠️ **Limite de requisições atingido.** Aguarde alguns segundos e tente novamente."
-    except client.exceptions.ModelNotReadyException:
-        return "⚠️ **Modelo não disponível no momento.** Tente novamente em instantes."
+        sql = response_body["content"][0]["text"].strip()
+        return sql, None
     except Exception as e:
-        error_msg = str(e)
-        if "AccessDeniedException" in error_msg:
-            return "❌ **Acesso Negado:** Verifique se o modelo Claude está habilitado na sua conta AWS e região."
-        return f"❌ **Erro de Conexão AWS Bedrock:** {error_msg}"
+        return "", str(e)
 
 
-def _get_secret(key: str) -> str:
-    """Lê um segredo do Streamlit Secrets com fallback seguro."""
+def executar_via_step_functions(sql: str) -> tuple:
+    client = boto3.client(service_name="stepfunctions", region_name=REGION)
     try:
-        return st.secrets.get(key, "") or ""
-    except Exception:
-        return ""
+        exec_resp = client.start_execution(
+            stateMachineArn=STATE_MACHINE,
+            input=json.dumps({"query": sql}),
+        )
+        exec_arn = exec_resp["executionArn"]
+        while True:
+            status_resp = client.describe_execution(executionArn=exec_arn)
+            status = status_resp["status"]
+            if status in ("SUCCEEDED", "FAILED", "TIMED_OUT", "ABORTED"):
+                break
+            time.sleep(1)
+        return status, None, status_resp
+    except Exception as e:
+        return "FAILED", str(e), {}
 
 
-def is_bedrock_available() -> bool:
-    """
-    Verifica se as credenciais AWS estão configuradas.
-    """
-    has_key = bool(os.getenv("AWS_ACCESS_KEY_ID") or _get_secret("AWS_ACCESS_KEY_ID"))
-    has_secret = bool(os.getenv("AWS_SECRET_ACCESS_KEY") or _get_secret("AWS_SECRET_ACCESS_KEY"))
-    return has_key and has_secret
+def buscar_resultado_s3(status_resp: dict) -> tuple:
+    client = boto3.client(service_name="s3", region_name=REGION)
+    try:
+        output_json = json.loads(status_resp.get("output", "{}"))
+        query_id = output_json.get("QueryExecution", {}).get("QueryExecutionId")
+        if not query_id:
+            return None, "QueryExecutionId não encontrado no output."
+        chave_s3 = f"{PREFIXO}{query_id}.csv"
+        time.sleep(1.5)
+        obj = client.get_object(Bucket=BUCKET, Key=chave_s3)
+        df = pd.read_csv(StringIO(obj["Body"].read().decode("utf-8")))
+        return df, None
+    except Exception as e:
+        return None, str(e)
