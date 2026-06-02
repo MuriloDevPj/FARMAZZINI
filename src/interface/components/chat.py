@@ -1,10 +1,12 @@
 """
-Componente principal de chat: renderiza mensagens, hot buttons e input.
-Integrado com AWS Bedrock (Claude) para respostas de IA.
+Componente principal de chat.
+Design fiel ao HTML sandbox: hot buttons, botões de ação inline (gráfico, contra-ataque, CSV).
+Integração real com AWS Bedrock (Claude).
 """
 
 import streamlit as st
-from utils.config import HOT_TRIGGERS, SYSTEM_PROMPT, DB_FILTER_PROMPTS
+import pandas as pd
+from utils.config import HOT_TRIGGERS, SYSTEM_PROMPT, DB_FILTER_PROMPTS, PRODUCTS_DB
 from utils.aws_client import get_bedrock_client, query_claude_bedrock, is_bedrock_available
 
 
@@ -12,29 +14,97 @@ from utils.aws_client import get_bedrock_client, query_claude_bedrock, is_bedroc
 WELCOME_MESSAGE = """
 Olá, Pedro! Seja bem-vindo ao **Farmazzini Intel 2.0**.
 
-O console de Inteligência Artificial está ativo e integrado ao **Claude via AWS Bedrock**. 
+O console de Inteligência Artificial está ativo e integrado ao **Claude via AWS Bedrock**.  
 Posso te auxiliar em análises de:
 
-- 📦 **Estoque físico** e alertas de ruptura
-- 🏷️ **Menor preço do mercado** em tempo real
-- 📊 **Preço médio regional** entre concorrentes
-- 🔥 **Regras de promoção complexas** da FarmaPonte e Vera Cruz
+- 📦 **Estoque físico** e alertas de ruptura  
+- 🏷️ **Menor preço do mercado** em tempo real  
+- 📊 **Preço médio regional** entre concorrentes  
+- 🔥 **Regras de promoção complexas** da FarmaPonte e Vera Cruz  
 
 Experimente os atalhos rápidos abaixo ou faça qualquer pergunta estratégica!
 """
 
 
-def _get_ai_response(prompt: str, db_filter: str) -> str:
+# ── GRÁFICO INLINE ─────────────────────────────────────────────────────────
+def _render_inline_chart(query_key: str):
     """
-    Obtém resposta da IA (Claude via Bedrock) ou retorna demo se não configurado.
+    Renderiza um gráfico de barras comparativo diretamente no chat.
+    query_key pode ser: 'dipirona', 'losartana', 'neosaldina', 'pampers'.
     """
-    if not is_bedrock_available():
-        # ── MODO DEMO (sem credenciais AWS) ──────────────────────────────────
-        return _demo_response(prompt, db_filter)
+    chart_data = {
+        "dipirona":  {"title": "Dipirona 500mg",        "labels": ["FarmaPonte\nR$14,90", "Vera Cruz\nR$8,94", "Farmazzini\nR$11,50"], "vals": [14.90, 8.94, 11.50]},
+        "losartana": {"title": "Losartana 50mg",         "labels": ["FarmaPonte\nR$18,50", "Vera Cruz\nR$13,90", "Farmazzini\nR$15,90"], "vals": [18.50, 13.90, 15.90]},
+        "neosaldina":{"title": "Neosaldina 30 drg",      "labels": ["FarmaPonte\nR$18,20", "Vera Cruz\nR$21,90", "Farmazzini\nR$22,50"], "vals": [18.20, 21.90, 22.50]},
+        "pampers":   {"title": "Fralda Pampers G",       "labels": ["FarmaPonte\nR$64,90", "Vera Cruz\nR$49,90", "Farmazzini\nR$59,90"], "vals": [64.90, 49.90, 59.90]},
+    }
 
+    key = "dipirona"
+    for k in chart_data:
+        if k in query_key.lower():
+            key = k
+            break
+
+    d = chart_data[key]
+    df = pd.DataFrame({"Concorrente": d["labels"], "Preço (R$)": d["vals"]})
+    df = df.set_index("Concorrente")
+
+    st.markdown(
+        f'<div style="font-size:13px; color:#E63946; font-weight:700; margin-bottom:8px;">'
+        f'📊 Comparativo de Preços: {d["title"]}</div>',
+        unsafe_allow_html=True,
+    )
+    st.bar_chart(df, color="#E63946", height=180)
+
+
+# ── CONTRA-ATAQUE ──────────────────────────────────────────────────────────
+def _render_counter_attack(original_query: str, db_filter: str):
+    """
+    Gera sugestão de contra-ataque via IA ou resposta demo.
+    """
+    counter_prompt = (
+        f"Com base na análise: '{original_query}', sugira 2-3 táticas de contra-ataque "
+        f"estratégico para a Farmazzini. Seja direto, executivo e use **negrito** nos pontos-chave."
+    )
+
+    with st.spinner("⚡ Gerando tática de defesa..."):
+        response = _get_ai_response(counter_prompt, db_filter)
+
+    st.markdown(
+        '<div class="attack-block">'
+        '<strong style="color:#E63946; font-size:15px;">⚡ Contra-Ataque Estratégico Proposto:</strong>'
+        '</div>',
+        unsafe_allow_html=True,
+    )
+    st.markdown(response)
+
+
+# ── EXPORTAR CSV ────────────────────────────────────────────────────────────
+def _export_csv():
+    """Prepara CSV com todos os dados de preço para download."""
+    rows = []
+    for p in PRODUCTS_DB:
+        rows.append({
+            "Produto": p["name"],
+            "EAN": p["ean"],
+            "Estoque": p["estoque"],
+            "Status": p["status"],
+            "Farmazzini": p["farmazzini"],
+            "FarmaPonte": p["farmaponte"],
+            "Promo FarmaPonte": p["farmaponte_promo"],
+            "Vera Cruz": p["veracruz"],
+            "Vera Cruz PIX": p.get("veracruz_pix", ""),
+            "Promo Vera Cruz": p["veracruz_promo"],
+        })
+    return pd.DataFrame(rows).to_csv(index=False).encode("utf-8")
+
+
+# ── AI RESPONSE ────────────────────────────────────────────────────────────
+def _get_ai_response(prompt: str, db_filter: str) -> str:
+    if not is_bedrock_available():
+        return _demo_response(prompt, db_filter)
     client = get_bedrock_client()
     db_filter_prompt = DB_FILTER_PROMPTS.get(db_filter, "")
-
     return query_claude_bedrock(
         client=client,
         user_prompt=prompt,
@@ -44,15 +114,9 @@ def _get_ai_response(prompt: str, db_filter: str) -> str:
 
 
 def _demo_response(prompt: str, db_filter: str) -> str:
-    """
-    Resposta de demonstração quando AWS Bedrock não está configurado.
-    Útil para testar o layout sem credenciais.
-    """
-    prompt_lower = prompt.lower()
-
-    if "estoque" in prompt_lower or "crítico" in prompt_lower:
-        return """
-**⚠️ Alerta de Estoque Crítico — Curva A**
+    p = prompt.lower()
+    if "estoque" in p or "crítico" in p:
+        return """**⚠️ Alerta de Estoque Crítico — Curva A**
 
 | Produto | Estoque | Status |
 |---|---|---|
@@ -60,14 +124,13 @@ def _demo_response(prompt: str, db_filter: str) -> str:
 | Losartana 50mg | **4 unidades** | 🟡 Baixo |
 
 **Ação Recomendada:**
-1. **Dipirona:** Emitir pedido de compra de urgência. Perda estimada de 3-5 vendas/dia.
-2. **Losartana:** Agendar reposição para próximos 48h.
+1. **Dipirona:** Emitir pedido de compra urgente. Perda estimada de 3-5 vendas/dia.
+2. **Losartana:** Agendar reposição para próximas 48h.
 
-> 💡 *Modo Demo ativo — configure credenciais AWS Bedrock para IA real.*
-"""
-    elif "barato" in prompt_lower or "dipirona" in prompt_lower or "preço" in prompt_lower:
-        return """
-**💰 Análise de Menor Preço: Dipirona 500mg**
+> 💡 *Modo Demo ativo — configure credenciais AWS Bedrock para IA real.*"""
+
+    elif "barato" in p or "dipirona" in p or "preço" in p:
+        return """**💰 Análise de Menor Preço: Dipirona 500mg**
 
 | Concorrente | Preço | Condição |
 |---|---|---|
@@ -79,120 +142,149 @@ def _demo_response(prompt: str, db_filter: str) -> str:
 **Diferença:** Vera Cruz PIX está **R$ 2,56 mais barato** que a Farmazzini (–22%).
 
 **Contra-ataque sugerido:**
-1. Oferecer desconto PIX de 10% → preço final **R$ 10,35** (ainda acima do Vera Cruz, mas competitivo).
-2. Criar combo "Dipirona + Paracetamol" com desconto progressivo para reter volume.
+- Oferecer desconto PIX de 10% → preço final **R$ 10,35**.
+- Criar combo "Dipirona + Paracetamol" com desconto progressivo.
 
-> 💡 *Modo Demo ativo — configure credenciais AWS Bedrock para IA real.*
-"""
-    elif "promo" in prompt_lower or "combo" in prompt_lower:
-        return """
-**🔥 Maiores Promoções Ativas — Concorrentes**
+> 💡 *Modo Demo ativo — configure credenciais AWS Bedrock para IA real.*"""
+
+    elif "promo" in p or "combo" in p:
+        return """**🔥 Maiores Promoções Ativas — Concorrentes**
 
 **FarmaPonte:**
-- Dipirona 500mg: Leve 3 por **R$ 12,90/cada** (vs R$ 14,90 unitário)
+- Dipirona 500mg: Leve 3 por **R$ 12,90/cada**
 - Neosaldina 30 drg: **Combo Leve 3 Pague 2** ← oferta agressiva!
 
 **Vera Cruz:**
-- Dipirona: **R$ 8,94 no PIX** (preço mais agressivo do mercado)
+- Dipirona: **R$ 8,94 no PIX**
 - Fralda Pampers G: A partir de 2 unidades, **R$ 49,90/cada** (–9%)
 
 **⚡ Plano de Contra-Ataque:**
-1. Neosaldina: lançar "Compre 2 leve desconto de 15%" para rivalizar o Leve 3 Pague 2.
-2. Dipirona: criar cashback interno de R$ 2,00 para clientes fidelidade pagando no PIX.
+- Neosaldina: lançar "Compre 2, desconto de 15%".
+- Dipirona: cashback interno de R$ 2,00 para clientes fidelidade no PIX.
 
-> 💡 *Modo Demo ativo — configure credenciais AWS Bedrock para IA real.*
-"""
-    else:
-        return f"""
-**📊 Análise Estratégica — Farmazzini Intel**
+> 💡 *Modo Demo ativo — configure credenciais AWS Bedrock para IA real.*"""
+
+    return f"""**📊 Análise Estratégica — Farmazzini Intel**
 
 Recebi sua consulta sobre: *"{prompt}"*
 
-Com base na base de dados ativa (**{db_filter}**), posso analisar preços, margens e promoções de todos os produtos monitorados.
+Com base na base **{db_filter}**, posso analisar preços, margens e promoções.
 
-Tente perguntas mais específicas como:
+Sugestões de perguntas:
 - *"Qual a margem da Dipirona vs Vera Cruz?"*
-- *"Quais produtos estão abaixo do preço de custo do concorrente?"*
+- *"Quais produtos estão com estoque crítico?"*
 - *"Sugira ações para melhorar a margem da Neosaldina"*
 
-> 💡 *Modo Demo ativo — configure credenciais AWS Bedrock para IA real.*
-"""
+> 💡 *Modo Demo ativo — configure credenciais AWS Bedrock para IA real.*"""
 
 
+# ── RENDER CHAT ────────────────────────────────────────────────────────────
 def render_chat(db_filter: str, chat_id: str):
     """
-    Renderiza o componente completo de chat para o chat_id ativo.
-    
-    Args:
-        db_filter: filtro de base de dados ativo ('todas', 'ponte', 'veracruz')
-        chat_id: ID do chat ativo no session_state
+    Renderiza o chat completo com mensagens, hot buttons, input e botões de ação.
     """
     chat_data = st.session_state.chats.get(chat_id, {"title": "Chat", "messages": []})
     messages = chat_data.get("messages", [])
 
-    # ── MENSAGEM DE BOAS-VINDAS (1º acesso) ──────────────────────────────────
+    # ── BOAS-VINDAS ───────────────────────────────────────────────────────
     if not messages:
         with st.chat_message("assistant", avatar="💊"):
             st.markdown(WELCOME_MESSAGE)
 
-    # ── HISTÓRICO DE MENSAGENS ────────────────────────────────────────────────
-    for msg in messages:
+    # ── HISTÓRICO ─────────────────────────────────────────────────────────
+    for i, msg in enumerate(messages):
         role = msg["role"]
         avatar = "👤" if role == "user" else "💊"
+
         with st.chat_message(role, avatar=avatar):
             st.markdown(msg["content"])
 
-    # ── HOT BUTTONS ──────────────────────────────────────────────────────────
-    st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
+            # Botões de ação só nas mensagens do assistente
+            if role == "assistant" and i > 0:
+                _render_action_buttons(msg, i, chat_id, db_filter)
 
+    # ── HOT BUTTONS ───────────────────────────────────────────────────────
+    st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
     hot_cols = st.columns(len(HOT_TRIGGERS))
     for col, (label, prompt) in zip(hot_cols, HOT_TRIGGERS.items()):
         with col:
             if st.button(label, use_container_width=True, key=f"hot_{label}_{chat_id}"):
-                _send_message(prompt, db_filter, chat_id, auto_title=True)
+                _send_message(prompt, db_filter, chat_id)
                 st.rerun()
 
     st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
 
-    # ── INPUT DO USUÁRIO ──────────────────────────────────────────────────────
+    # ── INPUT ─────────────────────────────────────────────────────────────
     if user_input := st.chat_input(
         "Faça uma consulta estratégica ou peça análise de preços...",
         key=f"chat_input_{chat_id}",
     ):
-        _send_message(user_input, db_filter, chat_id, auto_title=True)
+        _send_message(user_input, db_filter, chat_id)
         st.rerun()
 
 
-def _send_message(prompt: str, db_filter: str, chat_id: str, auto_title: bool = False):
+def _render_action_buttons(msg: dict, msg_index: int, chat_id: str, db_filter: str):
     """
-    Adiciona mensagem do usuário, obtém resposta da IA e salva no estado.
+    Renderiza os botões de ação abaixo de cada mensagem do assistente:
+    📊 Gerar Gráfico | ⚡ Contra-Ataque | 📥 Exportar CSV
     """
-    # Adiciona mensagem do usuário
+    # Pega o contexto (a mensagem do usuário anterior, se existir)
+    messages = st.session_state.chats[chat_id]["messages"]
+    user_query = ""
+    if msg_index > 0 and messages[msg_index - 1]["role"] == "user":
+        user_query = messages[msg_index - 1]["content"]
+
+    st.markdown('<div style="height:6px"></div>', unsafe_allow_html=True)
+    col1, col2, col3, _ = st.columns([2, 2, 2, 4])
+
+    with col1:
+        if st.button("📊 Gráfico", key=f"graph_{chat_id}_{msg_index}", help="Gerar gráfico comparativo"):
+            st.session_state[f"show_graph_{chat_id}_{msg_index}"] = True
+
+    with col2:
+        if st.button("⚡ Contra-Ataque", key=f"attack_{chat_id}_{msg_index}", help="Gerar tática de defesa"):
+            st.session_state[f"show_attack_{chat_id}_{msg_index}"] = True
+
+    with col3:
+        csv = _export_csv()
+        st.download_button(
+            label="📥 CSV",
+            data=csv,
+            file_name="farmazzini_analise.csv",
+            mime="text/csv",
+            key=f"csv_{chat_id}_{msg_index}",
+        )
+
+    # Expandir gráfico se clicado
+    if st.session_state.get(f"show_graph_{chat_id}_{msg_index}"):
+        with st.container():
+            _render_inline_chart(user_query)
+
+    # Expandir contra-ataque se clicado
+    if st.session_state.get(f"show_attack_{chat_id}_{msg_index}"):
+        with st.container():
+            _render_counter_attack(user_query, db_filter)
+            # Limpar para não re-gerar a cada rerun
+            del st.session_state[f"show_attack_{chat_id}_{msg_index}"]
+
+
+def _send_message(prompt: str, db_filter: str, chat_id: str):
+    """Adiciona mensagem, chama IA e salva no estado."""
     _append_message(chat_id, "user", prompt)
 
-    # Auto-renomeia o chat com base na primeira pergunta
-    if auto_title:
-        chat = st.session_state.chats.get(chat_id, {})
-        title = chat.get("title", "")
-        if title.startswith("Nova Consulta") or not chat.get("messages"):
-            short = prompt[:28] + "..." if len(prompt) > 28 else prompt
-            st.session_state.chats[chat_id]["title"] = short
+    # Auto-rename
+    chat = st.session_state.chats.get(chat_id, {})
+    if chat.get("title", "").startswith("Nova Consulta") or not chat.get("messages"):
+        short = prompt[:28] + "..." if len(prompt) > 28 else prompt
+        st.session_state.chats[chat_id]["title"] = short
 
-    # Obtém resposta da IA com spinner
     with st.spinner("🔍 Analisando o mercado..."):
         response = _get_ai_response(prompt, db_filter)
 
-    # Adiciona resposta do assistente
     _append_message(chat_id, "assistant", response)
 
 
 def _append_message(chat_id: str, role: str, content: str):
-    """
-    Adiciona uma mensagem ao chat especificado no session_state.
-    """
     if chat_id not in st.session_state.chats:
         st.session_state.chats[chat_id] = {"title": "Chat", "messages": []}
-
-    st.session_state.chats[chat_id]["messages"].append(
-        {"role": role, "content": content}
-    )
+    st.session_state.chats[chat_id]["messages"].append({"role": role, "content": content})
