@@ -1,68 +1,128 @@
-# ==============================================================================
-# metrics.py — Cards de métricas de mercado  |  Design refresh
-# Projeto Farmazzini | Poli Júnior | Equipe 06
-# ==============================================================================
+"""
+Componente de métricas e tabela de dados da Farmazzini.
+Exibe KPIs de estoque e comparativo de preços em formato executivo.
+"""
 
 import streamlit as st
 import pandas as pd
+from utils.config import PRODUCTS_DB
 
 
-def render_metrics(df: pd.DataFrame, key: str = "0"):
-    if df is None or df.empty:
-        return
+def render_metrics_bar():
+    """
+    Renderiza 4 KPI cards horizontais com status rápido do estoque.
+    """
+    cols = st.columns(4)
+
+    kpis = [
+        {
+            "label": "Itens Monitorados",
+            "value": str(len(PRODUCTS_DB)),
+            "delta": "base ativa",
+        },
+        {
+            "label": "Estoque Crítico",
+            "value": str(sum(1 for p in PRODUCTS_DB if p["estoque"] <= 4)),
+            "delta": "requer reposição",
+            "delta_color": "inverse",
+        },
+        {
+            "label": "Menor Preço Mercado",
+            "value": "R$ 8,94",
+            "delta": "Vera Cruz PIX",
+        },
+        {
+            "label": "Concorrentes Ativos",
+            "value": "2",
+            "delta": "FarmaPonte + Vera Cruz",
+        },
+    ]
+
+    for col, kpi in zip(cols, kpis):
+        with col:
+            st.metric(
+                label=kpi["label"],
+                value=kpi["value"],
+                delta=kpi["delta"],
+                delta_color=kpi.get("delta_color", "normal"),
+            )
+
+
+def render_price_table(db_filter: str = "todas"):
+    """
+    Exibe tabela comparativa de preços filtrada pelo concorrente selecionado.
+    
+    Args:
+        db_filter: 'todas' | 'ponte' | 'veracruz'
+    """
+    rows = []
+
+    for p in PRODUCTS_DB:
+        row = {
+            "Produto": p["name"],
+            "Estoque": f"{p['estoque']} un  {p['status']}",
+            "Farmazzini": f"R$ {p['farmazzini']:.2f}",
+        }
+
+        if db_filter in ("todas", "ponte"):
+            row["FarmaPonte"] = f"R$ {p['farmaponte']:.2f}"
+            row["Promo Ponte"] = p["farmaponte_promo"]
+
+        if db_filter in ("todas", "veracruz"):
+            row["Vera Cruz"] = f"R$ {p['veracruz']:.2f}"
+            if p["veracruz_pix"]:
+                row["Vera Cruz PIX"] = f"R$ {p['veracruz_pix']:.2f}"
+            row["Promo Vera Cruz"] = p["veracruz_promo"]
+
+        rows.append(row)
+
+    df = pd.DataFrame(rows)
 
     st.markdown(
-        "<div style='font-family:\"Space Grotesk\",sans-serif;"
-        "font-size:13px;font-weight:700;text-transform:uppercase;"
-        "letter-spacing:1.5px;color:#E63946;margin-bottom:12px;'>"
-        "📊 Resultado da Análise de Mercado</div>",
+        """
+        <div style="font-size:11px; text-transform:uppercase; letter-spacing:1.5px;
+                    color:#E63946; font-weight:700; margin-bottom:8px;">
+            📊 Comparativo de Preços — Mercado Regional
+        </div>
+        """,
         unsafe_allow_html=True,
     )
 
-    col1, col2, col3, col4 = st.columns(4)
-
-    with col1:
-        st.metric("Registros Encontrados", f"{len(df):,}")
-
-    with col2:
-        if "preco_original" in df.columns:
-            serie = pd.to_numeric(df["preco_original"], errors="coerce").dropna()
-            if not serie.empty:
-                st.metric("Preço Médio (Original)", f"R$ {serie.mean():,.2f}")
-            else:
-                st.metric("Preço Médio (Original)", "—")
-        else:
-            st.metric("Colunas", str(len(df.columns)))
-
-    with col3:
-        if "preco_pix" in df.columns:
-            serie = pd.to_numeric(df["preco_pix"], errors="coerce").dropna()
-            if not serie.empty:
-                st.metric("Menor Preço (PIX)", f"R$ {serie.min():,.2f}")
-            else:
-                st.metric("Menor Preço (PIX)", "—")
-        elif "preco_original" in df.columns:
-            serie = pd.to_numeric(df["preco_original"], errors="coerce").dropna()
-            st.metric("Menor Preço", f"R$ {serie.min():,.2f}" if not serie.empty else "—")
-        else:
-            st.metric("Linhas", str(len(df)))
-
-    with col4:
-        if "disponibilidade" in df.columns:
-            disponiveis = df["disponibilidade"].eq("Disponível").sum()
-            st.metric("Disponíveis", f"{disponiveis:,}")
-        elif "farmacia" in df.columns:
-            st.metric("Farmácias", str(df["farmacia"].nunique()))
-        else:
-            st.metric("Status", "✅ OK")
-
-    st.dataframe(df, use_container_width=True, hide_index=True)
-
-    csv_bytes = df.to_csv(index=False).encode("utf-8")
-    st.download_button(
-        label="⬇️ Baixar resultado em CSV",
-        data=csv_bytes,
-        file_name="resultado_farmazzini.csv",
-        mime="text/csv",
-        key=f"download_{key}",
+    st.dataframe(
+        df,
+        use_container_width=True,
+        hide_index=True,
     )
+
+    # ── EXPORT CSV ──────────────────────────────────────────────────────────
+    csv_data = df.to_csv(index=False).encode("utf-8")
+
+    st.download_button(
+        label="📥 Exportar CSV",
+        data=csv_data,
+        file_name="farmazzini_precos.csv",
+        mime="text/csv",
+        key="download_csv_table",
+    )
+
+
+def render_stock_chart():
+    """
+    Renderiza gráfico de barras de estoque usando st.bar_chart nativo.
+    """
+    import pandas as pd
+
+    data = {p["name"].split(" ")[0]: p["estoque"] for p in PRODUCTS_DB}
+    df = pd.DataFrame.from_dict(data, orient="index", columns=["Estoque (un)"])
+
+    st.markdown(
+        """
+        <div style="font-size:11px; text-transform:uppercase; letter-spacing:1.5px;
+                    color:#E63946; font-weight:700; margin: 12px 0 8px 0;">
+            📦 Nível de Estoque por Produto
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.bar_chart(df, color="#E63946", height=200)

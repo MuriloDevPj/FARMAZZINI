@@ -1,97 +1,129 @@
-# ==============================================================================
-# sidebar.py — Sidebar Farmazzini Intel 2.0  |  Design refresh
-# Projeto Farmazzini | Poli Júnior | Equipe 06
-# ==============================================================================
+"""
+Componente da barra lateral: seletor de base de dados e histórico de chats.
+"""
 
 import streamlit as st
-from utils.config import FARMACIAS_VALIDAS, DEFAULT_ANO, DEFAULT_MES, DEFAULT_DIA
+from utils.config import DB_OPTIONS
 
 
-def render_sidebar() -> dict:
+def render_sidebar() -> tuple[str, str]:
+    """
+    Renderiza a sidebar com:
+    - Título e ícone
+    - Seletor de base de dados (Todas / FarmaPonte / Vera Cruz)
+    - Histórico de conversas
+    - Botão novo chat
+
+    Retorna: (db_key, chat_id_selecionado)
+    """
+
     with st.sidebar:
-
-        # ── Logo ───────────────────────────────────────────────────────────────
-        st.markdown("""
-        <div style="padding:0.8rem 0 0.4rem;">
-            <div style="font-family:'Space Grotesk',sans-serif;
-                        font-size:1.2rem;font-weight:700;letter-spacing:2.5px;
-                        text-transform:uppercase;color:#f0f0f2;">
-                Farma<span style="color:#E63946;">zzini</span>
-                <span style="margin-left:8px;" class="badge-red">Intel</span>
+        # ── TÍTULO ──────────────────────────────────────────────────────────
+        st.markdown(
+            """
+            <div class="sidebar-title">
+                🕐 &nbsp; Chats &amp; Consultas
             </div>
-            <div style="font-family:'Space Grotesk',sans-serif;
-                        font-size:10px;text-transform:uppercase;letter-spacing:2.5px;
-                        color:#E63946;font-weight:700;margin-top:6px;">
-                Chats &amp; Consultas
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-
-        st.markdown("---")
-
-        # ── Seletor de base (pills emuladas via radio) ─────────────────────────
-        st.markdown('<div class="sidebar-section-title">Base de Dados Ativa</div>',
-                    unsafe_allow_html=True)
-
-        opcoes = ["Todas", "FarmaPonte", "Vera Cruz"]
-        farmacia_sel = st.radio(
-            label="base",
-            options=opcoes,
-            horizontal=True,
-            label_visibility="collapsed",
+            """,
+            unsafe_allow_html=True,
         )
 
-        st.markdown("---")
+        # ── SELETOR DE BASE ──────────────────────────────────────────────────
+        st.markdown(
+            '<div class="db-label">Base de Dados Ativa</div>',
+            unsafe_allow_html=True,
+        )
 
-        # ── Info do modelo ──────────────────────────────────────────────────────
-        st.markdown(f"""
-        <div style="font-family:'DM Sans',sans-serif;
-                    font-size:0.76rem;color:#7a7a85;line-height:2;">
-            <span style="color:#ccc;font-weight:600;">Dados</span>
-            &nbsp;{DEFAULT_DIA}/{DEFAULT_MES}/{DEFAULT_ANO}<br>
-            <span style="color:#ccc;font-weight:600;">Modelo</span>
-            &nbsp;Claude Haiku 4.5<br>
-            <span style="color:#ccc;font-weight:600;">Região</span>
-            &nbsp;us-east-2 (Ohio)<br>
-            <span style="color:#ccc;font-weight:600;">Equipe</span>
-            &nbsp;06 — Poli Júnior
-        </div>
-        <div style="margin-top:10px;">
-            <span class="badge-green">✨ Bedrock Conectado</span>
-        </div>
-        """, unsafe_allow_html=True)
+        selected_db_label = st.radio(
+            label="base_selector",
+            options=list(DB_OPTIONS.keys()),
+            index=0,
+            horizontal=True,
+            label_visibility="collapsed",
+            key="db_selector",
+        )
 
-        st.markdown("---")
+        db_key = DB_OPTIONS[selected_db_label]
 
-        # ── Atalhos rápidos ─────────────────────────────────────────────────────
-        st.markdown('<div class="sidebar-section-title">Atalhos Rápidos</div>',
-                    unsafe_allow_html=True)
-        st.caption("Clique para executar diretamente.")
+        st.markdown(
+            f"""
+            <div style="font-size:11px; color:#9a9a9f; margin-top:4px; margin-bottom:16px;">
+                Filtrando: <strong style="color:#E63946;">{selected_db_label}</strong>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
-        atalhos = {
-            "📦 Estoque Crítico":  "Quais produtos estão Indisponíveis hoje nas farmácias?",
-            "🏷️ Achar Mais Barato": "Qual o produto mais barato disponível por farmácia?",
-            "🔥 Maiores Promoções": "Liste os 10 produtos com maior desconto padrão.",
-            "💊 Preço Médio":       "Qual o preço médio dos produtos disponíveis por farmácia?",
-            "💳 Comparar PIX":      "Compare os preços PIX médios entre FarmaPonte e Vera Cruz.",
-        }
+        st.divider()
 
-        for label, pergunta in atalhos.items():
-            if st.button(label, key=f"hot_{label}", use_container_width=True):
-                st.session_state["exemplo_selecionado"] = pergunta
-                st.session_state["executar_exemplo"] = True
+        # ── HISTÓRICO DE CHATS ───────────────────────────────────────────────
+        st.markdown(
+            '<div class="db-label" style="margin-bottom:8px;">Histórico</div>',
+            unsafe_allow_html=True,
+        )
 
-        st.markdown("---")
+        if "chats" not in st.session_state or not st.session_state.chats:
+            st.session_state.chats = {
+                "chat_1": {
+                    "title": "Análise de Preço: Dipirona",
+                    "messages": [],
+                }
+            }
+            st.session_state.active_chat = "chat_1"
 
-        # ── Créditos ────────────────────────────────────────────────────────────
-        st.markdown("""
-        <div style="text-align:center;font-size:0.68rem;color:#3a3a42;padding-top:0.4rem;
-                    font-family:'DM Sans',sans-serif;">
-            Desenvolvido pela <b style="color:#555;">Poli Júnior</b><br>
-            para <b style="color:#555;">Farmazzini</b> © 2026
-        </div>
-        """, unsafe_allow_html=True)
+        if "active_chat" not in st.session_state:
+            st.session_state.active_chat = list(st.session_state.chats.keys())[0]
 
-    return {
-        "farmacia": None if farmacia_sel == "Todas" else farmacia_sel,
-    }
+        chats = st.session_state.chats
+        active = st.session_state.active_chat
+
+        for chat_id, chat_data in list(chats.items()):
+            is_active = chat_id == active
+            icon = "💬" if is_active else "🗨️"
+            label = f"{icon} {chat_data['title']}"
+
+            col_btn, col_del = st.columns([5, 1])
+
+            with col_btn:
+                if st.button(
+                    label,
+                    key=f"select_{chat_id}",
+                    use_container_width=True,
+                    type="primary" if is_active else "secondary",
+                ):
+                    st.session_state.active_chat = chat_id
+                    st.rerun()
+
+            with col_del:
+                if len(chats) > 1:
+                    if st.button("🗑", key=f"del_{chat_id}", help="Excluir chat"):
+                        del st.session_state.chats[chat_id]
+                        remaining = list(st.session_state.chats.keys())
+                        st.session_state.active_chat = remaining[0]
+                        st.rerun()
+
+        st.divider()
+
+        # ── NOVO CHAT ────────────────────────────────────────────────────────
+        if st.button("＋  Novo Chat", use_container_width=True, key="new_chat_btn"):
+            import time
+            new_id = f"chat_{int(time.time())}"
+            count = len(st.session_state.chats) + 1
+            st.session_state.chats[new_id] = {
+                "title": f"Nova Consulta #{count}",
+                "messages": [],
+            }
+            st.session_state.active_chat = new_id
+            st.rerun()
+
+        st.markdown(
+            """
+            <div style="margin-top: auto; padding-top: 20px; font-size:10px;
+                        color: rgba(255,255,255,0.15); text-align:center; letter-spacing:1px;">
+                FARMAZZINI INTEL v2.0
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    return db_key, st.session_state.active_chat

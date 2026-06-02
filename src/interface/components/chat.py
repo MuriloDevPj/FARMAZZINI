@@ -1,357 +1,198 @@
-# ==============================================================================
-# chat.py — Chat Farmazzini Intel 2.0  |  Design refresh
-# Projeto Farmazzini | Poli Júnior | Equipe 06
-# ==============================================================================
+"""
+Componente principal de chat: renderiza mensagens, hot buttons e input.
+Integrado com AWS Bedrock (Claude) para respostas de IA.
+"""
 
 import streamlit as st
-import pandas as pd
-import uuid
-import boto3
-import json
-from datetime import datetime
-
-from components.metrics import render_metrics
-from utils.aws_client import (
-    gerar_sql_com_bedrock,
-    executar_via_step_functions,
-    buscar_resultado_s3,
-)
+from utils.config import HOT_TRIGGERS, SYSTEM_PROMPT, DB_FILTER_PROMPTS
+from utils.aws_client import get_bedrock_client, query_claude_bedrock, is_bedrock_available
 
 
-# ── Session init ──────────────────────────────────────────────────────────────
+# ── MENSAGEM DE BOAS-VINDAS ──────────────────────────────────────────────────
+WELCOME_MESSAGE = """
+Olá, Pedro! Seja bem-vindo ao **Farmazzini Intel 2.0**.
 
-def _init_session():
-    if "chats" not in st.session_state:
-        pid = str(uuid.uuid4())[:8]
-        st.session_state["chats"] = {
-            pid: {
-                "nome": "Análise Inicial",
-                "historico": [],
-                "criado_em": datetime.now().strftime("%H:%M"),
-            }
-        }
-        st.session_state["chat_ativo"] = pid
-    if "chat_ativo" not in st.session_state:
-        st.session_state["chat_ativo"] = list(st.session_state["chats"].keys())[0]
-    for key in ("exemplo_selecionado", "executar_exemplo"):
-        if key not in st.session_state:
-            st.session_state[key] = None if key == "exemplo_selecionado" else False
+O console de Inteligência Artificial está ativo e integrado ao **Claude via AWS Bedrock**. 
+Posso te auxiliar em análises de:
+
+- 📦 **Estoque físico** e alertas de ruptura
+- 🏷️ **Menor preço do mercado** em tempo real
+- 📊 **Preço médio regional** entre concorrentes
+- 🔥 **Regras de promoção complexas** da FarmaPonte e Vera Cruz
+
+Experimente os atalhos rápidos abaixo ou faça qualquer pergunta estratégica!
+"""
 
 
-def _chat_atual():
-    return st.session_state["chats"][st.session_state["chat_ativo"]]
+def _get_ai_response(prompt: str, db_filter: str) -> str:
+    """
+    Obtém resposta da IA (Claude via Bedrock) ou retorna demo se não configurado.
+    """
+    if not is_bedrock_available():
+        # ── MODO DEMO (sem credenciais AWS) ──────────────────────────────────
+        return _demo_response(prompt, db_filter)
+
+    client = get_bedrock_client()
+    db_filter_prompt = DB_FILTER_PROMPTS.get(db_filter, "")
+
+    return query_claude_bedrock(
+        client=client,
+        user_prompt=prompt,
+        system_prompt=SYSTEM_PROMPT,
+        db_filter_prompt=db_filter_prompt,
+    )
 
 
-def _novo_chat():
-    nid = str(uuid.uuid4())[:8]
-    n = len(st.session_state["chats"]) + 1
-    st.session_state["chats"][nid] = {
-        "nome": f"Nova Consulta #{n}",
-        "historico": [],
-        "criado_em": datetime.now().strftime("%H:%M"),
-    }
-    st.session_state["chat_ativo"] = nid
+def _demo_response(prompt: str, db_filter: str) -> str:
+    """
+    Resposta de demonstração quando AWS Bedrock não está configurado.
+    Útil para testar o layout sem credenciais.
+    """
+    prompt_lower = prompt.lower()
+
+    if "estoque" in prompt_lower or "crítico" in prompt_lower:
+        return """
+**⚠️ Alerta de Estoque Crítico — Curva A**
+
+| Produto | Estoque | Status |
+|---|---|---|
+| Dipirona 500mg | **2 unidades** | 🔴 Ruptura Iminente |
+| Losartana 50mg | **4 unidades** | 🟡 Baixo |
+
+**Ação Recomendada:**
+1. **Dipirona:** Emitir pedido de compra de urgência. Perda estimada de 3-5 vendas/dia.
+2. **Losartana:** Agendar reposição para próximos 48h.
+
+> 💡 *Modo Demo ativo — configure credenciais AWS Bedrock para IA real.*
+"""
+    elif "barato" in prompt_lower or "dipirona" in prompt_lower or "preço" in prompt_lower:
+        return """
+**💰 Análise de Menor Preço: Dipirona 500mg**
+
+| Concorrente | Preço | Condição |
+|---|---|---|
+| **Vera Cruz** | **R$ 8,94** | PIX à vista |
+| Farmazzini | R$ 11,50 | Preço regular |
+| Vera Cruz Regular | R$ 12,90 | — |
+| FarmaPonte | R$ 14,90 | Regular |
+
+**Diferença:** Vera Cruz PIX está **R$ 2,56 mais barato** que a Farmazzini (–22%).
+
+**Contra-ataque sugerido:**
+1. Oferecer desconto PIX de 10% → preço final **R$ 10,35** (ainda acima do Vera Cruz, mas competitivo).
+2. Criar combo "Dipirona + Paracetamol" com desconto progressivo para reter volume.
+
+> 💡 *Modo Demo ativo — configure credenciais AWS Bedrock para IA real.*
+"""
+    elif "promo" in prompt_lower or "combo" in prompt_lower:
+        return """
+**🔥 Maiores Promoções Ativas — Concorrentes**
+
+**FarmaPonte:**
+- Dipirona 500mg: Leve 3 por **R$ 12,90/cada** (vs R$ 14,90 unitário)
+- Neosaldina 30 drg: **Combo Leve 3 Pague 2** ← oferta agressiva!
+
+**Vera Cruz:**
+- Dipirona: **R$ 8,94 no PIX** (preço mais agressivo do mercado)
+- Fralda Pampers G: A partir de 2 unidades, **R$ 49,90/cada** (–9%)
+
+**⚡ Plano de Contra-Ataque:**
+1. Neosaldina: lançar "Compre 2 leve desconto de 15%" para rivalizar o Leve 3 Pague 2.
+2. Dipirona: criar cashback interno de R$ 2,00 para clientes fidelidade pagando no PIX.
+
+> 💡 *Modo Demo ativo — configure credenciais AWS Bedrock para IA real.*
+"""
+    else:
+        return f"""
+**📊 Análise Estratégica — Farmazzini Intel**
+
+Recebi sua consulta sobre: *"{prompt}"*
+
+Com base na base de dados ativa (**{db_filter}**), posso analisar preços, margens e promoções de todos os produtos monitorados.
+
+Tente perguntas mais específicas como:
+- *"Qual a margem da Dipirona vs Vera Cruz?"*
+- *"Quais produtos estão abaixo do preço de custo do concorrente?"*
+- *"Sugira ações para melhorar a margem da Neosaldina"*
+
+> 💡 *Modo Demo ativo — configure credenciais AWS Bedrock para IA real.*
+"""
 
 
-# ── Gráficos ──────────────────────────────────────────────────────────────────
+def render_chat(db_filter: str, chat_id: str):
+    """
+    Renderiza o componente completo de chat para o chat_id ativo.
+    
+    Args:
+        db_filter: filtro de base de dados ativo ('todas', 'ponte', 'veracruz')
+        chat_id: ID do chat ativo no session_state
+    """
+    chat_data = st.session_state.chats.get(chat_id, {"title": "Chat", "messages": []})
+    messages = chat_data.get("messages", [])
 
-def _render_grafico(df: pd.DataFrame, key: str):
-    colunas_num = df.select_dtypes(include="number").columns.tolist()
-    if not colunas_num:
-        return
-    with st.expander("📊 Gerar Gráfico", expanded=False):
-        c1, c2, c3 = st.columns(3)
-        with c1:
-            tipo = st.selectbox("Tipo", ["Barras", "Linha", "Dispersão"], key=f"tipo_{key}")
-        with c2:
-            col_x = st.selectbox("Eixo X", df.columns.tolist(), key=f"x_{key}")
-        with c3:
-            col_y = st.selectbox("Eixo Y", colunas_num, key=f"y_{key}")
+    # ── MENSAGEM DE BOAS-VINDAS (1º acesso) ──────────────────────────────────
+    if not messages:
+        with st.chat_message("assistant", avatar="💊"):
+            st.markdown(WELCOME_MESSAGE)
 
-        if st.button("📈 Renderizar", key=f"render_{key}", type="primary"):
-            df_plot = df[[col_x, col_y]].dropna().set_index(col_x)
-            if tipo == "Barras":
-                st.bar_chart(df_plot, color="#E63946")
-            elif tipo == "Linha":
-                st.line_chart(df_plot, color="#E63946")
-            else:
-                st.scatter_chart(df_plot)
+    # ── HISTÓRICO DE MENSAGENS ────────────────────────────────────────────────
+    for msg in messages:
+        role = msg["role"]
+        avatar = "👤" if role == "user" else "💊"
+        with st.chat_message(role, avatar=avatar):
+            st.markdown(msg["content"])
 
+    # ── HOT BUTTONS ──────────────────────────────────────────────────────────
+    st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
 
-# ── Render mensagem individual ────────────────────────────────────────────────
-
-def _render_mensagem(msg: dict, idx: int):
-    if msg["role"] == "user":
-        st.markdown(f"""
-        <div class="avatar-user">Você</div>
-        <div class="chat-bubble-user">{msg["content"]}</div>
-        """, unsafe_allow_html=True)
-
-    elif msg["role"] == "assistant":
-        st.markdown(f"""
-        <div class="avatar-bot">💊 Farmazzini Intel</div>
-        <div class="chat-bubble-assistant">{msg["content"]}</div>
-        """, unsafe_allow_html=True)
-
-        if msg.get("sql"):
-            with st.expander("🗂️ Ver SQL gerado pelo Claude", expanded=False):
-                st.code(msg["sql"], language="sql")
-
-        if msg.get("df") is not None:
-            render_metrics(msg["df"], key=str(idx))
-            _render_grafico(msg["df"], key=str(idx))
-
-            if st.button("⚡ Sugerir Contra-Ataque", key=f"ataque_{idx}"):
-                st.session_state[f"mostrar_ataque_{idx}"] = True
-
-            if st.session_state.get(f"mostrar_ataque_{idx}"):
-                with st.spinner("✨ Claude analisando estratégia de contra-ataque…"):
-                    df = msg["df"]
-                    resumo = df.to_string(index=False, max_rows=5)
-                    prompt_ataque = (
-                        f"Com base nestes dados de mercado farmacêutico:\n{resumo}\n\n"
-                        "Gere 2 planos de ação rápidos e práticos de marketing ou precificação "
-                        "para a Farmazzini contra-atacar e preservar sua margem de lucro. "
-                        "Seja direto, executivo e focado em táticas reais de farmácia. "
-                        "Use negrito com ** para destacar pontos importantes."
-                    )
-                    client = boto3.client("bedrock-runtime", region_name="us-east-2")
-                    body = json.dumps({
-                        "anthropic_version": "bedrock-2023-05-31",
-                        "max_tokens": 600,
-                        "messages": [{"role": "user", "content": prompt_ataque}],
-                    })
-                    resp = client.invoke_model(
-                        modelId="us.anthropic.claude-haiku-4-5-20251001-v1:0",
-                        body=body,
-                    )
-                    ataque = json.loads(resp["body"].read())["content"][0]["text"]
-
-                ataque_fmt = (
-                    ataque
-                    .replace("\n", "<br>")
-                    .replace("**", "<strong>", 1)
-                )
-                # Simpler but robust bold replace
-                import re
-                ataque_fmt = re.sub(r"\*\*(.*?)\*\*", r"<strong>\1</strong>", ataque)
-                ataque_fmt = ataque_fmt.replace("\n", "<br>")
-
-                st.markdown(f"""
-                <div style="border-left:3px solid #E63946;padding:12px 16px;
-                            background:rgba(230,57,70,0.05);border-radius:0 12px 12px 0;
-                            margin-top:10px;font-size:13px;line-height:1.75;">
-                    <strong style="color:#E63946;display:block;margin-bottom:8px;">
-                        ⚡ Contra-Ataque Estratégico:
-                    </strong>
-                    {ataque_fmt}
-                </div>
-                """, unsafe_allow_html=True)
-
-        elif msg.get("sem_dados"):
-            st.warning("A consulta rodou com sucesso, mas não retornou registros.")
-
-
-# ── Processamento da pergunta ─────────────────────────────────────────────────
-
-def _processar_pergunta(user_input: str, filtros: dict):
-    chat = _chat_atual()
-
-    if not chat["historico"] and chat["nome"].startswith("Nova Consulta"):
-        chat["nome"] = (user_input[:22] + "…") if len(user_input) > 22 else user_input
-
-    chat["historico"].append({"role": "user", "content": user_input})
-
-    with st.spinner("🧠 Claude Haiku 4.5 gerando o SQL…"):
-        prompt = user_input
-        if filtros.get("farmacia"):
-            prompt = f"{user_input} (considere apenas a farmácia '{filtros['farmacia']}')"
-        sql, erro = gerar_sql_com_bedrock(prompt)
-
-    if erro:
-        chat["historico"].append({
-            "role": "assistant", "content": f"❌ Erro ao gerar SQL: `{erro}`",
-            "sql": None, "df": None,
-        })
-        return
-
-    with st.spinner("🛡️ Validando e executando no Athena…"):
-        status, erro, status_resp = executar_via_step_functions(sql)
-
-    if erro or status != "SUCCEEDED":
-        chat["historico"].append({
-            "role": "assistant",
-            "content": f"❌ {erro or f'Status: `{status}`'}",
-            "sql": sql, "df": None,
-        })
-        return
-
-    with st.spinner("📦 Buscando dados no S3…"):
-        df, erro = buscar_resultado_s3(status_resp)
-
-    if erro:
-        chat["historico"].append({
-            "role": "assistant",
-            "content": f"✅ Executado, mas erro ao carregar dados: `{erro}`",
-            "sql": sql, "df": None,
-        })
-        return
-
-    sem_dados = df is None or df.empty
-    chat["historico"].append({
-        "role": "assistant",
-        "content": "✅ Consulta executada com sucesso!" if not sem_dados else "✅ Nenhum registro encontrado.",
-        "sql": sql,
-        "df": df if not sem_dados else None,
-        "sem_dados": sem_dados,
-    })
-
-
-# ── Gerenciador de chats ──────────────────────────────────────────────────────
-
-def _render_gerenciador_chats():
-    chats = st.session_state["chats"]
-    chat_ativo = st.session_state["chat_ativo"]
-
-    col_busca, col_novo = st.columns([4, 1])
-    with col_busca:
-        busca = st.text_input(
-            "busca",
-            placeholder="🔍  Buscar chats…",
-            label_visibility="collapsed",
-            key="busca_chat_input",
-        )
-    with col_novo:
-        if st.button("＋ Novo Chat", use_container_width=True):
-            _novo_chat()
-            st.rerun()
-
-    ids_filtrados = [
-        cid for cid, c in chats.items()
-        if busca.lower() in c["nome"].lower()
-    ]
-    if not ids_filtrados:
-        st.caption("Nenhum chat encontrado.")
-        return
-
-    cols = st.columns(min(len(ids_filtrados), 4))
-    for i, cid in enumerate(ids_filtrados):
-        c = chats[cid]
-        ativo = cid == chat_ativo
-        label = f"{'▶ ' if ativo else ''}{c['nome']}\n{c['criado_em']}"
-        with cols[i % 4]:
-            if st.button(
-                label, key=f"sel_{cid}", use_container_width=True,
-                type="primary" if ativo else "secondary",
-            ):
-                st.session_state["chat_ativo"] = cid
+    hot_cols = st.columns(len(HOT_TRIGGERS))
+    for col, (label, prompt) in zip(hot_cols, HOT_TRIGGERS.items()):
+        with col:
+            if st.button(label, use_container_width=True, key=f"hot_{label}_{chat_id}"):
+                _send_message(prompt, db_filter, chat_id, auto_title=True)
                 st.rerun()
 
+    st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
 
-# ── Ponto de entrada ──────────────────────────────────────────────────────────
-
-def render_chat(filtros: dict):
-    _init_session()
-
-    # ── Cabeçalho ──────────────────────────────────────────────────────────────
-    col_t, col_b = st.columns([3, 1])
-    with col_t:
-        st.markdown("""
-        <div>
-            <span style="font-family:'Space Grotesk',sans-serif;
-                         font-size:1.75rem;font-weight:700;letter-spacing:2px;
-                         text-transform:uppercase;">
-                Farmazzini <span style="color:#E63946;">Intel</span>
-            </span>
-        </div>
-        <p style="font-family:'DM Sans',sans-serif;color:#7a7a85;font-size:0.88rem;margin:2px 0 0;">
-            Console de Inteligência de Mercado — Powered by Claude Haiku 4.5
-        </p>
-        """, unsafe_allow_html=True)
-    with col_b:
-        st.markdown("""
-        <div style="text-align:right;padding-top:12px;">
-            <span class="badge-green">✨ Bedrock Conectado</span>
-        </div>
-        """, unsafe_allow_html=True)
-
-    st.markdown("---")
-
-    # ── Seletor de chats ────────────────────────────────────────────────────────
-    _render_gerenciador_chats()
-    st.markdown("---")
-
-    chat = _chat_atual()
-
-    # ── Ações do chat ativo ─────────────────────────────────────────────────────
-    col_nome, col_del, col_exp = st.columns([3, 1, 1])
-    with col_nome:
-        novo_nome = st.text_input(
-            "Renomear",
-            value=chat["nome"],
-            label_visibility="collapsed",
-            placeholder="Nome do chat…",
-            key=f"rename_{st.session_state['chat_ativo']}",
-        )
-        if novo_nome != chat["nome"]:
-            chat["nome"] = novo_nome
-
-    with col_del:
-        if len(st.session_state["chats"]) > 1:
-            if st.button("🗑️ Excluir", use_container_width=True):
-                del st.session_state["chats"][st.session_state["chat_ativo"]]
-                st.session_state["chat_ativo"] = list(st.session_state["chats"].keys())[0]
-                st.rerun()
-
-    with col_exp:
-        if chat["historico"]:
-            historico_txt = "\n\n".join([
-                f"[{m['role'].upper()}] {m['content']}"
-                + (f"\nSQL: {m['sql']}" if m.get("sql") else "")
-                for m in chat["historico"]
-            ])
-            st.download_button(
-                "💾 Exportar",
-                data=historico_txt.encode("utf-8"),
-                file_name=f"{chat['nome'][:20].replace(' ','_')}.txt",
-                mime="text/plain",
-                use_container_width=True,
-                key=f"exp_{st.session_state['chat_ativo']}",
-            )
-
-    st.markdown("---")
-
-    # ── Histórico de mensagens ──────────────────────────────────────────────────
-    for idx, msg in enumerate(chat["historico"]):
-        _render_mensagem(msg, idx)
-
-    if chat["historico"]:
-        st.markdown("---")
-        if st.button("🗑️ Limpar conversa", key="limpar_conv"):
-            chat["historico"] = []
-            st.rerun()
-
-    # ── Input ───────────────────────────────────────────────────────────────────
-    executar_agora = st.session_state.pop("executar_exemplo", False)
-    valor_inicial  = st.session_state.get("exemplo_selecionado") or ""
-    if executar_agora:
-        st.session_state["exemplo_selecionado"] = None
-
-    col_inp, col_btn = st.columns([5, 1])
-    with col_inp:
-        user_input = st.text_input(
-            label="Consulta",
-            value=valor_inicial,
-            placeholder="Faça uma consulta estratégica ao mercado…",
-            label_visibility="collapsed",
-            key="user_input_field",
-        )
-    with col_btn:
-        executar = st.button("Analisar", type="primary", use_container_width=True)
-
-    pergunta_final = user_input.strip() or valor_inicial.strip()
-    if (executar or executar_agora) and pergunta_final:
-        _processar_pergunta(pergunta_final, filtros)
+    # ── INPUT DO USUÁRIO ──────────────────────────────────────────────────────
+    if user_input := st.chat_input(
+        "Faça uma consulta estratégica ou peça análise de preços...",
+        key=f"chat_input_{chat_id}",
+    ):
+        _send_message(user_input, db_filter, chat_id, auto_title=True)
         st.rerun()
-    elif (executar or executar_agora) and not pergunta_final:
-        st.warning("Digite uma consulta antes de executar.")
+
+
+def _send_message(prompt: str, db_filter: str, chat_id: str, auto_title: bool = False):
+    """
+    Adiciona mensagem do usuário, obtém resposta da IA e salva no estado.
+    """
+    # Adiciona mensagem do usuário
+    _append_message(chat_id, "user", prompt)
+
+    # Auto-renomeia o chat com base na primeira pergunta
+    if auto_title:
+        chat = st.session_state.chats.get(chat_id, {})
+        title = chat.get("title", "")
+        if title.startswith("Nova Consulta") or not chat.get("messages"):
+            short = prompt[:28] + "..." if len(prompt) > 28 else prompt
+            st.session_state.chats[chat_id]["title"] = short
+
+    # Obtém resposta da IA com spinner
+    with st.spinner("🔍 Analisando o mercado..."):
+        response = _get_ai_response(prompt, db_filter)
+
+    # Adiciona resposta do assistente
+    _append_message(chat_id, "assistant", response)
+
+
+def _append_message(chat_id: str, role: str, content: str):
+    """
+    Adiciona uma mensagem ao chat especificado no session_state.
+    """
+    if chat_id not in st.session_state.chats:
+        st.session_state.chats[chat_id] = {"title": "Chat", "messages": []}
+
+    st.session_state.chats[chat_id]["messages"].append(
+        {"role": role, "content": content}
+    )
