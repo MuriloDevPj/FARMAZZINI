@@ -117,3 +117,8 @@ DB_FILTER_PROMPTS = {
     "ponte": "Analise SOMENTE dados da FarmaPonte. IGNORE completamente dados da Vera Cruz.",
     "veracruz": "Analise SOMENTE dados da Vera Cruz. IGNORE completamente dados da FarmaPonte.",
 }
+# ── LISTA DE FARMÁCIAS VÁLIDAS (usada pelo sidebar.py) ───────────────────────
+FARMACIAS_VALIDAS = list(DB_OPTIONS.keys())  # ["Todas", "FarmaPonte", "Vera Cruz"]
+
+# ── AWS ───────────────────────────────────────────────────────────────────────
+AWS_REGION = "us-east-2"
