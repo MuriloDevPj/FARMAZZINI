@@ -48,21 +48,17 @@ def checar_conexao_bedrock():
 if "chats" not in st.session_state:
     st.session_state.chats = {
         "chat_1": {
-            "nome": "Análise de Preço: Dipirona",
-            "historico": [],
+            "title": "Análise de Preço: Dipirona",
+            "messages": [],
         }
     }
 
-if "chat_ativo" not in st.session_state:
-    st.session_state.chat_ativo = "chat_1"
+if "active_chat" not in st.session_state:
+    st.session_state.active_chat = "chat_1"
 
 # ── SIDEBAR ──────────────────────────────────────────────────────────────────
-# Captura o retorno estruturado da barra lateral (Dicionário contendo a farmácia selecionada)
-filtros_sidebar = render_sidebar()
-
-# Garante a extração segura do filtro de farmácia (padrão 'Todas') e o ID da conversa ativa
-db_filter = filtros_sidebar.get("farmacia", "Todas") if isinstance(filtros_sidebar, dict) else "Todas"
-active_chat_id = st.session_state.get("chat_ativo", "chat_1")
+# render_sidebar() retorna (db_key, chat_id_ativo) — desempacota corretamente
+db_filter, active_chat_id = render_sidebar()
 
 # ── HEADER ───────────────────────────────────────────────────────────────────
 header_col, status_col = st.columns([3, 2])
@@ -114,7 +110,7 @@ st.markdown(
 # Como o módulo 'metrics.py' original do seu projeto renderiza os KPIs de forma acoplada
 # junto com os resultados obtidos das queries do S3, o fluxo centralizado passa a rodar
 # de forma linear no console principal de chats!
-render_chat()
+render_chat(db_filter=db_filter, chat_id=active_chat_id)
 
 # ── PAINEL DE AVISO DE CONFIGURAÇÃO (Caso Bedrock não responda) ──────────────
 if not bedrock_disponivel:
