@@ -121,4 +121,4 @@ DB_FILTER_PROMPTS = {
 FARMACIAS_VALIDAS = list(DB_OPTIONS.keys())  # ["Todas", "FarmaPonte", "Vera Cruz"]
 
 # ── AWS ───────────────────────────────────────────────────────────────────────
-AWS_REGION = "us-east-2"
+AWS_REGION = "us-east-1"
