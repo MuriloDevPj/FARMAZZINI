@@ -1,14 +1,13 @@
-"""
-Componente principal de chat.
-Design fiel ao HTML sandbox: hot buttons, botões de ação inline (gráfico, contra-ataque, CSV).
-Integração real com AWS Bedrock (Claude).
-"""
+# ==============================================================================
+# components/chat.py — Componente Principal de Chat (Nativo & Sem Interrupções)
+# Design fiel ao HTML sandbox: hot buttons, botões inline e AWS Bedrock
+# Projeto Farmazzini | Poli Júnior | Equipe 06
+# ==============================================================================
 
 import streamlit as st
 import pandas as pd
 from utils.config import HOT_TRIGGERS, SYSTEM_PROMPT, DB_FILTER_PROMPTS, PRODUCTS_DB
 from utils.aws_client import get_bedrock_client, query_claude_bedrock, is_bedrock_available
-
 
 # ── MENSAGEM DE BOAS-VINDAS ──────────────────────────────────────────────────
 WELCOME_MESSAGE = """
@@ -25,12 +24,10 @@ Posso te auxiliar em análises de:
 Experimente os atalhos rápidos abaixo ou faça qualquer pergunta estratégica!
 """
 
-
 # ── GRÁFICO INLINE ─────────────────────────────────────────────────────────
 def _render_inline_chart(query_key: str):
     """
     Renderiza um gráfico de barras comparativo diretamente no chat.
-    query_key pode ser: 'dipirona', 'losartana', 'neosaldina', 'pampers'.
     """
     chart_data = {
         "dipirona":  {"title": "Dipirona 500mg",        "labels": ["FarmaPonte\nR$14,90", "Vera Cruz\nR$8,94", "Farmazzini\nR$11,50"], "vals": [14.90, 8.94, 11.50]},
@@ -50,12 +47,11 @@ def _render_inline_chart(query_key: str):
     df = df.set_index("Concorrente")
 
     st.markdown(
-        f'<div style="font-size:13px; color:#E63946; font-weight:700; margin-bottom:8px;">'
+        f'<div style="font-size:13px; color:#E63946; font-weight:700; margin-top:14px; margin-bottom:8px; font-family:\'Space Grotesk\', sans-serif;">'
         f'📊 Comparativo de Preços: {d["title"]}</div>',
         unsafe_allow_html=True,
     )
     st.bar_chart(df, color="#E63946", height=180)
-
 
 # ── CONTRA-ATAQUE ──────────────────────────────────────────────────────────
 def _render_counter_attack(original_query: str, db_filter: str):
@@ -71,13 +67,17 @@ def _render_counter_attack(original_query: str, db_filter: str):
         response = _get_ai_response(counter_prompt, db_filter)
 
     st.markdown(
-        '<div class="attack-block">'
-        '<strong style="color:#E63946; font-size:15px;">⚡ Contra-Ataque Estratégico Proposto:</strong>'
-        '</div>',
+        """
+        <div style="background:rgba(230,57,70,0.06); border:1px solid rgba(230,57,70,0.25);
+                    border-radius:12px; padding:14px 16px; margin-top:14px; font-family:\'DM Sans\', sans-serif;">
+            <strong style="color:#E63946; font-size:14px; display:block; margin-bottom:6px;">
+                ⚡ Contra-Ataque Estratégico Proposto:
+            </strong>
+        </div>
+        """,
         unsafe_allow_html=True,
     )
     st.markdown(response)
-
 
 # ── EXPORTAR CSV ────────────────────────────────────────────────────────────
 def _export_csv():
@@ -98,7 +98,6 @@ def _export_csv():
         })
     return pd.DataFrame(rows).to_csv(index=False).encode("utf-8")
 
-
 # ── AI RESPONSE ────────────────────────────────────────────────────────────
 def _get_ai_response(prompt: str, db_filter: str) -> str:
     if not is_bedrock_available():
@@ -111,7 +110,6 @@ def _get_ai_response(prompt: str, db_filter: str) -> str:
         system_prompt=SYSTEM_PROMPT,
         db_filter_prompt=db_filter_prompt,
     )
-
 
 def _demo_response(prompt: str, db_filter: str) -> str:
     p = prompt.lower()
@@ -177,7 +175,6 @@ Sugestões de perguntas:
 
 > 💡 *Modo Demo ativo — configure credenciais AWS Bedrock para IA real.*"""
 
-
 # ── RENDER CHAT ────────────────────────────────────────────────────────────
 def render_chat(db_filter: str, chat_id: str):
     """
@@ -199,7 +196,7 @@ def render_chat(db_filter: str, chat_id: str):
         with st.chat_message(role, avatar=avatar):
             st.markdown(msg["content"])
 
-            # Botões de ação só nas mensagens do assistente
+            # Botões de ação apenas nas respostas do assistente
             if role == "assistant" and i > 0:
                 _render_action_buttons(msg, i, chat_id, db_filter)
 
@@ -222,13 +219,10 @@ def render_chat(db_filter: str, chat_id: str):
         _send_message(user_input, db_filter, chat_id)
         st.rerun()
 
-
 def _render_action_buttons(msg: dict, msg_index: int, chat_id: str, db_filter: str):
     """
-    Renderiza os botões de ação abaixo de cada mensagem do assistente:
-    📊 Gerar Gráfico | ⚡ Contra-Ataque | 📥 Exportar CSV
+    Renderiza os botões de ação estruturados inline abaixo das mensagens.
     """
-    # Pega o contexto (a mensagem do usuário anterior, se existir)
     messages = st.session_state.chats[chat_id]["messages"]
     user_query = ""
     if msg_index > 0 and messages[msg_index - 1]["role"] == "user":
@@ -238,51 +232,50 @@ def _render_action_buttons(msg: dict, msg_index: int, chat_id: str, db_filter: s
     col1, col2, col3, _ = st.columns([2, 2, 2, 4])
 
     with col1:
-        if st.button("📊 Gráfico", key=f"graph_{chat_id}_{msg_index}", help="Gerar gráfico comparativo"):
+        if st.button("📊 Gráfico", key=f"graph_{chat_id}_{msg_index}", help="Gerar gráfico comparativo", use_container_width=True):
             st.session_state[f"show_graph_{chat_id}_{msg_index}"] = True
 
     with col2:
-        if st.button("⚡ Contra-Ataque", key=f"attack_{chat_id}_{msg_index}", help="Gerar tática de defesa"):
+        if st.button("⚡ Contra-Ataque", key=f"attack_{chat_id}_{msg_index}", help="Gerar tática de defesa", use_container_width=True):
             st.session_state[f"show_attack_{chat_id}_{msg_index}"] = True
 
     with col3:
-        csv = _export_csv()
+        csv_data = _export_csv()
         st.download_button(
             label="📥 CSV",
-            data=csv,
+            data=csv_data,
             file_name="farmazzini_analise.csv",
             mime="text/csv",
             key=f"csv_{chat_id}_{msg_index}",
+            use_container_width=True
         )
 
-    # Expandir gráfico se clicado
-    if st.session_state.get(f"show_graph_{chat_id}_{msg_index}"):
+    # Renderiza o gráfico inline sob demanda se o estado for verdadeiro
+    if st.session_state.get(f"show_graph_{chat_id}_{msg_index}", False):
         with st.container():
             _render_inline_chart(user_query)
 
-    # Expandir contra-ataque se clicado
-    if st.session_state.get(f"show_attack_{chat_id}_{msg_index}"):
+    # Renderiza a tática de contra-ataque sob demanda se o estado for verdadeiro
+    if st.session_state.get(f"show_attack_{chat_id}_{msg_index}", False):
         with st.container():
             _render_counter_attack(user_query, db_filter)
-            # Limpar para não re-gerar a cada rerun
-            del st.session_state[f"show_attack_{chat_id}_{msg_index}"]
-
+            # Desativa o gatilho de renderização síncrona pós-exibição para evitar loops infinitos
+            st.session_state[f"show_attack_{chat_id}_{msg_index}"] = False
 
 def _send_message(prompt: str, db_filter: str, chat_id: str):
-    """Adiciona mensagem, chama IA e salva no estado."""
+    """Adiciona a mensagem ao histórico ativo, chama a IA do Bedrock e preserva os estados."""
     _append_message(chat_id, "user", prompt)
 
-    # Auto-rename
+    # Renomeação dinâmica inteligente do título do chat na barra lateral
     chat = st.session_state.chats.get(chat_id, {})
-    if chat.get("title", "").startswith("Nova Consulta") or not chat.get("messages"):
-        short = prompt[:28] + "..." if len(prompt) > 28 else prompt
+    if chat.get("title", "").startswith("Análise de Preço:") or chat.get("title", "").startswith("Chat") or len(chat.get("messages", [])) <= 2:
+        short = prompt[:25] + "..." if len(prompt) > 25 else prompt
         st.session_state.chats[chat_id]["title"] = short
 
     with st.spinner("🔍 Analisando o mercado..."):
         response = _get_ai_response(prompt, db_filter)
 
     _append_message(chat_id, "assistant", response)
-
 
 def _append_message(chat_id: str, role: str, content: str):
     if chat_id not in st.session_state.chats:
