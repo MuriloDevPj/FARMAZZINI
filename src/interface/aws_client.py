@@ -36,9 +36,23 @@ Regras Estritas:
    - Se o usuário não especificar a farmácia, NÃO filtre por farmacia (busque as duas).
    - Se o usuário não especificar data, use SEMPRE: ano='2026' AND mes='05' AND dia='26'.
 
-5. Exemplos de filtro correto:
-   - "produtos da FarmaPonte" → WHERE farmacia='FarmaPonte' AND ano='2026' AND mes='05' AND dia='26'
-   - "menor preço da dipirona na Vera Cruz" → WHERE nome LIKE '%Dipirona%' AND farmacia='Vera Cruz' AND ano='2026' AND mes='05' AND dia='26'
+5. Regras de Performance para Athena (CRÍTICO — evita timeout):
+   - NUNCA use ORDER BY em queries sem filtro de nome/produto. ORDER BY força scan total + sort.
+   - NUNCA use COALESCE em ORDER BY. Causa full scan obrigatório antes do LIMIT.
+   - Para "menor preço" ou "mais barato" SEM especificar produto:
+     Use MIN() com GROUP BY farmacia — NÃO use ORDER BY ... LIMIT 1.
+     Exemplo: SELECT farmacia, MIN(preco_pix) as menor_pix FROM ... GROUP BY farmacia
+   - Para "menor preço" COM produto específico:
+     Filtre pelo nome primeiro, ENTÃO use ORDER BY com LIMIT.
+     Exemplo: WHERE nome LIKE '%Dipirona%' AND ... ORDER BY preco_pix ASC LIMIT 10
+   - Prefira LIMIT 50 no máximo. Nunca omita LIMIT em queries sem filtro de nome.
+   - Se a pergunta pedir comparativo entre farmácias, use GROUP BY farmacia com AVG() ou MIN().
+
+6. Exemplos de filtro correto:
+   - "produtos da FarmaPonte" → SELECT nome, preco_original FROM tb_processed WHERE farmacia='FarmaPonte' AND ano='2026' AND mes='05' AND dia='26' LIMIT 50
+   - "menor preço da dipirona na Vera Cruz" → WHERE nome LIKE '%Dipirona%' AND farmacia='Vera Cruz' AND ano='2026' AND mes='05' AND dia='26' ORDER BY preco_pix ASC LIMIT 10
+   - "produto mais barato do mercado" → SELECT farmacia, nome, MIN(preco_pix) as menor_pix FROM tb_processed WHERE ano='2026' AND mes='05' AND dia='26' GROUP BY farmacia, nome ORDER BY menor_pix ASC LIMIT 10
+   - "comparar preços entre farmácias" → SELECT farmacia, AVG(preco_original) as preco_medio FROM tb_processed WHERE ano='2026' AND mes='05' AND dia='26' GROUP BY farmacia
 """
 
 

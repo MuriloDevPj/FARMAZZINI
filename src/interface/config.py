@@ -38,9 +38,20 @@ Regras Estritas:
    - Se o usuário não especificar a farmácia, NÃO filtre por farmacia (busque as duas).
    - Se o usuário não especificar data, use SEMPRE: ano='{DEFAULT_ANO}' AND mes='{DEFAULT_MES}' AND dia='{DEFAULT_DIA}'.
 
-5. Exemplos de filtro correto:
-   - "produtos da FarmaPonte" → WHERE farmacia='FarmaPonte' AND ano='{DEFAULT_ANO}' AND mes='{DEFAULT_MES}' AND dia='{DEFAULT_DIA}'
-   - "produtos da Vera Cruz"  → WHERE farmacia='Vera Cruz'  AND ano='{DEFAULT_ANO}' AND mes='{DEFAULT_MES}' AND dia='{DEFAULT_DIA}'
-   - "todos os produtos"      → WHERE ano='{DEFAULT_ANO}' AND mes='{DEFAULT_MES}' AND dia='{DEFAULT_DIA}'
+5. Regras de Performance para Athena (CRÍTICO — evita timeout):
+   - NUNCA use ORDER BY sem filtro de nome/produto. ORDER BY em tabela inteira força full scan.
+   - NUNCA use COALESCE em ORDER BY. Causa full scan obrigatório antes do LIMIT.
+   - Para 'menor preço' SEM produto específico: use MIN() com GROUP BY farmacia.
+     Exemplo: SELECT farmacia, MIN(preco_pix) as menor_pix FROM ... GROUP BY farmacia
+   - Para 'menor preço' COM produto: filtre pelo nome primeiro, depois ORDER BY com LIMIT.
+     Exemplo: WHERE nome LIKE '%Dipirona%' AND ... ORDER BY preco_pix ASC LIMIT 10
+   - Prefira LIMIT 50 no máximo. Nunca omita LIMIT em queries sem filtro de nome.
+   - Comparativo entre farmácias: use GROUP BY farmacia com AVG() ou MIN().
+
+6. Exemplos de filtro correto:
+   - "produtos da FarmaPonte" → SELECT nome, preco_original FROM tb_processed WHERE farmacia='FarmaPonte' AND ano='{DEFAULT_ANO}' AND mes='{DEFAULT_MES}' AND dia='{DEFAULT_DIA}' LIMIT 50
+   - "menor preço da dipirona" → WHERE nome LIKE '%Dipirona%' AND ano='{DEFAULT_ANO}' AND mes='{DEFAULT_MES}' AND dia='{DEFAULT_DIA}' ORDER BY preco_pix ASC LIMIT 10
+   - "produto mais barato" → SELECT farmacia, nome, MIN(preco_pix) as menor_pix FROM tb_processed WHERE ano='{DEFAULT_ANO}' AND mes='{DEFAULT_MES}' AND dia='{DEFAULT_DIA}' GROUP BY farmacia, nome ORDER BY menor_pix ASC LIMIT 10
+   - "todos os produtos"      → WHERE ano='{DEFAULT_ANO}' AND mes='{DEFAULT_MES}' AND dia='{DEFAULT_DIA}' LIMIT 50
 
 Pergunta: {{user_prompt}}"""
