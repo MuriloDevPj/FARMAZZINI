@@ -1259,11 +1259,18 @@ function corFarmacia(nome) {{
 }}
 
 // ── Abre o modal e renderiza todos os painéis ─────────────────────────────────
-function abrirGrafico(chartJsonRaw) {{
+// CORRECAO: recebe o elemento <button> em vez de uma string inline.
+// Lê o JSON de data-chart (sem risco de conflito de aspas) e usa
+// <textarea>.innerHTML para desescapar TODAS as entidades HTML que o Python
+// possa ter gerado (&amp; &quot; &#39; &#x27; &lt; &gt;) antes de JSON.parse().
+function abrirGrafico(btnEl) {{
     let payload;
     try {{
-        const decoded = chartJsonRaw.replace(/&#39;/g, "'");
-        payload = JSON.parse(decoded);
+        const raw = btnEl.getAttribute('data-chart');
+        // O browser desescapa automaticamente todas as entidades HTML via textarea
+        const txt = document.createElement('textarea');
+        txt.innerHTML = raw;
+        payload = JSON.parse(txt.value);
     }} catch(e) {{
         showToast('⚠️ Erro ao parsear dados do gráfico', '#f59e0b', '#1c1000', '#fde68a');
         return;
@@ -1274,7 +1281,7 @@ function abrirGrafico(chartJsonRaw) {{
     // Garante que o Chart.js está disponível
     if(typeof Chart === 'undefined') {{
         showToast('⏳ Aguardando Chart.js...', '#3b82f6', '#0f172a', '#93c5fd');
-        setTimeout(() => abrirGrafico(chartJsonRaw), 400);
+        setTimeout(() => abrirGrafico(btnEl), 400);
         return;
     }}
 

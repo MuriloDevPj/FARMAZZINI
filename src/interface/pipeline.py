@@ -32,8 +32,15 @@ def _chart_payload(df: pd.DataFrame) -> str:
     """
     Constrói o JSON com os dados dos 3 cruzamentos estratégicos.
     Retorna uma string JSON segura para embutir em atributo HTML data-*.
+
+    CORREÇÃO: Totalmente resiliente — funciona com ou sem coluna 'farmacia',
+    e com aliases de colunas calculadas pelo Athena (menor_preco_mercado, etc).
+    Só retorna "" se o DataFrame estiver vazio ou sem nenhum dado utilizável.
     """
     import json as _json
+
+    if df is None or df.empty:
+        return ""
 
     FARMACIAS_MAP = {
         "farmaponte": "FarmaPonte",
@@ -44,24 +51,55 @@ def _chart_payload(df: pd.DataFrame) -> str:
         "farmazzini": "Farmazzini",
     }
 
-    # Normaliza a coluna farmacia
+    # Hints para detectar colunas de preço mesmo com aliases do Athena
+    PRECO_HINTS = [
+        "preco_original", "preco_pix", "preco_cartao",
+        "menor_preco", "menor_preco_mercado", "preco_medio",
+        "media_preco", "preco_min", "preco_max", "valor",
+    ]
+
     df = df.copy()
-    if "farmacia" in df.columns:
-        df["farmacia"] = df["farmacia"].apply(
+    cols_lower = {c.lower(): c for c in df.columns}
+
+    # Normaliza a coluna farmacia se existir (com tolerância a variações de case)
+    col_farmacia = cols_lower.get("farmacia")
+    if col_farmacia:
+        df[col_farmacia] = df[col_farmacia].apply(
             lambda v: FARMACIAS_MAP.get(str(v).strip().lower(), str(v).strip())
             if pd.notna(v) else v
         )
     else:
-        # Se o DataFrame não tem coluna farmacia, não há cruzamento competitivo possível
-        return ""
+        # Sem coluna farmacia: tenta detectar coluna de agrupamento pelo nome
+        # e cria uma coluna farmacia sintética para manter o pipeline funcionando.
+        # Isso cobre queries como SELECT farmacia, MIN(preco) AS menor_preco_mercado ...
+        for hint in ("farmacia", "loja", "filial", "unidade"):
+            match = next((orig for low, orig in cols_lower.items() if hint in low), None)
+            if match:
+                df["farmacia"] = df[match]
+                col_farmacia = "farmacia"
+                break
+
+        # Último recurso: DataFrame sem contexto de farmácia → gráfico genérico
+        if not col_farmacia:
+            # Descobre coluna de label (não numérica)
+            label_col = next(
+                (c for c in df.columns if not pd.api.types.is_numeric_dtype(df[c])),
+                df.columns[0]
+            )
+            df["farmacia"] = df[label_col].astype(str)
+            col_farmacia = "farmacia"
 
     farmacias = sorted(df["farmacia"].dropna().unique().tolist())
-    if len(farmacias) < 1:
+    if not farmacias:
         return ""
 
-    # ── Cruzamento 1: preço médio por farmácia (original / pix / cartão) ──────
+    # ── Cruzamento 1: preço médio por farmácia ────────────────────────────────
+    # Inclui colunas canônicas E aliases gerados pelo Athena (ex: menor_preco_mercado)
+    COLUNAS_PRECO_CANONICAS = ("preco_original", "preco_pix", "preco_cartao")
     cruzamento1 = {}
-    for mod in ("preco_original", "preco_pix", "preco_cartao"):
+
+    # 1a. Tenta as colunas canônicas primeiro
+    for mod in COLUNAS_PRECO_CANONICAS:
         if mod in df.columns:
             serie = pd.to_numeric(df[mod], errors="coerce")
             cruzamento1[mod] = (
@@ -74,9 +112,28 @@ def _chart_payload(df: pd.DataFrame) -> str:
                 .to_dict()
             )
 
+    # 1b. Se nenhuma coluna canônica foi encontrada, detecta dinamicamente
+    #     qualquer coluna numérica com hint de preco/valor (aliases do Athena)
+    if not cruzamento1:
+        for col in df.columns:
+            if col == "farmacia":
+                continue
+            if any(h in col.lower() for h in PRECO_HINTS) or pd.api.types.is_numeric_dtype(df[col]):
+                serie = pd.to_numeric(df[col], errors="coerce")
+                if serie.notna().any():
+                    cruzamento1[col] = (
+                        df.assign(_p=serie)
+                        .groupby("farmacia")["_p"]
+                        .mean()
+                        .round(2)
+                        .reindex(farmacias)
+                        .fillna(0)
+                        .to_dict()
+                    )
+
     # ── Cruzamento 2: preços por modalidade por farmácia (mesma estrutura,
     #    mas focada na leitura de agressividade vertical) ─────────────────────
-    cruzamento2 = cruzamento1  # mesmos dados, gráfico transpõe os eixos no frontend
+    cruzamento2 = cruzamento1  # mesmos dados, gráfico transpoem os eixos no frontend
 
     # ── Cruzamento 3: share de disponibilidade por farmácia ──────────────────
     cruzamento3 = {}
@@ -266,11 +323,15 @@ def processar_mensagem(mensagem: str, db_filter: str = "todas", historico: list 
     nome_arquivo = "farmazzini_consulta.csv"
     chart_json = _chart_payload(df)
 
-    # Botão de gráfico só aparece quando há dados competitivos suficientes
+    # Botão de gráfico: usa data-attribute em vez de onclick inline
+    # CORRECAO BUG 2: onclick inline + JSON gera conflito de aspas.
+    # Solucao: embutir o JSON em data-chart='' (aspas simples no HTML)
+    # e ler com getAttribute no JS, eliminando qualquer risco de SyntaxError.
     btn_grafico = ""
     if chart_json:
         btn_grafico = f"""
-        <button class="action-btn" onclick="abrirGrafico('{chart_json}')"
+        <button class="action-btn" data-chart='{chart_json}'
+                onclick="abrirGrafico(this)"
                 style="border-color:rgba(232,37,58,0.35);color:#E8253A;">
             <i class="fa-solid fa-chart-bar"></i> Gerar Gráfico
         </button>"""
