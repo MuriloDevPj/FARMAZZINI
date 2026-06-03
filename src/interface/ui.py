@@ -9,6 +9,7 @@ def render_full_ui(chats: str, active_chat_id: int, active_db: str, next_id: int
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
 :root {{
     --bg-main:      #08030A;
@@ -549,6 +550,63 @@ tr:last-child td {{ border-bottom:none; }}
   </div>
 </div>
 
+<!-- ══ MODAL DE GRÁFICOS ESTRATÉGICOS ══ -->
+<div class="chart-modal-overlay" id="chartModal" onclick="if(event.target===this)fecharGrafico()">
+  <div class="chart-modal-box">
+
+    <!-- Cabeçalho -->
+    <div class="chart-modal-header">
+      <div>
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--primary);font-weight:700;margin-bottom:4px;">
+          Análise de mercado em tempo real · Athena tb_processed
+        </div>
+        <div class="chart-modal-title">📊 Cruzamentos Estratégicos de Mercado</div>
+      </div>
+      <button class="chart-modal-close" onclick="fecharGrafico()">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <!-- KPI cards rápidos -->
+    <div class="chart-metric-grid" id="chartKpis"></div>
+
+    <!-- Tabs de navegação -->
+    <div class="chart-tabs">
+      <button class="chart-tab active" onclick="switchTab(0,this)">
+        <i class="fa-solid fa-chart-bar" style="margin-right:5px;"></i>Cruzamento 1 — Comparativo de Preços
+      </button>
+      <button class="chart-tab" onclick="switchTab(1,this)">
+        <i class="fa-solid fa-credit-card" style="margin-right:5px;"></i>Cruzamento 2 — Modalidades de Pagamento
+      </button>
+      <button class="chart-tab" onclick="switchTab(2,this)">
+        <i class="fa-solid fa-circle-half-stroke" style="margin-right:5px;"></i>Cruzamento 3 — Share de Presença
+      </button>
+    </div>
+
+    <!-- Filtro de preço (só no cruzamento 1) -->
+    <div class="chart-filter-row" id="filterRow">
+      <label><i class="fa-solid fa-filter" style="margin-right:4px;"></i>Modalidade de Preço:</label>
+      <select id="priceFilter" onchange="atualizarCruzamento1()">
+        <option value="preco_original">Preço Original (Gôndola)</option>
+        <option value="preco_pix">Preço PIX</option>
+        <option value="preco_cartao">Preço Cartão</option>
+      </select>
+    </div>
+
+    <!-- Canvas dos gráficos -->
+    <div class="chart-canvas-wrap">
+      <canvas id="chartCanvas" style="max-height:320px;"></canvas>
+    </div>
+
+    <!-- Legenda -->
+    <div class="chart-legend" id="chartLegend"></div>
+
+    <!-- CTA de insight -->
+    <div class="chart-cta" id="chartCta"></div>
+
+  </div>
+</div>
+
 <div class="app-shell">
 
   <!-- ══ SIDEBAR ══ -->
@@ -935,6 +993,372 @@ function showToast(msg, borderColor, bg, color) {{
 document.getElementById('deleteModal').addEventListener('click', function(e) {{
     if(e.target === this) closeModal();
 }});
+
+// ════════════════════════════════════════════════════════════════
+// GRÁFICOS ESTRATÉGICOS — 3 CRUZAMENTOS COMPETITIVOS
+// ════════════════════════════════════════════════════════════════
+let _chartInstance  = null;   // instância ativa do Chart.js
+let _chartPayload   = null;   // dados desserializados do pipeline
+let _activeTab      = 0;      // 0=preços, 1=modalidades, 2=share
+
+// Paleta por farmácia (alinha com a imagem de referência)
+const FARM_COLORS = {{
+    'Farmazzini':  {{ bar:'rgba(74,222,128,0.85)',  border:'#4ade80',  dot:'#4ade80'  }},
+    'FarmaPonte':  {{ bar:'rgba(96,165,250,0.85)',  border:'#60a5fa',  dot:'#60a5fa'  }},
+    'Vera Cruz':   {{ bar:'rgba(232,37,58,0.85)',   border:'#E8253A',  dot:'#E8253A'  }},
+}};
+const MODAL_COLORS = {{
+    preco_original: {{ bar:'rgba(148,163,184,0.80)', border:'#94a3b8', label:'Original' }},
+    preco_pix:      {{ bar:'rgba(74,222,128,0.85)',  border:'#4ade80', label:'PIX'      }},
+    preco_cartao:   {{ bar:'rgba(96,165,250,0.85)',  border:'#60a5fa', label:'Cartão'   }},
+}};
+
+function _farmColor(farm, key) {{
+    return (FARM_COLORS[farm] || {{bar:'rgba(200,200,200,0.7)',border:'#aaa',dot:'#aaa'}})[key];
+}}
+
+function _destroyChart() {{
+    if(_chartInstance) {{ _chartInstance.destroy(); _chartInstance = null; }}
+}}
+
+function _chartDefaults() {{
+    return {{
+        responsive:true, maintainAspectRatio:true,
+        plugins:{{
+            legend:{{ display:false }},
+            tooltip:{{
+                backgroundColor:'rgba(10,5,14,0.92)',
+                borderColor:'rgba(200,30,55,0.25)',
+                borderWidth:1,
+                titleColor:'#fff',
+                bodyColor:'#ccc',
+                padding:12,
+                callbacks:{{
+                    label: ctx => ' R$ ' + (ctx.parsed.y ?? ctx.parsed).toFixed(2)
+                }}
+            }}
+        }},
+        scales:{{
+            x:{{
+                grid:{{ color:'rgba(255,255,255,0.04)' }},
+                ticks:{{ color:'#9a9a9f', font:{{family:'Urbanist',size:12}} }}
+            }},
+            y:{{
+                grid:{{ color:'rgba(255,255,255,0.04)' }},
+                ticks:{{
+                    color:'#9a9a9f', font:{{family:'Urbanist',size:12}},
+                    callback: v => 'R$ ' + v.toFixed(2)
+                }}
+            }}
+        }}
+    }};
+}}
+
+// ── Cruzamento 1: Comparativo de preços por farmácia ──────────────
+function renderCruzamento1() {{
+    const modalidade = document.getElementById('priceFilter').value;
+    const c1 = _chartPayload.cruzamento1;
+    const farmacias = _chartPayload.farmacias;
+
+    if(!c1 || !c1[modalidade]) {{
+        _semDados('Sem dados de preço para esta modalidade.'); return;
+    }}
+
+    const data = farmacias.map(f => c1[modalidade][f] || 0);
+    const bgColors   = farmacias.map(f => _farmColor(f,'bar'));
+    const bdColors   = farmacias.map(f => _farmColor(f,'border'));
+
+    _destroyChart();
+    _chartInstance = new Chart(document.getElementById('chartCanvas'), {{
+        type:'bar',
+        data:{{
+            labels: farmacias,
+            datasets:[{{
+                label: MODAL_COLORS[modalidade]?.label || modalidade,
+                data,
+                backgroundColor: bgColors,
+                borderColor:     bdColors,
+                borderWidth:1.5,
+                borderRadius:6,
+                borderSkipped:false,
+            }}]
+        }},
+        options: _chartDefaults()
+    }});
+
+    // Legenda
+    _renderLegend(farmacias.map(f => ({{label:f, color:_farmColor(f,'dot')}})));
+
+    // Insight gap vs líder
+    const minVal  = Math.min(...data.filter(v=>v>0));
+    const maxVal  = Math.max(...data);
+    const farmMin = farmacias[data.indexOf(minVal)];
+    const farmMax = farmacias[data.indexOf(maxVal)];
+    const gap     = minVal > 0 ? (((maxVal - minVal) / minVal) * 100).toFixed(1) : '—';
+    const isFarmazziniLeader = farmMin === 'Farmazzini';
+
+    document.getElementById('filterRow').style.display = 'flex';
+    _renderCta(
+        isFarmazziniLeader
+            ? `✅ <strong>Farmazzini lidera</strong> com o menor preço <strong>${{MODAL_COLORS[modalidade]?.label}}.</strong> Gap de <strong>${{gap}}%</strong> em relação a ${{farmMax}}. Avalie elevar margem preservando competitividade.`
+            : `⚡ <strong>${{farmMin}}</strong> pratica o menor preço (${{MODAL_COLORS[modalidade]?.label}}). Farmazzini está <strong>${{gap}}% acima do líder de preço baixo.</strong> Avaliar redução ou comunicar diferencial de qualidade.`,
+        isFarmazziniLeader ? '#0d2818' : '#1a0810',
+        isFarmazziniLeader ? '#4ade80' : '#E8253A',
+        isFarmazziniLeader ? '#10b981' : '#E8253A'
+    );
+}}
+
+function atualizarCruzamento1() {{ renderCruzamento1(); }}
+
+// ── Cruzamento 2: Modalidades de pagamento por farmácia ───────────
+function renderCruzamento2() {{
+    const c2       = _chartPayload.cruzamento2;
+    const farmacias = _chartPayload.farmacias;
+    const modals   = ['preco_original','preco_pix','preco_cartao'];
+    const labels   = ['Original','PIX','Cartão'];
+
+    document.getElementById('filterRow').style.display = 'none';
+
+    const datasets = farmacias.map(farm => ({{
+        label: farm,
+        data: modals.map(m => c2[m]?.[farm] || 0),
+        backgroundColor: _farmColor(farm,'bar'),
+        borderColor:     _farmColor(farm,'border'),
+        borderWidth:1.5,
+        borderRadius:5,
+        borderSkipped:false,
+    }}));
+
+    _destroyChart();
+    _chartInstance = new Chart(document.getElementById('chartCanvas'), {{
+        type:'bar',
+        data:{{ labels, datasets }},
+        options:{{
+            ..._chartDefaults(),
+            plugins:{{
+                ..._chartDefaults().plugins,
+                tooltip:{{
+                    ..._chartDefaults().plugins.tooltip,
+                    callbacks:{{
+                        label: ctx => ` ${{ctx.dataset.label}}: R$ ${{ctx.parsed.y.toFixed(2)}}`
+                    }}
+                }}
+            }}
+        }}
+    }});
+
+    _renderLegend(farmacias.map(f => ({{label:f, color:_farmColor(f,'dot')}})));
+
+    // Insight: qual farmácia tem maior desconto PIX
+    if(c2.preco_original && c2.preco_pix) {{
+        let maxDescPct = -Infinity; let farmMaxDesc = '';
+        farmacias.forEach(f => {{
+            const orig = c2.preco_original[f]; const pix = c2.preco_pix[f];
+            if(orig > 0) {{
+                const d = ((orig - pix) / orig) * 100;
+                if(d > maxDescPct) {{ maxDescPct = d; farmMaxDesc = f; }}
+            }}
+        }});
+        const descPix_farm = c2.preco_pix?.['Farmazzini'];
+        const descPix_concOriginal = c2.preco_original?.['Farmazzini'];
+        const farmazziniPix = descPix_farm && descPix_concOriginal
+            ? (((descPix_concOriginal - descPix_farm) / descPix_concOriginal) * 100).toFixed(1)
+            : '—';
+
+        _renderCta(
+            `💳 <strong>${{farmMaxDesc}}</strong> oferece o maior desconto PIX (<strong>${{maxDescPct.toFixed(1)}}%</strong>). ` +
+            `Farmazzini pratica <strong>${{farmazziniPix}}% de desconto PIX</strong>. ` +
+            `Calibre o gatilho PIX para não queimar margem desnecessariamente.`,
+            '#0d1428','#60a5fa','#3b82f6'
+        );
+    }}
+}}
+
+// ── Cruzamento 3: Share de Presença / Ruptura de Prateleira ───────
+function renderCruzamento3() {{
+    const c3       = _chartPayload.cruzamento3;
+    const farmacias = _chartPayload.farmacias;
+
+    document.getElementById('filterRow').style.display = 'none';
+
+    if(!c3 || Object.keys(c3).length === 0) {{
+        _semDados('Sem dados de disponibilidade para este conjunto de resultados.'); return;
+    }}
+
+    // Donut com disponível vs indisponível por farmácia (multi-dataset simulado via bar)
+    const dispData  = farmacias.map(f => c3[f] ? Math.round((c3[f].disponivel / (c3[f].total||1)) * 100) : 0);
+    const rupData   = farmacias.map(f => c3[f] ? Math.round((c3[f].indisponivel / (c3[f].total||1)) * 100) : 0);
+
+    _destroyChart();
+    _chartInstance = new Chart(document.getElementById('chartCanvas'), {{
+        type:'bar',
+        data:{{
+            labels: farmacias,
+            datasets:[
+                {{
+                    label:'Disponível (%)',
+                    data: dispData,
+                    backgroundColor: farmacias.map(f => _farmColor(f,'bar')),
+                    borderColor:     farmacias.map(f => _farmColor(f,'border')),
+                    borderWidth:1.5, borderRadius:6, borderSkipped:false,
+                }},
+                {{
+                    label:'Ruptura (%)',
+                    data: rupData,
+                    backgroundColor:'rgba(248,113,113,0.55)',
+                    borderColor:'#f87171',
+                    borderWidth:1.5, borderRadius:6, borderSkipped:false,
+                }}
+            ]
+        }},
+        options:{{
+            ..._chartDefaults(),
+            plugins:{{
+                ..._chartDefaults().plugins,
+                tooltip:{{
+                    ..._chartDefaults().plugins.tooltip,
+                    callbacks:{{
+                        label: ctx => ` ${{ctx.dataset.label}}: ${{ctx.parsed.y}}%`
+                    }}
+                }}
+            }},
+            scales:{{
+                x:{{ grid:{{ color:'rgba(255,255,255,0.04)' }}, ticks:{{ color:'#9a9a9f', font:{{family:'Urbanist',size:12}} }} }},
+                y:{{
+                    max:100,
+                    grid:{{ color:'rgba(255,255,255,0.04)' }},
+                    ticks:{{ color:'#9a9a9f', font:{{family:'Urbanist',size:12}}, callback: v => v+'%' }}
+                }}
+            }}
+        }}
+    }});
+
+    _renderLegend([
+        ...farmacias.map(f => ({{label:f+' (Disponível)', color:_farmColor(f,'dot')}})),
+        {{label:'Ruptura', color:'#f87171'}}
+    ]);
+
+    // Insight: maior ruptura → oportunidade de preço
+    let maxRup = -1; let farmMaxRup = '';
+    farmacias.forEach((f,i) => {{ if(rupData[i] > maxRup) {{ maxRup = rupData[i]; farmMaxRup = f; }} }});
+    const allOut = rupData.every(v => v >= 100);
+
+    _renderCta(
+        allOut
+            ? `🔥 <strong>100% dos concorrentes estão em ruptura!</strong> Janela de oportunidade aberta — considere aumento temporário de preço (baixa elasticidade por urgência de compra).`
+            : `📦 <strong>${{farmMaxRup}}</strong> tem a maior ruptura de prateleira (<strong>${{maxRup}}%</strong>). Monitore — quando atingir 100%, acionar reposicionamento de preço.`,
+        maxRup >= 80 ? '#1a0810' : '#0d1a10',
+        maxRup >= 80 ? '#E8253A' : '#10b981',
+        maxRup >= 80 ? '#E8253A' : '#4ade80'
+    );
+}}
+
+function _semDados(msg) {{
+    document.getElementById('chartCanvas').style.display='none';
+    document.getElementById('chartCta').innerHTML =
+        `<span style="color:var(--text-muted);">ℹ️ ${{msg}}</span>`;
+    document.getElementById('chartCta').style.cssText =
+        'background:rgba(255,255,255,0.03);border-color:rgba(255,255,255,0.08);color:#9a9a9f;';
+}}
+
+function _renderLegend(items) {{
+    document.getElementById('chartLegend').innerHTML = items.map(it =>
+        `<div class="chart-legend-item">
+            <div class="chart-legend-swatch" style="background:${{it.color}};"></div>
+            <span>${{it.label}}</span>
+        </div>`
+    ).join('');
+}}
+
+function _renderCta(html, bg, border, color) {{
+    const el = document.getElementById('chartCta');
+    el.innerHTML = html;
+    el.style.background   = bg;
+    el.style.borderColor  = border;
+    el.style.color        = color || '#fff';
+}}
+
+function switchTab(idx, el) {{
+    _activeTab = idx;
+    document.querySelectorAll('.chart-tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('chartCanvas').style.display = 'block';
+    if(idx === 0) renderCruzamento1();
+    if(idx === 1) renderCruzamento2();
+    if(idx === 2) renderCruzamento3();
+}}
+
+// ── KPI cards no topo do modal ─────────────────────────────────────
+function _renderKpis(payload) {{
+    const farmacias = payload.farmacias || [];
+    const c1 = payload.cruzamento1 || {{}};
+    const c3 = payload.cruzamento3 || {{}};
+
+    let html = '';
+
+    // Preço original por farmácia
+    farmacias.forEach(farm => {{
+        const val = c1?.preco_original?.[farm];
+        if(val) {{
+            const cor = _farmColor(farm,'dot');
+            html += `
+            <div class="chart-metric-card">
+                <div class="chart-metric-val" style="color:${{cor}}">R$ ${{val.toFixed(2)}}</div>
+                <div class="chart-metric-lbl">${{farm}}</div>
+            </div>`;
+        }}
+    }});
+
+    // Gap vs líder
+    const precos = farmacias.map(f => c1?.preco_original?.[f] || 0).filter(v=>v>0);
+    if(precos.length >= 2) {{
+        const min = Math.min(...precos); const max = Math.max(...precos);
+        const gap = (((max-min)/min)*100).toFixed(1);
+        html += `
+        <div class="chart-metric-card">
+            <div class="chart-metric-val" style="color:#a78bfa">+${{gap}}%</div>
+            <div class="chart-metric-lbl">Gap vs. líder</div>
+        </div>`;
+    }}
+
+    document.getElementById('chartKpis').innerHTML = html;
+}}
+
+// ── Ponto de entrada chamado pelo botão "Gerar Gráfico" ───────────
+function abrirGrafico(jsonStr) {{
+    try {{
+        // Restaura entidades HTML escapadas pelo Python
+        const clean = jsonStr.replace(/&#39;/g, "'");
+        _chartPayload = JSON.parse(clean);
+    }} catch(e) {{
+        showToast('❌ Erro ao parsear dados do gráfico.', '#E8253A', '#1a0810', '#f87171');
+        return;
+    }}
+
+    // Reseta estado
+    _activeTab = 0;
+    _destroyChart();
+    document.getElementById('chartCanvas').style.display = 'block';
+    document.getElementById('chartLegend').innerHTML = '';
+    document.getElementById('chartCta').innerHTML = '';
+    document.getElementById('filterRow').style.display = 'flex';
+    document.getElementById('priceFilter').value = 'preco_original';
+
+    // Ativa a aba 1 visualmente
+    document.querySelectorAll('.chart-tab').forEach((t,i) => t.classList.toggle('active', i===0));
+
+    // Renderiza KPIs e primeiro cruzamento
+    _renderKpis(_chartPayload);
+    renderCruzamento1();
+
+    // Abre o modal
+    document.getElementById('chartModal').classList.add('open');
+}}
+
+function fecharGrafico() {{
+    document.getElementById('chartModal').classList.remove('open');
+    _destroyChart();
+}}
 </script>
 </body>
 </html>"""
