@@ -110,15 +110,21 @@ def _chart_payload(df: pd.DataFrame) -> str:
     for mod in COLUNAS_PRECO_CANONICAS:
         if mod in df.columns:
             serie = pd.to_numeric(df[mod], errors="coerce")
-            cruzamento1[mod] = (
+            # CORREÇÃO: usa None em vez de 0 para farmácias sem dados nessa modalidade.
+            # O valor 0 era interpretado pelo frontend como "preço zero real", causando
+            # os KPIs mostrarem R$ 0,00 e o gap competitivo mostrar "dados insuficientes".
+            # Com None, o JS pode distinguir ausência de dado de preço genuinamente zero.
+            medias = (
                 df.assign(_p=serie)
                 .groupby("farmacia")["_p"]
                 .mean()
                 .round(2)
                 .reindex(farmacias)
-                .fillna(0)
-                .to_dict()
             )
+            cruzamento1[mod] = {
+                f: (None if pd.isna(v) else float(v))
+                for f, v in medias.items()
+            }
 
     # 1b. Se nenhuma coluna canônica foi encontrada, detecta dinamicamente
     #     qualquer coluna numérica com hint de preco/valor (aliases do Athena)
@@ -129,15 +135,17 @@ def _chart_payload(df: pd.DataFrame) -> str:
             if any(h in col.lower() for h in PRECO_HINTS) or pd.api.types.is_numeric_dtype(df[col]):
                 serie = pd.to_numeric(df[col], errors="coerce")
                 if serie.notna().any():
-                    cruzamento1[col] = (
+                    medias = (
                         df.assign(_p=serie)
                         .groupby("farmacia")["_p"]
                         .mean()
                         .round(2)
                         .reindex(farmacias)
-                        .fillna(0)
-                        .to_dict()
                     )
+                    cruzamento1[col] = {
+                        f: (None if pd.isna(v) else float(v))
+                        for f, v in medias.items()
+                    }
 
     # ── Cruzamento 2: preços por modalidade por farmácia (mesma estrutura,
     #    mas focada na leitura de agressividade vertical) ─────────────────────

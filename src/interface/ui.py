@@ -1336,25 +1336,35 @@ function intelRenderC1() {{
     const farmacias = p.farmacias || [];
     const dadosMod = (p.cruzamento1 || {{}})[mod] || {{}};
 
+    // CORREÇÃO: usa null (dado ausente) vs 0 (preço real zero) para não mostrar R$ 0,00
+    // dadosMod[f] pode ser null (farmácia sem essa modalidade na query) ou um número real.
+    const getVal = f => {{ const v = dadosMod[f]; return (v === null || v === undefined) ? null : Number(v); }};
+
     // KPIs
     const kpiEl = document.getElementById('c1-kpis');
     kpiEl.innerHTML = '';
     farmacias.forEach(f => {{
-        const val = dadosMod[f] || 0;
+        const val = getVal(f);
         const cor = corFarmacia(f);
+        // Se a modalidade não está na query, exibe aviso em vez de R$ 0,00
+        const valDisplay = val !== null
+            ? fmtBRL(val)
+            : `<span style="font-size:12px;color:var(--text-muted);">Não disponível<br><span style="font-size:11px;">esta consulta não retornou este preço</span></span>`;
         kpiEl.innerHTML += `
         <div class="intel-kpi" style="border-color:${{cor}}22;">
-            <div class="intel-kpi-val" style="color:${{cor}};">${{fmtBRL(val)}}</div>
+            <div class="intel-kpi-val" style="color:${{cor}};">${{valDisplay}}</div>
             <div class="intel-kpi-lbl">${{f}}</div>
         </div>`;
     }});
 
-    // Gráfico
+    // Gráfico — barras com null são tratadas como 0 no canvas mas sem tooltip enganoso
     _chartC1 = destroyChart(_chartC1);
     const ctx = document.getElementById('c1-canvas').getContext('2d');
-    const values = farmacias.map(f => dadosMod[f] || 0);
+    const values = farmacias.map(f => {{ const v = getVal(f); return v !== null ? v : 0; }});
     const colors = farmacias.map(f => corFarmacia(f));
-    const colorsAlpha = colors.map(c => c + '33');
+    // Barras com dados ausentes ficam tracejadas/opacas para sinalizar ausência
+    const colorsAlpha = farmacias.map(f => getVal(f) !== null ? corFarmacia(f) + '33' : 'rgba(100,100,100,0.15)');
+    const borderColors = farmacias.map(f => getVal(f) !== null ? corFarmacia(f) : 'rgba(150,150,150,0.4)');
 
     _chartC1 = new Chart(ctx, {{
         type: 'bar',
@@ -1364,7 +1374,7 @@ function intelRenderC1() {{
                 label: MODAL_LABELS[mod] || mod,
                 data: values,
                 backgroundColor: colorsAlpha,
-                borderColor: colors,
+                borderColor: borderColors,
                 borderWidth: 2,
                 borderRadius: 10,
                 borderSkipped: false,
@@ -1377,7 +1387,10 @@ function intelRenderC1() {{
                 legend: {{ display: false }},
                 tooltip: {{
                     callbacks: {{
-                        label: ctx => ' ' + fmtBRL(ctx.parsed.y)
+                        label: ctx => {{
+                            const f = farmacias[ctx.dataIndex];
+                            return getVal(f) !== null ? ' ' + fmtBRL(ctx.parsed.y) : ' Dado não disponível nesta consulta';
+                        }}
                     }},
                     backgroundColor: '#1a1a2e',
                     borderColor: 'rgba(255,255,255,0.08)',
@@ -1417,17 +1430,22 @@ function intelRenderC1() {{
     ).join('');
 
     // CTA automático com Gap%
+    // CORREÇÃO: só calcula gap se AMBAS as farmácias têm valor real (não null)
     const ctaEl = document.getElementById('c1-cta-text');
     if(farmacias.length >= 2) {{
-        const vA = dadosMod[farmacias[0]] || 0;
-        const vB = dadosMod[farmacias[1]] || 0;
-        if(vA > 0 && vB > 0) {{
-            const lider   = vA < vB ? farmacias[0] : farmacias[1];
+        const vA = getVal(farmacias[0]);
+        const vB = getVal(farmacias[1]);
+        if(vA !== null && vB !== null && vA > 0 && vB > 0) {{
+            const lider    = vA < vB ? farmacias[0] : farmacias[1];
             const seguidor = vA < vB ? farmacias[1] : farmacias[0];
-            const vLider  = Math.min(vA, vB);
-            const vSeg    = Math.max(vA, vB);
-            const gap     = calcGap(vSeg, vLider).toFixed(1);
+            const vLider   = Math.min(vA, vB);
+            const vSeg     = Math.max(vA, vB);
+            const gap      = calcGap(vSeg, vLider).toFixed(1);
             ctaEl.innerHTML = `<strong>${{lider}}</strong> está aplicando ${{MODAL_LABELS[mod]||mod}} <strong>${{gap}}% menor</strong> que ${{seguidor}} (${{fmtBRL(vLider)}} vs ${{fmtBRL(vSeg)}}). Margem de elasticidade local pressionada pela liderança de ${{lider}}.`;
+        }} else if(vA === null || vB === null) {{
+            // CORREÇÃO: informa que a modalidade não foi retornada pela query, em vez de "dados insuficientes"
+            const modLabel = MODAL_LABELS[mod] || mod;
+            ctaEl.innerHTML = `⚠️ A consulta atual não retornou a coluna <strong>${{modLabel}}</strong>. Faça uma pergunta que inclua este tipo de preço para ver o comparativo.`;
         }} else {{
             ctaEl.innerHTML = 'Dados insuficientes para calcular o gap competitivo.';
         }}
