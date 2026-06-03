@@ -1,20 +1,18 @@
 """
 ╔══════════════════════════════════════════════════════════════════╗
 ║           FARMAZZINI INTEL — APP PRINCIPAL (STREAMLIT)          ║
-║                    VERSÃO CORRIGIDA                              ║
+║              VERSÃO ULTRA-FLUIDA COM SEPARAÇÃO DE ESTADOS        ║
 ║                                                                  ║
-║  PROBLEMA ORIGINAL:                                              ║
-║  O RECEPTOR_HTML e o componente do chat rodavam em iframes       ║
-║  separados. O postMessage saía do iframe do chat, mas o          ║
-║  listener estava em OUTRO iframe — nunca se comunicavam.         ║
-║  Além disso, window.location de iframes cross-origin é           ║
-║  bloqueado por segurança do navegador.                           ║
+║  PROBLEMA RESOLVIDO:                                             ║
+║  O processamento na AWS demorava e deixava o iframe em tela      ║
+║  preta ou travada devido à latência de rede em navegação direta. ║
 ║                                                                  ║
-║  SOLUÇÃO:                                                        ║
-║  O iframe do chat usa fetch() para chamar a própria URL do       ║
-║  Streamlit com os query_params como parâmetros GET.              ║
-║  Isso aciona o st.query_params → st.rerun() sem depender         ║
-║  de postMessage ou window.parent.                                ║
+║  SOLUÇÃO DE FLUIDEZ:                                             ║
+║  1. A ação "send" salva a pergunta e adiciona um balão de        ║
+║     loading HTML com ícone de rotação nativo instantaneamente.   ║
+║  2. O Streamlit limpa a URL e atualiza o iframe em milissegundos.║
+║  3. No ciclo estável seguinte, o script detecta o loading, roda  ║
+║     o processamento AWS e substitui a mensagem de carregamento.  ║
 ╚══════════════════════════════════════════════════════════════════╝
 """
 
@@ -86,7 +84,6 @@ params = st.query_params
 if "action" in params:
     action = params.get("action")
 
-    # Guard: marca que já processamos para não reprocessar em loops
     if action == "send" and "msg" in params:
         user_msg  = params.get("msg", "").strip()
         db_filter = params.get("db", "todas")
@@ -107,26 +104,29 @@ if "action" in params:
                 ja_tem = (ultima.get("sender") == "user" and ultima.get("text") == user_msg)
 
                 if not ja_tem:
+                    # 1. Adiciona a mensagem do usuário instantaneamente
                     chat["messages"].append({"sender": "user", "text": user_msg})
 
                     if chat["title"].startswith("Nova Consulta"):
                         chat["title"] = (user_msg[:20] + "...") if len(user_msg) > 20 else user_msg
 
-                    resposta = processar_mensagem(
-                        mensagem=user_msg,
-                        db_filter=db_filter,
-                        historico=chat["messages"]
-                    )
-
-                    bot_text = f"""
-                        {resposta}
-                        <div class="action-row" style="margin-top:20px;border-top:1px solid var(--border);padding-top:12px;">
-                            <button class="action-btn" onclick="exportCSV()">
-                                <i class="fa-solid fa-file-csv"></i> 📥 Exportar CSV
-                            </button>
-                        </div>
+                    # 2. ADICIONA O LOADING HTML IMEDIATAMENTE (Atualização em milissegundos)
+                    # Não executa a query pesada aqui para liberar o renderizador do iframe
+                    loading_html = f"""
+                    <div class="loading-container" style="display: flex; align-items: center; gap: 12px; padding: 8px 0; color: #a1a1aa;">
+                        <i class="fa-solid fa-circle-notch fa-spin" style="font-size: 20px; color: #E8253A;"></i>
+                        <span style="font-family: 'Urbanist', sans-serif; font-size: 15px; font-weight: 500; letter-spacing: 0.3px;">
+                            Buscando dados na infraestrutura AWS Farmazzini...
+                        </span>
+                    </div>
                     """
-                    chat["messages"].append({"sender": "bot", "text": bot_text})
+                    chat["messages"].append({
+                        "sender": "bot",
+                        "text": loading_html,
+                        "is_loading": True,       # Flag para identificar o processamento pendente
+                        "raw_query": user_msg,    # Salva a pergunta para usar na AWS no ciclo estável
+                        "saved_db": db_filter     # Salva o filtro de banco de dados correspondente
+                    })
 
     elif action == "new_chat":
         new_id = st.session_state.next_id
@@ -161,6 +161,45 @@ if "action" in params:
 
     st.query_params.clear()
     st.rerun()
+
+# ─────────────────────────────────────────────
+# SEGUNDO PLANO: PROCESSAR PIPELINE PESADO DA AWS
+# ─────────────────────────────────────────────
+# Varre se o chat ativo possui alguma mensagem pendente de processamento com a tag "is_loading"
+chat_atual = next(
+    (c for c in st.session_state.chats if c["id"] == st.session_state.active_chat_id),
+    None
+)
+
+if chat_atual and chat_atual["messages"]:
+    ultima_msg = chat_atual["messages"][-1]
+
+    if ultima_msg.get("is_loading") is True:
+        # Recupera as informações do estado pendente
+        query_pendente = ultima_msg.get("raw_query")
+        db_pendente = ultima_msg.get("saved_db", "todas")
+
+        # Roda o processamento da AWS em segundo plano estável, sem bloquear o iframe
+        resposta = processar_mensagem(
+            mensagem=query_pendente,
+            db_filter=db_pendente,
+            historico=chat_atual["messages"][:-1]  # Envia o histórico sem o bloco temporário de loading
+        )
+
+        bot_text = f"""
+            {resposta}
+            <div class="action-row" style="margin-top:20px;border-top:1px solid var(--border);padding-top:12px;">
+                <button class="action-btn" onclick="exportCSV()">
+                    <i class="fa-solid fa-file-csv"></i> 📥 Exportar CSV
+                </button>
+            </div>
+        """
+        
+        # Substitui o bloco de carregamento temporário pelo HTML final com os botões de ação
+        chat_atual["messages"][-1] = {"sender": "bot", "text": bot_text}
+
+        # Força uma atualização limpa para exibir o resultado final
+        st.rerun()
 
 # ─────────────────────────────────────────────
 # SERIALIZAR ESTADO
