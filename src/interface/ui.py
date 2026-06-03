@@ -410,7 +410,9 @@ tr:last-child td {{ border-bottom:none; }}
         </div>
       </div>
       <p class="disclaimer">
+
         Farmazzini Intel pode cometer erros. Verifique informações importantes antes de tomar decisões estratégicas.
+        
       </p>
     </div>
   </div>
