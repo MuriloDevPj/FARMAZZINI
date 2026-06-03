@@ -210,7 +210,7 @@ html, body {{
     position:relative;
     flex-shrink:0;
     background:linear-gradient(to top, rgba(6,6,8,0.98) 70%, transparent);
-    padding:16px 40px 0px;
+    padding:16px 40px 20px;
     display:flex; flex-direction:column; align-items:center; gap:12px;
     z-index:100;
     width:100%;
@@ -240,8 +240,7 @@ html, body {{
 }}
 .disclaimer {{
     font-size:12px; color:var(--text-muted);
-    text-align:center;
-    padding-bottom:16px;
+    text-align:center; padding-bottom:8px;
     line-height:1.5;
 }}
 .disclaimer a {{
