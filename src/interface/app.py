@@ -64,20 +64,13 @@ if not st.session_state.autenticado and _params_auth.get("action") == "login":
     _u = _params_auth.get("usr", "").strip()
     _p = _params_auth.get("pwd", "")
     if USUARIOS_VALIDOS.get(_u) == _p:
-        st.session_state.autenticado    = True
-        st.session_state.usuario_logado = _u
-        st.session_state.login_erro     = False
-        # Injeta JS para salvar token no localStorage e redirecionar limpo
-        _token = _gerar_token(_u)
+        st.session_state.autenticado         = True
+        st.session_state.usuario_logado      = _u
+        st.session_state.login_erro          = False
+        st.session_state._pending_tok        = _gerar_token(_u)
+        st.session_state._pending_tok_user   = _u
         st.query_params.clear()
-        components.html(f"""
-        <script>
-            localStorage.setItem('fz_session_token', '{_token}');
-            localStorage.setItem('fz_session_user',  '{_u}');
-            window.parent.location.href = window.parent.location.pathname;
-        </script>
-        """, height=0)
-        st.stop()
+        st.rerun()
     else:
         st.session_state.login_erro = True
         st.query_params.clear()
@@ -306,7 +299,7 @@ html, body {{
     <!-- Marca -->
     <div class="login-brand">
         <div class="brand-pill">Inteligência de Mercado</div>
-        <div class="brand-logo">FARM A<span class="zz">ZZ</span>INI</div>
+        <div class="brand-logo">FARMA<span class="zz">ZZ</span>INI</div>
         <div class="brand-sub">Intel &mdash; Análise Competitiva em Tempo Real</div>
     </div>
 
@@ -402,6 +395,17 @@ function fazerLogin() {{
 # ═══════════════════════════════════════════════════════
 # A PARTIR DAQUI: CHATBOT ORIGINAL (sem alterações)
 # ═══════════════════════════════════════════════════════
+
+# ── Salva token no localStorage após login bem-sucedido ──
+if st.session_state.get("_pending_tok"):
+    _tok  = st.session_state.pop("_pending_tok")
+    _tuser = st.session_state.pop("_pending_tok_user", "")
+    components.html(f"""<script>
+        try {{
+            localStorage.setItem('fz_session_token', '{_tok}');
+            localStorage.setItem('fz_session_user',  '{_tuser}');
+        }} catch(e) {{}}
+    </script>""", height=0)
 
 st.markdown("""
     <style>
