@@ -1,7 +1,4 @@
- •313 lines
-•
-Formatting may be inconsistent from source
-# ==============================================================================
+ # ==============================================================================
 # aws_client.py — Integração com Amazon Bedrock, Step Functions e S3
 # Projeto Farmazzini | Poli Júnior | Equipe 06
 # CORREÇÃO: Resiliência contra loops infinitos e latência de escrita assíncrona
