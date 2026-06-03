@@ -267,15 +267,28 @@ def processar_mensagem(mensagem: str, db_filter: str = "todas", historico: list 
     chart_json = _chart_payload(df)
 
     # Botão de gráfico só aparece quando há dados competitivos suficientes
+    # CORREÇÃO: JSON embutido em onclick quebra por causa das aspas duplas e simples.
+    # Solução: gravar o payload num <script> com ID único e referenciar por variável JS.
+    import uuid as _uuid
     btn_grafico = ""
+    script_payload = ""
     if chart_json:
+        payload_var = "chartData_" + _uuid.uuid4().hex[:8]
+        # chart_json já tem ensure_ascii=False e &#39; — desfazemos o &#39; aqui pois
+        # vamos embutir dentro de um <script>, não de um atributo HTML.
+        chart_json_raw = chart_json.replace("&#39;", "'")
+        script_payload = f"""<script>
+var {payload_var} = {chart_json_raw};
+</script>"""
         btn_grafico = f"""
-        <button class="action-btn" onclick="abrirGrafico('{chart_json}')"
+        <button class="action-btn"
+                onclick="abrirGrafico({payload_var})"
                 style="border-color:rgba(232,37,58,0.35);color:#E8253A;">
             <i class="fa-solid fa-chart-bar"></i> Gerar Gráfico
         </button>"""
 
     return f"""
+    {script_payload}
     ✅ Consulta executada com sucesso!
     {_metricas_rapidas(df)}
     {_df_para_html(df)}

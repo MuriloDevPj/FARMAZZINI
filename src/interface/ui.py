@@ -1325,13 +1325,17 @@ function _renderKpis(payload) {{
 }}
 
 // ── Ponto de entrada chamado pelo botão "Gerar Gráfico" ───────────
-function abrirGrafico(jsonStr) {{
+function abrirGrafico(payload) {{
     try {{
-        // Restaura entidades HTML escapadas pelo Python
-        const clean = jsonStr.replace(/&#39;/g, "'");
-        _chartPayload = JSON.parse(clean);
+        // payload já é um objeto JS (passado via variável, não string)
+        if(typeof payload === 'string') {{
+            const clean = payload.replace(/&#39;/g, "'");
+            _chartPayload = JSON.parse(clean);
+        }} else {{
+            _chartPayload = payload;
+        }}
     }} catch(e) {{
-        showToast('❌ Erro ao parsear dados do gráfico.', '#E8253A', '#1a0810', '#f87171');
+        showToast('❌ Erro ao parsear dados do gráfico: ' + e.message, '#E8253A', '#1a0810', '#f87171');
         return;
     }}
 
