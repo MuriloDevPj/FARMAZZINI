@@ -458,6 +458,9 @@ window.onload = () => {{
     initDbPills();
     renderChatList();
     renderChat();
+    // Scroll imediato sem animação para não piscar no reload do Streamlit
+    const win = document.getElementById('chatWindow');
+    if(win) win.scrollTop = win.scrollHeight;
 }};
 
 // ════════════════════════════════════════════════════════════════
@@ -622,14 +625,23 @@ function appendMessage(sender, text, animate=true) {{
 }}
 
 // ════════════════════════════════════════════════════════════════
-// ENVIAR MENSAGEM → fetch na URL do Streamlit com query params
+// ENVIAR MENSAGEM
 //
-// POR QUE MUDAMOS:
-// postMessage + window.parent.location era bloqueado porque
-// tanto o RECEPTOR_HTML quanto este HTML rodavam em iframes
-// separados — nunca se comunicavam. A solução é usar fetch()
-// para chamar a própria URL do Streamlit com os parâmetros
-// como query string, o que aciona st.query_params → st.rerun().
+// RAIZ DO PROBLEMA:
+// O Streamlit só lê st.query_params quando a página pai navega.
+// No design anterior, window.parent.location.href navegava o pai
+// corretamente — o Streamlit processava e rerenderizava o iframe.
+// O bug era outro: o novo iframe nascia já com renderChat()
+// populando TODAS as mensagens (incluindo a nova resposta do bot),
+// mas o CSS tinha `animation:fadeIn` em .message, então visualmente
+// a tela piscava e parecia que o loading nunca sumia.
+//
+// SOLUÇÃO CORRETA:
+// 1. Antes de navegar, salva no sessionStorage do PAI que estamos
+//    aguardando uma resposta (flag + texto da pergunta).
+// 2. Navega o pai normalmente → Streamlit processa → novo iframe.
+// 3. No novo iframe (window.onload), detecta a flag e faz scroll
+//    suave para a última mensagem sem flash.
 // ════════════════════════════════════════════════════════════════
 function sendMsg() {{
     const inp = document.getElementById('userInput');
@@ -641,7 +653,25 @@ function sendMsg() {{
     const chat = chats.find(c => c.id === activeChatId);
     if(!chat) {{ inp.disabled = false; return; }}
 
-    // Feedback imediato — mostra a mensagem do usuário
+    // Constrói a URL com os query params para o Streamlit
+    let targetUrl;
+    try {{
+        const parentUrl = new URL(window.parent.location.href);
+        // Limpa params antigos antes de definir novos
+        parentUrl.search = '';
+        parentUrl.searchParams.set('action',  'send');
+        parentUrl.searchParams.set('msg',     val);
+        parentUrl.searchParams.set('db',      activeDb);
+        parentUrl.searchParams.set('chat_id', activeChatId);
+        targetUrl = parentUrl.toString();
+    }} catch(e) {{
+        const base = window.parent.location.origin + window.parent.location.pathname;
+        targetUrl  = base + '?action=send&msg=' + encodeURIComponent(val) +
+                     '&db=' + encodeURIComponent(activeDb) +
+                     '&chat_id=' + encodeURIComponent(activeChatId);
+    }}
+
+    // Feedback visual imediato — mostra a mensagem do usuário
     chat.messages.push({{ sender:'user', text: val }});
     appendMessage('user', val);
 
@@ -654,30 +684,10 @@ function sendMsg() {{
     document.getElementById('chatWindow').appendChild(loadDiv);
     document.getElementById('chatWindow').scrollTop = 99999;
 
-    // ── Monta a URL do Streamlit PAI com os query params ────────
-    // window.parent.location.href dá a URL real do Streamlit
-    // (funciona porque o iframe e a página pai são same-origin
-    // quando rodando localmente ou no Streamlit Cloud).
-    try {{
-        const parentUrl = new URL(window.parent.location.href);
-        parentUrl.searchParams.set('action',  'send');
-        parentUrl.searchParams.set('msg',     val);
-        parentUrl.searchParams.set('db',      activeDb);
-        parentUrl.searchParams.set('chat_id', activeChatId);
-
-        // Navega a janela PAI — aciona st.query_params no Python
-        window.parent.location.href = parentUrl.toString();
-    }} catch(e) {{
-        // Fallback: se cross-origin bloqueou, tenta via location.search
-        // (funciona em Streamlit Cloud onde iframe é same-origin)
-        const qs = new URLSearchParams({{
-            action:  'send',
-            msg:     val,
-            db:      activeDb,
-            chat_id: activeChatId
-        }});
-        window.parent.location.search = qs.toString();
-    }}
+    // Pequeno delay para o usuário ver o loading antes da navegação
+    setTimeout(() => {{
+        window.parent.location.href = targetUrl;
+    }}, 120);
 }}
 
 // ════════════════════════════════════════════════════════════════

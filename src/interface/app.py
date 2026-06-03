@@ -86,6 +86,7 @@ params = st.query_params
 if "action" in params:
     action = params.get("action")
 
+    # Guard: marca que já processamos para não reprocessar em loops
     if action == "send" and "msg" in params:
         user_msg  = params.get("msg", "").strip()
         db_filter = params.get("db", "todas")
@@ -100,26 +101,32 @@ if "action" in params:
             )
 
             if chat:
-                chat["messages"].append({"sender": "user", "text": user_msg})
+                # Evita duplicar mensagem se o Streamlit rerenderizar
+                # sem reprocessar (ex: hot reload em dev)
+                ultima = chat["messages"][-1] if chat["messages"] else {}
+                ja_tem = (ultima.get("sender") == "user" and ultima.get("text") == user_msg)
 
-                if chat["title"].startswith("Nova Consulta"):
-                    chat["title"] = (user_msg[:20] + "...") if len(user_msg) > 20 else user_msg
+                if not ja_tem:
+                    chat["messages"].append({"sender": "user", "text": user_msg})
 
-                resposta = processar_mensagem(
-                    mensagem=user_msg,
-                    db_filter=db_filter,
-                    historico=chat["messages"]
-                )
+                    if chat["title"].startswith("Nova Consulta"):
+                        chat["title"] = (user_msg[:20] + "...") if len(user_msg) > 20 else user_msg
 
-                bot_text = f"""
-                    {resposta}
-                    <div class="action-row" style="margin-top:20px;border-top:1px solid var(--border);padding-top:12px;">
-                        <button class="action-btn" onclick="exportCSV()">
-                            <i class="fa-solid fa-file-csv"></i> 📥 Exportar CSV
-                        </button>
-                    </div>
-                """
-                chat["messages"].append({"sender": "bot", "text": bot_text})
+                    resposta = processar_mensagem(
+                        mensagem=user_msg,
+                        db_filter=db_filter,
+                        historico=chat["messages"]
+                    )
+
+                    bot_text = f"""
+                        {resposta}
+                        <div class="action-row" style="margin-top:20px;border-top:1px solid var(--border);padding-top:12px;">
+                            <button class="action-btn" onclick="exportCSV()">
+                                <i class="fa-solid fa-file-csv"></i> 📥 Exportar CSV
+                            </button>
+                        </div>
+                    """
+                    chat["messages"].append({"sender": "bot", "text": bot_text})
 
     elif action == "new_chat":
         new_id = st.session_state.next_id
