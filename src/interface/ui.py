@@ -22,12 +22,14 @@ def render_full_ui(chats: str, active_chat_id: int, active_db: str) -> str:
     --glow-red:     rgba(230,57,70,0.22);
 }}
 *{{ box-sizing:border-box; margin:0; padding:0; }}
-html {{ height:100%; overflow:hidden; }}
-body {{
+html, body {{
     font-family:'Urbanist',sans-serif;
     background:var(--bg-main);
     color:var(--text-main);
     height:100vh;
+    min-height:100vh;
+    margin:0;
+    padding:0;
     overflow:hidden;
     position:relative;
 }}
@@ -393,10 +395,10 @@ let sidebarOpen  = true;
 
 // ── Bridge para o Python (via query_params) ──────────────────
 function toPython(action, params={{}}) {{
-  const url = new URL(window.parent.location.href);
+  const url = new URL(window.location.href);
   url.searchParams.set('action', action);
   for(const [k,v] of Object.entries(params)) url.searchParams.set(k,v);
-  window.parent.location.href = url.toString();
+  window.location.href = url.toString();
 }}
 
 // ── Init ─────────────────────────────────────────────────────
@@ -514,41 +516,7 @@ function triggerCSV() {{
   setTimeout(()=>t.style.display='none', 3500);
 }}
 
-// ── Ajusta altura para ocupar toda a tela ────────────────────
-(function fixHeight() {{
-  function applyHeight(h) {{
-    document.documentElement.style.height = h + 'px';
-    document.documentElement.style.minHeight = h + 'px';
-    document.body.style.height = h + 'px';
-    document.body.style.minHeight = h + 'px';
-    var shell = document.querySelector('.app-shell');
-    if (shell) {{
-      shell.style.height = h + 'px';
-      shell.style.minHeight = h + 'px';
-    }}
-    var main = document.querySelector('.main-content');
-    if (main) {{
-      main.style.height = h + 'px';
-      main.style.minHeight = h + 'px';
-    }}
-    // Pede ao Streamlit para redimensionar o iframe
-    window.parent.postMessage({{ type: 'streamlit:setFrameHeight', height: h }}, '*');
-  }}
 
-  function getHeight() {{
-    try {{ return window.parent.innerHeight; }}
-    catch(e) {{ return window.screen.availHeight || 900; }}
-  }}
-
-  function run() {{ applyHeight(getHeight()); }}
-
-  run();
-  // Garante ajuste após fontes/CSS carregarem
-  setTimeout(run, 100);
-  setTimeout(run, 500);
-  setTimeout(run, 1000);
-  window.addEventListener('resize', run);
-}})();
 </script>
 </body>
 </html>"""
