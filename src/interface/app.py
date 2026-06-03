@@ -26,10 +26,13 @@ st.set_page_config(
 st.markdown("""
     <style>
         [data-testid="stAppViewContainer"] { padding: 0 !important; }
-        [data-testid="stHeader"] { display: none !important; }
+        [data-testid="stHeader"] { display: none !important; height: 0 !important; min-height: 0 !important; }
         [data-testid="stToolbar"] { display: none !important; }
+        [data-testid="stDecoration"] { display: none !important; }
+        header[data-testid="stHeader"] { display: none !important; }
         footer { display: none !important; }
         .block-container { padding: 0 !important; max-width: 100% !important; }
+        .stApp > header { display: none !important; }
     </style>
 """, unsafe_allow_html=True)
 
@@ -202,6 +205,10 @@ st.markdown("""
         overflow: hidden !important;
         height: 100dvh !important;
     }
+    [data-testid="stHeader"],
+    [data-testid="stToolbar"],
+    [data-testid="stDecoration"],
+    header { display: none !important; height: 0 !important; }
     iframe {
         display: block !important;
         border: none !important;
