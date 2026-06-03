@@ -340,6 +340,86 @@ tr:last-child td {{ border-bottom:none; }}
 }}
 .modal-btn-confirm:hover {{ background:var(--primary-mid); }}
 
+/* ── LOADING OVERLAY ── */
+.loading-overlay {{
+    display:none; position:fixed; inset:0; z-index:9999;
+    background: radial-gradient(ellipse 120% 80% at 50% -10%, rgba(180,20,45,0.35) 0%, rgba(80,0,18,0.18) 40%, transparent 70%),
+                radial-gradient(ellipse 80% 60% at 85% 90%, rgba(120,0,25,0.25) 0%, transparent 60%),
+                radial-gradient(ellipse 60% 50% at 10% 80%, rgba(160,15,35,0.15) 0%, transparent 55%),
+                #08030A;
+    flex-direction:column; align-items:center; justify-content:center; gap:32px;
+    animation: overlayFade 0.18s ease forwards;
+}}
+.loading-overlay.active {{ display:flex; }}
+@keyframes overlayFade {{ from{{opacity:0}} to{{opacity:1}} }}
+
+.loading-overlay-logo {{
+    font-size:22px; font-weight:700; letter-spacing:3px; color:#ffffff;
+    opacity:0.85;
+}}
+.loading-overlay-logo span {{ color:var(--primary); }}
+
+.loading-overlay-card {{
+    background:rgba(20,8,25,0.75); border:1px solid rgba(200,30,55,0.18);
+    border-radius:24px; padding:36px 48px;
+    display:flex; flex-direction:column; align-items:center; gap:20px;
+    backdrop-filter:blur(20px);
+    box-shadow:0 24px 60px rgba(0,0,0,0.7), 0 0 80px rgba(180,10,35,0.08);
+}}
+
+.loading-overlay-dots {{
+    display:flex; gap:10px; align-items:center;
+}}
+.loading-overlay-dots span {{
+    width:12px; height:12px; border-radius:50%;
+    background:var(--primary);
+    animation: dotPulse 1.4s ease-in-out infinite;
+    display:block;
+}}
+.loading-overlay-dots span:nth-child(1) {{ animation-delay:0s; }}
+.loading-overlay-dots span:nth-child(2) {{ animation-delay:0.2s; }}
+.loading-overlay-dots span:nth-child(3) {{ animation-delay:0.4s; }}
+@keyframes dotPulse {{
+    0%,80%,100% {{ transform:scale(0.7); opacity:0.3; }}
+    40%          {{ transform:scale(1.2); opacity:1; }}
+}}
+
+.loading-overlay-label {{
+    font-size:15px; color:var(--text-muted); font-weight:500; letter-spacing:0.5px;
+    text-align:center; line-height:1.5;
+}}
+.loading-overlay-label strong {{ color:#ffffff; font-weight:600; }}
+
+.loading-overlay-bar-wrap {{
+    width:220px; height:3px; background:rgba(255,255,255,0.06);
+    border-radius:4px; overflow:hidden;
+}}
+.loading-overlay-bar {{
+    height:100%; width:0%; background:linear-gradient(90deg, var(--primary-dark), var(--primary));
+    border-radius:4px;
+    animation: barProgress 30s cubic-bezier(0.1,0.4,0.2,1) forwards;
+}}
+@keyframes barProgress {{
+    0%   {{ width:0% }}
+    10%  {{ width:15% }}
+    30%  {{ width:35% }}
+    60%  {{ width:60% }}
+    85%  {{ width:80% }}
+    100% {{ width:92% }}
+}}
+
+/* Glow flutuante atrás do card */
+.loading-overlay-glow {{
+    position:absolute; width:60vw; height:60vw; border-radius:50%;
+    background:radial-gradient(ellipse, rgba(200,20,50,0.22) 0%, transparent 70%);
+    filter:blur(80px); pointer-events:none; z-index:-1;
+    animation: glowPulse 3s ease-in-out infinite alternate;
+}}
+@keyframes glowPulse {{
+    from{{ transform:scale(1); opacity:0.6; }}
+    to  {{ transform:scale(1.15); opacity:1; }}
+}}
+
 @media(max-width:768px){{
     .sidebar {{ top:76px; left:8px; right:8px; width:calc(100% - 16px); }}
     .main-content {{ padding-left:0 !important; }}
@@ -365,6 +445,24 @@ tr:last-child td {{ border-bottom:none; }}
     <div class="modal-btns">
       <button class="modal-btn-cancel" onclick="closeModal()">Cancelar</button>
       <button class="modal-btn-confirm" onclick="confirmDelete()">Excluir</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ LOADING OVERLAY — exibido durante processamento da query ══ -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-overlay-glow"></div>
+  <div class="loading-overlay-logo">FARMAZZINI <span>INTEL</span></div>
+  <div class="loading-overlay-card">
+    <div class="loading-overlay-dots">
+      <span></span><span></span><span></span>
+    </div>
+    <div class="loading-overlay-label">
+      <strong id="overlayQuestion"></strong><br>
+      Consultando base de dados...
+    </div>
+    <div class="loading-overlay-bar-wrap">
+      <div class="loading-overlay-bar" id="overlayBar"></div>
     </div>
   </div>
 </div>
@@ -458,9 +556,18 @@ window.onload = () => {{
     initDbPills();
     renderChatList();
     renderChat();
-    // Scroll imediato sem animação para não piscar no reload do Streamlit
     const win = document.getElementById('chatWindow');
     if(win) win.scrollTop = win.scrollHeight;
+
+    // Fade-in suave pós-redirect: evita o flash branco entre overlay e conteúdo
+    const shell = document.querySelector('.app-shell');
+    if(shell) {{
+        shell.style.opacity = '0';
+        shell.style.transition = 'opacity 0.4s ease';
+        requestAnimationFrame(() => {{
+            requestAnimationFrame(() => {{ shell.style.opacity = '1'; }});
+        }});
+    }}
 }};
 
 // ════════════════════════════════════════════════════════════════
@@ -643,6 +750,33 @@ function appendMessage(sender, text, animate=true) {{
 // 3. No novo iframe (window.onload), detecta a flag e faz scroll
 //    suave para a última mensagem sem flash.
 // ════════════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════════
+// LOADING OVERLAY — controla a tela de loading durante a query
+// ════════════════════════════════════════════════════════════════
+function showLoadingOverlay(question) {{
+    const overlay = document.getElementById('loadingOverlay');
+    const label   = document.getElementById('overlayQuestion');
+    const bar     = document.getElementById('overlayBar');
+
+    // Mostra o trecho da pergunta truncado
+    const truncated = question.length > 55 ? question.substring(0, 55) + '…' : question;
+    label.textContent = truncated;
+
+    // Reinicia a barra de progresso
+    bar.style.animation = 'none';
+    bar.offsetHeight; // força reflow para reiniciar a animação
+    bar.style.animation = 'barProgress 30s cubic-bezier(0.1,0.4,0.2,1) forwards';
+
+    overlay.classList.add('active');
+}}
+
+function hideLoadingOverlay() {{
+    document.getElementById('loadingOverlay').classList.remove('active');
+}}
+
+// ════════════════════════════════════════════════════════════════
+// ENVIAR MENSAGEM
+// ════════════════════════════════════════════════════════════════
 function sendMsg() {{
     const inp = document.getElementById('userInput');
     const val = inp.value.trim();
@@ -653,29 +787,10 @@ function sendMsg() {{
     const chat = chats.find(c => c.id === activeChatId);
     if(!chat) {{ inp.disabled = false; return; }}
 
-    // Feedback visual imediato — mostra a mensagem do usuário
-    chat.messages.push({{ sender:'user', text: val }});
-    appendMessage('user', val);
+    // Exibe o overlay de loading com a pergunta do usuário ANTES do redirect
+    // Isso elimina a tela preta: o usuário vê a animação durante todo o processamento
+    showLoadingOverlay(val);
 
-    // Indicador de carregamento
-    const loadDiv = document.createElement('div');
-    loadDiv.className = 'message bot';
-    loadDiv.id = 'loadingMsg';
-    loadDiv.innerHTML = `<div class="avatar">FZ</div>
-        <div class="loading-bubble"><div class="dot-flashing"></div></div>`;
-    document.getElementById('chatWindow').appendChild(loadDiv);
-    document.getElementById('chatWindow').scrollTop = 99999;
-
-    // ─────────────────────────────────────────────────────────────
-    // CORREÇÃO: usa fetch() para acionar o Streamlit via query params
-    //
-    // window.parent.location é bloqueado por same-origin policy quando
-    // o iframe roda em domínio diferente (Streamlit Cloud, túneis, etc).
-    // A solução é fazer um GET para a própria origem do iframe (que é
-    // sempre acessível) com os params que o Streamlit lê em st.query_params.
-    // O Streamlit detecta a mudança de params, chama st.rerun() e
-    // rerenderiza o componente com a resposta do bot.
-    // ─────────────────────────────────────────────────────────────
     const params = new URLSearchParams({{
         action:  'send',
         msg:     val,
@@ -683,19 +798,12 @@ function sendMsg() {{
         chat_id: activeChatId,
     }});
 
-    // window.location.href dentro do iframe aponta para a URL do Streamlit
-    // (mesmo host/porta), portanto nunca dispara cross-origin block.
     const targetUrl = window.location.origin + window.location.pathname + '?' + params.toString();
 
-    fetch(targetUrl, {{ method: 'GET', mode: 'no-cors' }})
-        .catch(() => {{}}) // no-cors sempre resolve; ignoramos o resultado opaco
-        .finally(() => {{
-            // Após o fetch, recarrega o iframe apontando para a mesma URL
-            // com os params — o Streamlit processa e rerenderiza normalmente.
-            setTimeout(() => {{
-                window.location.href = targetUrl;
-            }}, 80);
-        }});
+    // Pequeno delay para garantir que o overlay renderize antes do redirect
+    setTimeout(() => {{
+        window.location.href = targetUrl;
+    }}, 120);
 }}
 
 // ════════════════════════════════════════════════════════════════
@@ -707,7 +815,8 @@ function hotTrigger(type) {{
         preco:   'Ache o produto mais barato do mercado e mostre a diferença para o preço da Farmazzini.',
         promos:  'Quais as maiores promoções de combos ou descontos progressivos da FarmaPonte ou Vera Cruz?'
     }};
-    document.getElementById('userInput').value = msgs[type];
+    const input = document.getElementById('userInput');
+    input.value = msgs[type];
     sendMsg();
 }}
 
@@ -738,4 +847,3 @@ document.getElementById('deleteModal').addEventListener('click', function(e) {{
 </script>
 </body>
 </html>"""
-
