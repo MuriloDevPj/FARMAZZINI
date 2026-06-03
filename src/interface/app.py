@@ -26,34 +26,15 @@ st.set_page_config(
 )
 
 # ─────────────────────────────────────────────
-# CREDENCIAIS DE ACESSO
-# ─────────────────────────────────────────────
-USUARIOS_VALIDOS = {
-    "Pedro Mazzini": "@2026"
-}
-
-# ─────────────────────────────────────────────
-# SESSION STATE — autenticação
-# CORREÇÃO COMPLETA:
-#   - Removido localStorage (causava loop infinito de redirect)
-#   - Removido token hash (desnecessário para este fluxo)
-#   - Lógica simplificada: query_params → session_state → rerun
+# SESSION STATE — autenticação (sem verificação)
 # ─────────────────────────────────────────────
 if "autenticado" not in st.session_state:
     st.session_state.autenticado = False
-if "login_erro" not in st.session_state:
-    st.session_state.login_erro = False
 
 _params_auth = st.query_params
 if not st.session_state.autenticado and _params_auth.get("action") == "login":
-    _u = _params_auth.get("usr", "").strip()
-    _p = _params_auth.get("pwd", "")
-    if USUARIOS_VALIDOS.get(_u) == _p:
-        st.session_state.autenticado    = True
-        st.session_state.usuario_logado = _u
-        st.session_state.login_erro     = False
-    else:
-        st.session_state.login_erro = True
+    st.session_state.autenticado    = True
+    st.session_state.usuario_logado = "visitante"
     st.query_params.clear()
     st.rerun()
 
@@ -61,14 +42,6 @@ if not st.session_state.autenticado and _params_auth.get("action") == "login":
 # TELA DE LOGIN
 # ─────────────────────────────────────────────
 if not st.session_state.autenticado:
-
-    erro_html = ""
-    if st.session_state.login_erro:
-        erro_html = """
-        <div class="err-box">
-            ⚠️&nbsp;&nbsp;Usuário ou senha inválidos. Tente novamente.
-        </div>
-        """
 
     login_page = f"""<!DOCTYPE html>
 <html lang="pt-br">
@@ -145,68 +118,6 @@ html, body {{
 }}
 .card-title {{ font-size: 22px; font-weight: 700; color: #fff; margin-bottom: 6px; }}
 .card-desc  {{ font-size: 14px; color: #9a9a9f; margin-bottom: 28px; }}
-.field-lbl  {{
-    font-size: 11px; font-weight: 700; text-transform: uppercase;
-    letter-spacing: 1px; color: #9a9a9f; margin-bottom: 8px;
-    display: block;
-}}
-.field-lbl-2 {{
-    font-size: 11px; font-weight: 700; text-transform: uppercase;
-    letter-spacing: 1px; color: #9a9a9f; margin-bottom: 8px; margin-top: 20px;
-    display: block;
-}}
-
-/* Inputs */
-.field-wrap {{ position: relative; }}
-.field-icon {{
-    position: absolute; left: 16px; top: 50%; transform: translateY(-50%);
-    color: rgba(154,154,159,0.5); font-size: 16px; pointer-events: none;
-}}
-.field-wrap input {{
-    width: 100%; height: 52px;
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 14px;
-    color: #fff; font-family: 'Urbanist', sans-serif;
-    font-size: 15px; font-weight: 500;
-    padding: 0 48px 0 46px;
-    caret-color: #E8253A;
-    outline: none;
-    transition: border-color 0.25s, box-shadow 0.25s, background 0.25s;
-}}
-.field-wrap input:focus {{
-    border-color: rgba(232,37,58,0.55);
-    box-shadow: 0 0 0 3px rgba(232,37,58,0.10);
-    background: rgba(232,37,58,0.04);
-}}
-.field-wrap input::placeholder {{ color: rgba(154,154,159,0.40); }}
-
-/* Toggle senha */
-.toggle-eye {{
-    position: absolute; right: 16px; top: 50%; transform: translateY(-50%);
-    color: rgba(154,154,159,0.5); cursor: pointer; font-size: 16px;
-    transition: color 0.2s;
-}}
-.toggle-eye:hover {{ color: #E8253A; }}
-
-/* Erro */
-.err-box {{
-    background: rgba(232,37,58,0.10);
-    border: 1px solid rgba(232,37,58,0.35);
-    border-radius: 12px; padding: 12px 16px;
-    display: flex; align-items: center; gap: 10px;
-    font-size: 13px; font-weight: 500; color: #ff6b7a;
-    margin-bottom: 20px;
-    animation: shake 0.38s ease;
-}}
-@keyframes shake {{
-    0%,100%{{transform:translateX(0)}}
-    20%{{transform:translateX(-6px)}}
-    40%{{transform:translateX(6px)}}
-    60%{{transform:translateX(-4px)}}
-    80%{{transform:translateX(4px)}}
-}}
-
 /* Botão */
 .btn-login {{
     width: 100%; height: 54px; margin-top: 28px;
@@ -238,15 +149,7 @@ html, body {{
 .btn-login.loading .btn-text {{ opacity: 0.7; }}
 @keyframes spin {{ to {{ transform: rotate(360deg); }} }}
 
-/* Divisor + rodapé */
-.divider-row {{
-    display: flex; align-items: center; gap: 12px;
-    font-size: 11px; color: rgba(154,154,159,0.4); font-weight: 600;
-    margin: 20px 0 0; text-transform: uppercase; letter-spacing: 1px;
-}}
-.divider-row::before, .divider-row::after {{
-    content:''; flex:1; height:1px; background: rgba(255,255,255,0.06);
-}}
+/* Rodapé */
 .card-foot {{
     text-align: center; font-size: 11px; color: rgba(154,154,159,0.45);
     line-height: 1.75; margin-top: 16px;
@@ -270,69 +173,28 @@ html, body {{
 
     <!-- Card -->
     <div class="login-card">
-        <div class="card-title">Bem-vindo de volta 👋</div>
-        <div class="card-desc">Faça login para acessar o painel de inteligência.</div>
-
-        {erro_html}
-
-        <span class="field-lbl">Usuário</span>
-        <div class="field-wrap">
-            <span class="field-icon">&#9901;</span>
-            <input id="inp-user" type="text" placeholder="Seu nome de usuário" autocomplete="username" autofocus>
-        </div>
-
-        <span class="field-lbl-2">Senha</span>
-        <div class="field-wrap">
-            <span class="field-icon">&#128274;</span>
-            <input id="inp-pass" type="password" placeholder="Sua senha de acesso" autocomplete="current-password">
-            <span class="toggle-eye" id="eye-toggle" onclick="toggleSenha()">&#128065;</span>
-        </div>
+        <div class="card-title">Bem-vindo 👋</div>
+        <div class="card-desc">Clique abaixo para acessar o painel de inteligência.</div>
 
         <button class="btn-login" id="btn-login" onclick="fazerLogin()">
             <div class="spinner"></div>
             <span class="btn-text">&#8594;&nbsp; Entrar no painel</span>
         </button>
 
-        <div class="divider-row">acesso restrito</div>
-        <div class="card-foot">
-            Plataforma exclusiva para a rede <strong>Farmazzini</strong>.<br>
-            Em caso de dúvidas, contacte o administrador do sistema.
+        <div class="card-foot" style="margin-top:24px;">
+            Plataforma de inteligência de mercado da rede <strong>Farmazzini</strong>.
         </div>
     </div>
 
 </div>
 
 <script>
-// Permite enviar com Enter
-document.getElementById('inp-user').addEventListener('keydown', function(e) {{
-    if (e.key === 'Enter') document.getElementById('inp-pass').focus();
-}});
-document.getElementById('inp-pass').addEventListener('keydown', function(e) {{
-    if (e.key === 'Enter') fazerLogin();
-}});
-
-function toggleSenha() {{
-    var inp = document.getElementById('inp-pass');
-    inp.type = inp.type === 'password' ? 'text' : 'password';
-}}
-
 function fazerLogin() {{
-    var btn  = document.getElementById('btn-login');
-    var user = document.getElementById('inp-user').value.trim();
-    var pass = document.getElementById('inp-pass').value;
-    if (!user || !pass) return;
-
+    var btn = document.getElementById('btn-login');
     btn.classList.add('loading');
     btn.disabled = true;
 
-    // CORREÇÃO FINAL: usa window.parent.location.href com pathname completo
-    // para forçar um reload real da página pai. Apenas .search não funciona
-    // dentro de iframe (Streamlit usa components.html que cria iframe isolado).
-    var params = new URLSearchParams({{
-        action: 'login',
-        usr:    user,
-        pwd:    pass
-    }});
+    var params = new URLSearchParams({{ action: 'login' }});
     window.parent.location.href = window.parent.location.pathname + '?' + params.toString();
 }}
 </script>
