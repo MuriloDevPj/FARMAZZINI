@@ -26,8 +26,8 @@ html, body {{
     font-family:'Urbanist',sans-serif;
     background:var(--bg-main);
     color:var(--text-main);
-    height:100vh;
-    max-height:100vh;
+    height:100dvh;
+    max-height:100dvh;
     min-height:unset;
     margin:0;
     padding:0;
@@ -46,7 +46,7 @@ html, body {{
     background:radial-gradient(circle,rgba(230,57,70,0.15) 0%,rgba(139,0,0,0.03) 60%,transparent 80%);
     filter:blur(100px); z-index:1; pointer-events:none; border-radius:50%;
 }}
-.app-shell {{ display:flex; width:100%; height:100vh; position:relative; z-index:2; overflow:hidden; }}
+.app-shell {{ display:flex; width:100%; height:100dvh; position:relative; z-index:2; overflow:hidden; }}
 
 /* ── SIDEBAR ── */
 .sidebar {{
@@ -58,6 +58,7 @@ html, body {{
     backdrop-filter:blur(25px);
     box-shadow:0 16px 40px rgba(0,0,0,0.7);
     transition:transform 0.35s cubic-bezier(0.25,0.8,0.25,1),opacity 0.35s ease;
+    max-height:calc(100dvh - 32px);
 }}
 .sidebar.collapsed {{ transform:translateX(-352px); opacity:0; pointer-events:none; }}
 .sidebar-header {{ display:flex; align-items:center; justify-content:space-between; }}
@@ -145,7 +146,7 @@ html, body {{
     flex-grow:1; display:flex; flex-direction:column;
     background:var(--bg-card); overflow:hidden;
     position:relative; z-index:2;
-    width:100%; height:100vh;
+    width:100%; height:100dvh;
     transition:padding-left 0.35s cubic-bezier(0.25,0.8,0.25,1);
     padding-left:352px;
 }}
@@ -175,7 +176,7 @@ html, body {{
 /* ── CHAT SCROLLER ── */
 .chat-scroller {{
     flex:1; overflow-y:auto; padding:40px;
-    padding-bottom:160px; /* espaço para input + botões fixos */
+    padding-bottom:24px;
     display:flex; flex-direction:column; gap:24px;
     min-height:0;
 }}
@@ -204,14 +205,15 @@ html, body {{
     box-shadow:0 8px 24px rgba(230,57,70,0.3); color:#fff;
 }}
 
-/* ── ÁREA FIXA NO RODAPÉ — acompanha zoom igual ao Claude ── */
+/* ── ÁREA FIXA NO RODAPÉ — sticky dentro do flex, acompanha zoom igual ao Claude ── */
 .bottom-fixed-area {{
-    position:fixed; bottom:0; left:352px; right:0;
+    position:relative;
+    flex-shrink:0;
     background:linear-gradient(to top, rgba(6,6,8,0.98) 70%, transparent);
     padding:16px 40px 28px;
     display:flex; flex-direction:column; align-items:center; gap:12px;
     z-index:100;
-    transition:left 0.35s cubic-bezier(0.25,0.8,0.25,1);
+    width:100%;
 }}
 .bottom-fixed-area.no-sidebar {{ left:0; }}
 

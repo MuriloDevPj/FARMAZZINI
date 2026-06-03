@@ -186,8 +186,8 @@ html_content = render_full_ui(
 )
 
 # ─────────────────────────────────────────────
-# ALTURA DINÂMICA — iframe ocupa exatamente a viewport
-# JS mede innerHeight real e aplica no iframe (funciona no zoom out/in)
+# CSS mínimo — o layout responsivo está todo no ui.py
+# O iframe ocupa 100dvh e não precisa de JS para ajuste
 # ─────────────────────────────────────────────
 st.markdown("""
 <style>
@@ -200,31 +200,17 @@ st.markdown("""
         max-width: 100% !important;
         background-color: #060608 !important;
         overflow: hidden !important;
+        height: 100dvh !important;
     }
     iframe {
         display: block !important;
         border: none !important;
+        width: 100% !important;
+        height: 100dvh !important;
     }
 </style>
-<script>
-    (function() {
-        function ajustarIframe() {
-            const iframes = window.parent.document.querySelectorAll('iframe');
-            const h = window.parent.innerHeight;
-            iframes.forEach(f => {
-                f.style.height = h + 'px';
-                f.style.maxHeight = h + 'px';
-                f.style.overflow = 'hidden';
-            });
-        }
-        ajustarIframe();
-        window.parent.addEventListener('resize', ajustarIframe);
-        setTimeout(ajustarIframe, 100);
-        setTimeout(ajustarIframe, 500);
-    })();
-</script>
 """, unsafe_allow_html=True)
 
-# height=10000 garante que o Streamlit não corte o iframe internamente;
-# o JS acima sobrescreve a altura visual para innerHeight real do navegador.
+# scrolling=False + height grande garante que o Streamlit não corte o conteúdo;
+# o CSS acima faz o iframe ocupar exatamente 100dvh, acompanhando o zoom.
 components.html(html_content, height=10000, scrolling=False)
