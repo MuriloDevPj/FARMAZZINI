@@ -158,14 +158,28 @@ def _chart_payload(df: pd.DataFrame) -> str:
     #
     cruzamento3 = {}
     if "disponibilidade" in df.columns:
-        STATUS_DISPONIVEL = {"disponível", "disponivel", "available", "sim", "yes"}
+        # BUG FIX: conjunto expandido para cobrir variações com/sem acento e maiúsculas
+        # que o Athena pode retornar dependendo de como os dados foram gravados no S3.
+        STATUS_DISPONIVEL = {
+            "disponível", "disponivel",   # com e sem acento
+            "available", "sim", "yes",
+            "true", "1", "ativo", "ativa",
+        }
+
+        def _is_disponivel(valor) -> bool:
+            """Normaliza unicode e case antes de comparar — imune a variações do Athena."""
+            import unicodedata
+            s = unicodedata.normalize("NFKD", str(valor)).encode("ascii", "ignore").decode().strip().lower()
+            return s in {
+                "disponivel", "available", "sim", "yes", "true", "1", "ativo", "ativa"
+            }
 
         # Detecta colunas de contagem — hints comuns gerados pelo Athena
         COUNT_HINTS = ("total", "qtd", "count", "quantidade", "contagem", "_c0")
         col_count = next(
             (c for c in df.columns
              if any(h in c.lower() for h in COUNT_HINTS)
-             and pd.api.types.is_numeric_dtype(pd.to_numeric(df[c], errors="coerce"))),
+             and pd.to_numeric(df[c], errors="coerce").notna().any()),
             None
         )
 
@@ -176,9 +190,13 @@ def _chart_payload(df: pd.DataFrame) -> str:
                 disp_total = 0
                 indisp_total = 0
                 for _, row in sub.iterrows():
-                    status = str(row["disponibilidade"]).strip().lower()
-                    qtd = int(pd.to_numeric(row[col_count], errors="coerce") or 0)
-                    if status in STATUS_DISPONIVEL:
+                    # BUG FIX: pd.to_numeric pode retornar NaN; usar `or 0` falha pois
+                    # `NaN or 0` retorna 0 MAS `0 or 0` também retorna 0 — o problema real
+                    # é quando NaN vem de uma linha válida que deveria ser contada.
+                    # Usamos fillna(0) antes de converter para int.
+                    qtd_raw = pd.to_numeric(row[col_count], errors="coerce")
+                    qtd = int(qtd_raw) if pd.notna(qtd_raw) else 0
+                    if _is_disponivel(row["disponibilidade"]):
                         disp_total += qtd
                     else:
                         indisp_total += qtd
@@ -190,12 +208,10 @@ def _chart_payload(df: pd.DataFrame) -> str:
 
         # FORMATO B: sem coluna de contagem → cada linha é um produto individual
         else:
+            # BUG FIX: usa _is_disponivel (com normalização unicode) em vez do set
+            # STATUS_DISPONIVEL, que não cobre variações sem acento retornadas pelo Athena.
             df["_disp"] = df["disponibilidade"].apply(
-                lambda v: "Disponível"
-                if str(v).strip().lower() in STATUS_DISPONIVEL
-                else "Indisponível"
-                if pd.notna(v)
-                else "Indisponível"
+                lambda v: "Disponível" if pd.notna(v) and _is_disponivel(v) else "Indisponível"
             )
             for farm in farmacias:
                 sub = df[df["farmacia"] == farm]["_disp"]

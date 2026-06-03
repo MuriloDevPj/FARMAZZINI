@@ -1552,6 +1552,23 @@ function intelRenderC3() {{
     const farmacias = p.farmacias || [];
     const c3        = p.cruzamento3 || {{}};
 
+    // BUG FIX: detecta se c3 está vazio (query sem coluna disponibilidade).
+    // Nesse caso, exibe aviso em vez de zeros enganosos (0%/0% simultaneamente).
+    const c3Keys = Object.keys(c3);
+    const c3HasData = c3Keys.length > 0 && farmacias.some(f => (c3[f] || {{}}).total > 0);
+    if (!c3HasData) {{
+        document.getElementById('c3-donut-val').textContent = '—';
+        document.getElementById('c3-legend').innerHTML = '';
+        const tabelaEl = document.getElementById('c3-tabela');
+        tabelaEl.innerHTML = `<tr><td colspan="4" style="color:#9a9a9f;text-align:center;padding:20px;font-size:13px;">
+            ⚠️ Esta consulta não retornou a coluna <strong>disponibilidade</strong>.<br>
+            Faça uma pergunta sobre estoque ou disponibilidade para ver esta aba.
+        </td></tr>`;
+        const ctaEl = document.getElementById('c3-cta-text');
+        if(ctaEl) ctaEl.innerHTML = 'Consulta atual não contém dados de disponibilidade.';
+        return;
+    }}
+
     // Totais para o donut — soma apenas os disponíveis de todas as farmácias
     let totalDisp = 0, totalGeral = 0;
     farmacias.forEach(f => {{
@@ -1630,10 +1647,24 @@ function intelRenderC3() {{
         const total  = d.total        || 0;
         const disp   = d.disponivel   || 0;
         const indisp = d.indisponivel || 0;
-        // pctDisp_f = disponível/total; pctRup_f = indisponível/total
-        const pctDisp_f = total > 0 ? Math.round((disp  / total) * 100) : 0;
-        const pctRup_f  = total > 0 ? Math.round((indisp / total) * 100) : 0;
         const cor    = corFarmacia(f);
+
+        // BUG FIX: se total===0 para esta farmácia, exibe "—" em vez de "0%/0%"
+        // que violava a invariante Disponível + Ruptura = 100%.
+        if (total === 0) {{
+            tabelaEl.innerHTML += `
+            <tr>
+                <td style="color:${{cor}};font-weight:700;">${{f}}</td>
+                <td><span style="color:#9a9a9f;">—</span></td>
+                <td><span style="color:#9a9a9f;">—</span></td>
+                <td><div class="ruptura-bar-wrap"></div></td>
+            </tr>`;
+            return;
+        }}
+
+        // pctDisp_f = disponível/total; pctRup_f = indisponível/total
+        const pctDisp_f = Math.round((disp  / total) * 100);
+        const pctRup_f  = Math.round((indisp / total) * 100);
         // Barra representa a ruptura; cor vermelha quando alta
         const rupCor = pctRup_f >= 40 ? '#e11d48' : pctRup_f >= 20 ? '#eab308' : '#22c55e';
 
