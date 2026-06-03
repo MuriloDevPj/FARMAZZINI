@@ -1,4 +1,4 @@
-def render_full_ui(chats: str, active_chat_id: int, active_db: str) -> str:
+def render_full_ui(chats: str, active_chat_id: int, active_db: str, next_id: int = 2) -> str:
     db_label = {"todas": "Todas", "ponte": "FarmaPonte", "veracruz": "Vera Cruz"}.get(active_db, "Todas")
     return f"""<!DOCTYPE html>
 <html lang="pt-br">
@@ -32,48 +32,32 @@ html, body {{
                 radial-gradient(ellipse 60% 50% at 10% 80%, rgba(160,15,35,0.15) 0%, transparent 55%),
                 #08030A;
     color:var(--text-main);
-    height:100dvh;
-    max-height:100dvh;
-    min-height:unset;
-    margin:0;
-    padding:0;
-    overflow:hidden;
-    position:relative;
+    height:100dvh; max-height:100dvh; min-height:unset;
+    margin:0; padding:0; overflow:hidden; position:relative;
 }}
+/* glows */
 .fluid-glow-1 {{
-    position:fixed; top:-20%; left:15%;
-    width:70vw; height:70vw;
-    background:radial-gradient(ellipse at center,
-        rgba(220,30,55,0.30) 0%,
-        rgba(140,5,30,0.18) 35%,
-        rgba(80,0,15,0.08) 60%,
-        transparent 80%);
+    position:fixed; top:-20%; left:15%; width:70vw; height:70vw;
+    background:radial-gradient(ellipse at center, rgba(220,30,55,0.30) 0%, rgba(140,5,30,0.18) 35%, rgba(80,0,15,0.08) 60%, transparent 80%);
     filter:blur(90px); z-index:1; pointer-events:none; border-radius:50%;
     animation: glow-drift1 12s ease-in-out infinite alternate;
 }}
 .fluid-glow-2 {{
-    position:fixed; bottom:-15%; right:5%;
-    width:55vw; height:55vw;
-    background:radial-gradient(ellipse at center,
-        rgba(160,10,35,0.22) 0%,
-        rgba(90,0,20,0.12) 40%,
-        transparent 70%);
+    position:fixed; bottom:-15%; right:5%; width:55vw; height:55vw;
+    background:radial-gradient(ellipse at center, rgba(160,10,35,0.22) 0%, rgba(90,0,20,0.12) 40%, transparent 70%);
     filter:blur(110px); z-index:1; pointer-events:none; border-radius:50%;
     animation: glow-drift2 15s ease-in-out infinite alternate;
 }}
 .fluid-glow-3 {{
-    position:fixed; top:40%; left:-10%;
-    width:40vw; height:40vw;
-    background:radial-gradient(ellipse at center,
-        rgba(180,20,45,0.15) 0%,
-        rgba(100,0,20,0.06) 50%,
-        transparent 75%);
+    position:fixed; top:40%; left:-10%; width:40vw; height:40vw;
+    background:radial-gradient(ellipse at center, rgba(180,20,45,0.15) 0%, rgba(100,0,20,0.06) 50%, transparent 75%);
     filter:blur(80px); z-index:1; pointer-events:none; border-radius:50%;
     animation: glow-drift3 18s ease-in-out infinite alternate;
 }}
 @keyframes glow-drift1 {{ from{{transform:translate(0,0) scale(1)}} to{{transform:translate(3vw,2vh) scale(1.08)}} }}
 @keyframes glow-drift2 {{ from{{transform:translate(0,0) scale(1)}} to{{transform:translate(-2vw,-3vh) scale(1.05)}} }}
 @keyframes glow-drift3 {{ from{{transform:translate(0,0) scale(1)}} to{{transform:translate(4vw,-2vh) scale(1.1)}} }}
+
 .app-shell {{ display:flex; width:100%; height:100dvh; position:relative; z-index:2; overflow:hidden; }}
 
 /* ── SIDEBAR ── */
@@ -183,10 +167,8 @@ html, body {{
 .header {{
     padding:20px 40px; border-bottom:1px solid rgba(200,30,55,0.08);
     display:flex; justify-content:space-between; align-items:center;
-    background:transparent;
-    flex-shrink:0;
+    background:transparent; flex-shrink:0;
 }}
-
 .header-left {{ display:flex; align-items:center; gap:20px; }}
 .menu-toggle {{
     background:rgba(255,255,255,0.03); border:1px solid var(--border);
@@ -229,36 +211,29 @@ html, body {{
     padding:16px 20px; border-radius:18px; font-size:15px; line-height:1.6; width:100%;
 }}
 .message.user .msg-bubble {{
-    background:linear-gradient(135deg,
-        #E8253A 0%,
-        #C01535 30%,
-        #8B0828 65%,
-        #560016 100%);
+    background:linear-gradient(135deg, #E8253A 0%, #C01535 30%, #8B0828 65%, #560016 100%);
     border:1px solid rgba(255,80,100,0.22);
-    box-shadow:
-        0 8px 28px rgba(200,20,50,0.40),
-        0 2px 8px rgba(230,40,60,0.25),
-        inset 0 1px 0 rgba(255,120,140,0.18);
+    box-shadow:0 8px 28px rgba(200,20,50,0.40), 0 2px 8px rgba(230,40,60,0.25), inset 0 1px 0 rgba(255,120,140,0.18);
     color:#fff;
 }}
 
-/* ── ÁREA FIXA NO RODAPÉ — sticky dentro do flex, acompanha zoom igual ao Claude ── */
+/* loading bubble */
+.loading-bubble {{
+    background:rgba(30,30,40,0.4); border:1px solid var(--border);
+    padding:20px 24px; border-radius:18px;
+}}
+
+/* ── RODAPÉ ── */
 .bottom-fixed-area {{
-    position:relative;
-    flex-shrink:0;
+    position:relative; flex-shrink:0;
     background:linear-gradient(to top, rgba(6,6,8,0.98) 70%, transparent);
     padding:16px 40px 28px;
     display:flex; flex-direction:column; align-items:center; gap:12px;
-    z-index:100;
-    width:100%;
+    z-index:100; width:100%;
 }}
 .bottom-fixed-area.no-sidebar {{ left:0; }}
 
-/* hot buttons */
-.hot-buttons-wrapper {{
-    display:flex; gap:12px; justify-content:center;
-    flex-wrap:wrap;
-}}
+.hot-buttons-wrapper {{ display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }}
 .hot-btn {{
     background:linear-gradient(135deg,var(--primary),var(--primary-dark));
     color:white; border:1px solid rgba(255,255,255,0.1);
@@ -271,22 +246,11 @@ html, body {{
 }}
 .hot-btn:hover {{ transform:translateY(-3px); box-shadow:0 8px 25px rgba(230,57,70,0.4); }}
 
-/* input */
-.input-container {{
-    width:100%; display:flex; justify-content:center;
-}}
+.input-container {{ width:100%; display:flex; justify-content:center; }}
 .disclaimer {{
-    font-size:12px; color:var(--text-muted);
-    text-align:center;
-    padding-bottom:0px;
-    margin-bottom:0px;
-    line-height:1.5;
+    font-size:12px; color:var(--text-muted); text-align:center;
+    padding-bottom:0; margin-bottom:0; line-height:1.5;
 }}
-.disclaimer a {{
-    color:var(--text-muted); text-decoration:underline;
-    text-underline-offset:3px; transition:color 0.2s;
-}}
-.disclaimer a:hover {{ color:var(--primary); }}
 .input-box {{
     width:100%; max-width:800px;
     background:rgba(14,14,18,0.9); border:1px solid var(--border);
@@ -309,7 +273,7 @@ th {{ text-align:left; color:var(--primary); padding:14px; border-bottom:2px sol
 td {{ padding:14px; border-bottom:1px solid var(--border); font-size:14px; color:#eee; }}
 tr:last-child td {{ border-bottom:none; }}
 
-/* action buttons dentro das mensagens */
+/* action buttons */
 .action-row {{ display:flex; gap:10px; margin-top:10px; flex-wrap:wrap; }}
 .action-btn {{
     background:rgba(255,255,255,0.03); border:1px solid var(--border);
@@ -318,30 +282,6 @@ tr:last-child td {{ border-bottom:none; }}
     transition:all 0.2s; font-family:'Urbanist',sans-serif; font-weight:600;
 }}
 .action-btn:hover {{ border-color:var(--primary); color:white; background:rgba(230,57,70,0.1); }}
-
-/* gráfico */
-.chart-mock {{
-    margin-top:15px; background:rgba(10,10,12,0.85);
-    border:1px solid var(--border); border-radius:16px;
-    padding:24px; display:flex; flex-direction:column; gap:18px;
-    animation:fadeIn 0.4s ease-out;
-}}
-.bar-container {{
-    display:flex; align-items:flex-end; justify-content:space-around;
-    gap:20px; height:140px; padding-top:15px;
-    border-bottom:1px solid rgba(255,255,255,0.1);
-}}
-.bar {{
-    width:48px;
-    background:linear-gradient(to top,var(--primary-dark),var(--primary));
-    border-radius:8px 8px 0 0;
-    animation:growUp 0.8s cubic-bezier(0.16,1,0.3,1) forwards;
-    min-height:5px; position:relative;
-    box-shadow:0 4px 15px rgba(230,57,70,0.3);
-}}
-.bar-value {{ position:absolute; top:-24px; left:50%; transform:translateX(-50%); font-size:12px; font-weight:700; color:var(--primary); }}
-@keyframes growUp {{ from{{height:0}} to{{height:var(--h)}} }}
-.bar-labels {{ display:flex; justify-content:space-around; font-size:11px; color:var(--text-muted); font-weight:600; }}
 
 /* toast */
 .download-toast {{
@@ -354,11 +294,11 @@ tr:last-child td {{ border-bottom:none; }}
 }}
 @keyframes slideIn {{ from{{transform:translateY(-20px);opacity:0}} to{{transform:translateY(0);opacity:1}} }}
 
-/* loading */
+/* loading dots */
 .dot-flashing {{
     position:relative; width:10px; height:10px;
     border-radius:5px; background-color:var(--primary);
-    animation:dotf 1s infinite linear alternate; animation-delay:.5s; margin:10px 20px;
+    animation:dotf 1s infinite linear alternate; animation-delay:.5s; margin:8px 20px;
 }}
 .dot-flashing::before,.dot-flashing::after {{
     content:''; display:inline-block; position:absolute; top:0;
@@ -367,6 +307,38 @@ tr:last-child td {{ border-bottom:none; }}
 .dot-flashing::before {{ left:-15px; animation:dotf 1s infinite linear alternate; animation-delay:0s; }}
 .dot-flashing::after  {{ left:15px;  animation:dotf 1s infinite linear alternate; animation-delay:1s; }}
 @keyframes dotf {{ 0%{{background-color:var(--primary)}} 50%,100%{{background-color:rgba(230,57,70,0.2)}} }}
+
+/* modal de confirmação */
+.modal-overlay {{
+    display:none; position:fixed; inset:0;
+    background:rgba(0,0,0,0.6); z-index:300;
+    align-items:center; justify-content:center;
+    backdrop-filter:blur(4px);
+}}
+.modal-overlay.open {{ display:flex; }}
+.modal-box {{
+    background:#0e0612; border:1px solid rgba(200,30,55,0.25);
+    border-radius:20px; padding:28px 32px; max-width:380px; width:90%;
+    box-shadow:0 24px 60px rgba(0,0,0,0.8);
+    animation:fadeIn 0.2s ease;
+}}
+.modal-title {{ font-size:16px; font-weight:700; margin-bottom:8px; }}
+.modal-desc  {{ font-size:14px; color:var(--text-muted); margin-bottom:24px; line-height:1.5; }}
+.modal-btns  {{ display:flex; gap:10px; justify-content:flex-end; }}
+.modal-btn-cancel {{
+    background:rgba(255,255,255,0.04); border:1px solid var(--border);
+    color:var(--text-muted); padding:10px 20px; border-radius:10px;
+    cursor:pointer; font-family:'Urbanist',sans-serif; font-size:14px; font-weight:600;
+    transition:all 0.2s;
+}}
+.modal-btn-cancel:hover {{ color:var(--text-main); }}
+.modal-btn-confirm {{
+    background:var(--primary); border:none;
+    color:white; padding:10px 20px; border-radius:10px;
+    cursor:pointer; font-family:'Urbanist',sans-serif; font-size:14px; font-weight:600;
+    transition:all 0.2s;
+}}
+.modal-btn-confirm:hover {{ background:var(--primary-mid); }}
 
 @media(max-width:768px){{
     .sidebar {{ top:76px; left:8px; right:8px; width:calc(100% - 16px); }}
@@ -383,7 +355,19 @@ tr:last-child td {{ border-bottom:none; }}
 <div class="fluid-glow-1"></div>
 <div class="fluid-glow-2"></div>
 <div class="fluid-glow-3"></div>
-<div class="download-toast" id="toast">✅ Dados exportados em CSV!</div>
+<div class="download-toast" id="toast">✅ CSV exportado com sucesso!</div>
+
+<!-- Modal de confirmação de exclusão -->
+<div class="modal-overlay" id="deleteModal">
+  <div class="modal-box">
+    <div class="modal-title">Excluir chat?</div>
+    <div class="modal-desc" id="modalDesc">Esta ação não pode ser desfeita.</div>
+    <div class="modal-btns">
+      <button class="modal-btn-cancel" onclick="closeModal()">Cancelar</button>
+      <button class="modal-btn-confirm" onclick="confirmDelete()">Excluir</button>
+    </div>
+  </div>
+</div>
 
 <div class="app-shell">
 
@@ -398,9 +382,9 @@ tr:last-child td {{ border-bottom:none; }}
     <div class="db-selector-container">
       <div class="db-selector-title">Base de Dados Ativa</div>
       <div class="db-pills" id="dbPills">
-        <div class="db-pill {'active' if active_db=='todas' else ''}" data-db="todas" onclick="setDb('todas',this)">Todas</div>
-        <div class="db-pill {'active' if active_db=='ponte' else ''}" data-db="ponte" onclick="setDb('ponte',this)">Ponte</div>
-        <div class="db-pill {'active' if active_db=='veracruz' else ''}" data-db="veracruz" onclick="setDb('veracruz',this)">Vera Cruz</div>
+        <div class="db-pill" data-db="todas"     onclick="setDb('todas',this)">Todas</div>
+        <div class="db-pill" data-db="ponte"     onclick="setDb('ponte',this)">Ponte</div>
+        <div class="db-pill" data-db="veracruz"  onclick="setDb('veracruz',this)">Vera Cruz</div>
       </div>
     </div>
 
@@ -435,7 +419,6 @@ tr:last-child td {{ border-bottom:none; }}
 
     <div class="chat-scroller" id="chatWindow"></div>
 
-    <!-- Área fixa no rodapé: botões + input sempre visíveis independente de zoom -->
     <div class="bottom-fixed-area" id="bottomArea">
       <div class="hot-buttons-wrapper">
         <button class="hot-btn" onclick="hotTrigger('estoque')"><i class="fa-solid fa-boxes-stacked"></i> Estoque Crítico</button>
@@ -458,137 +441,262 @@ tr:last-child td {{ border-bottom:none; }}
 </div>
 
 <script>
-// ── Estado inicial injetado pelo Python ──────────────────────
-let chats       = {chats};
+// ════════════════════════════════════════════════════════════════
+// ESTADO — injetado pelo Python no carregamento
+// ════════════════════════════════════════════════════════════════
+let chats        = {chats};
 let activeChatId = {active_chat_id};
 let activeDb     = "{active_db}";
+let nextId       = {next_id};
 let sidebarOpen  = true;
+let pendingDeleteId = null;
 
-// ── Bridge para o Python (via query_params) ──────────────────
-function toPython(action, params={{}}) {{
-  const url = new URL(window.location.href);
-  url.searchParams.set('action', action);
-  for(const [k,v] of Object.entries(params)) url.searchParams.set(k,v);
-  window.location.href = url.toString();
-}}
+// ════════════════════════════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════════════════════════════
+window.onload = () => {{
+    initDbPills();
+    renderChatList();
+    renderChat();
+}};
 
-// ── Init ─────────────────────────────────────────────────────
-window.onload = () => {{ renderChatList(); renderChat(); }};
-
-// ── Sidebar ──────────────────────────────────────────────────
+// ════════════════════════════════════════════════════════════════
+// SIDEBAR
+// ════════════════════════════════════════════════════════════════
 function toggleSidebar() {{
-  sidebarOpen = !sidebarOpen;
-  document.getElementById('sidebar').classList.toggle('collapsed', !sidebarOpen);
-  document.getElementById('mainContent').classList.toggle('no-sidebar', !sidebarOpen);
-  document.getElementById('bottomArea').classList.toggle('no-sidebar', !sidebarOpen);
+    sidebarOpen = !sidebarOpen;
+    document.getElementById('sidebar').classList.toggle('collapsed', !sidebarOpen);
+    document.getElementById('mainContent').classList.toggle('no-sidebar', !sidebarOpen);
+    document.getElementById('bottomArea').classList.toggle('no-sidebar', !sidebarOpen);
 }}
 
-// ── DB Pills ─────────────────────────────────────────────────
-// Muda localmente e envia ao Python (que salva e recarrega)
+// ════════════════════════════════════════════════════════════════
+// DB PILLS — atualiza localmente, sem recarregar
+// ════════════════════════════════════════════════════════════════
+function initDbPills() {{
+    document.querySelectorAll('.db-pill').forEach(pill => {{
+        pill.classList.toggle('active', pill.dataset.db === activeDb);
+    }});
+    document.getElementById('dbLabel').textContent =
+        ({{todas:'Todas', ponte:'FarmaPonte', veracruz:'Vera Cruz'}})[activeDb] || 'Todas';
+}}
+
 function setDb(db, el) {{
-  toPython('set_db', {{db}});
+    activeDb = db;
+    document.querySelectorAll('.db-pill').forEach(p => p.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('dbLabel').textContent =
+        ({{todas:'Todas', ponte:'FarmaPonte', veracruz:'Vera Cruz'}})[db] || 'Todas';
 }}
 
-// ── Lista de chats ───────────────────────────────────────────
-function renderChatList() {{
-  const q = (document.getElementById('searchInput').value||'').toLowerCase();
-  const list = document.getElementById('chatList');
-  list.innerHTML = '';
-  chats.filter(c => c.title.toLowerCase().includes(q)).forEach(chat => {{
-    const div = document.createElement('div');
-    div.className = 'chat-item' + (chat.id===activeChatId?' active':'');
-    div.innerHTML = `
-      <div class="chat-item-left" onclick="selectChat(${{chat.id}})">
-        <i class="fa-regular fa-comment"></i>
-        <span class="chat-title-span" id="title-${{chat.id}}"
-              ondblclick="startRename(${{chat.id}})">${{chat.title}}</span>
-      </div>
-      <div class="chat-item-actions">
-        <i class="fa-solid fa-pen action-icon" onclick="startRename(${{chat.id}})" title="Renomear"></i>
-        <i class="fa-solid fa-trash-can action-icon" onclick="deleteChat(${{chat.id}})" title="Excluir"></i>
-      </div>`;
-    list.appendChild(div);
-  }});
+// ════════════════════════════════════════════════════════════════
+// NOVO CHAT — 100% local, sem recarregar
+// ════════════════════════════════════════════════════════════════
+function newChat() {{
+    const id = nextId++;
+    const chat = {{
+        id,
+        title: 'Nova Consulta #' + id,
+        messages: [{{
+            sender: 'bot',
+            text: 'Nova sessão aberta. Como posso ajudar?'
+        }}]
+    }};
+    chats.push(chat);
+    activeChatId = id;
+    renderChatList();
+    renderChat();
+    // Foca no input
+    const inp = document.getElementById('userInput');
+    if(inp) inp.focus();
 }}
 
-// ── Renomear chat (inline, sem recarregar) ───────────────────
-function startRename(id) {{
-  const span = document.getElementById('title-'+id);
-  if(!span) return;
-  const old = span.textContent;
-  const input = document.createElement('input');
-  input.className = 'rename-input';
-  input.value = old;
-  span.replaceWith(input);
-  input.focus(); input.select();
-  const finish = () => {{
-    const val = input.value.trim() || old;
-    const chat = chats.find(c=>c.id===id);
-    if(chat) chat.title = val;
-    // Persiste no Python em background
-    toPython('rename_chat', {{id, title: val}});
-  }};
-  input.onblur = finish;
-  input.onkeypress = e => {{ if(e.key==='Enter') input.blur(); }};
-}}
-
-// ── Selecionar chat ──────────────────────────────────────────
+// ════════════════════════════════════════════════════════════════
+// SELECIONAR CHAT — local
+// ════════════════════════════════════════════════════════════════
 function selectChat(id) {{
-  toPython('select_chat', {{id}});
+    activeChatId = id;
+    renderChatList();
+    renderChat();
 }}
 
-// ── Excluir chat ─────────────────────────────────────────────
+// ════════════════════════════════════════════════════════════════
+// EXCLUIR CHAT — modal de confirmação
+// ════════════════════════════════════════════════════════════════
 function deleteChat(id) {{
-  if(chats.length<=1){{ alert('Mantenha ao menos um chat!'); return; }}
-  if(confirm('Excluir este chat?')) toPython('delete_chat', {{id}});
+    if(chats.length <= 1) {{
+        showToast('⚠️ Mantenha ao menos um chat!', '#7c3aed', '#4c1d95', '#a78bfa');
+        return;
+    }}
+    pendingDeleteId = id;
+    const chat = chats.find(c => c.id === id);
+    document.getElementById('modalDesc').textContent =
+        `"${{chat ? chat.title : 'Este chat'}}" será excluído permanentemente.`;
+    document.getElementById('deleteModal').classList.add('open');
 }}
 
-// ── Novo chat ─────────────────────────────────────────────────
-function newChat() {{ toPython('new_chat'); }}
+function closeModal() {{
+    document.getElementById('deleteModal').classList.remove('open');
+    pendingDeleteId = null;
+}}
 
-// ── Renderizar mensagens ─────────────────────────────────────
+function confirmDelete() {{
+    if(pendingDeleteId === null) return;
+    chats = chats.filter(c => c.id !== pendingDeleteId);
+    if(activeChatId === pendingDeleteId) {{
+        activeChatId = chats[0].id;
+    }}
+    closeModal();
+    renderChatList();
+    renderChat();
+}}
+
+// ════════════════════════════════════════════════════════════════
+// RENOMEAR — inline, sem recarregar
+// ════════════════════════════════════════════════════════════════
+function startRename(id) {{
+    const span = document.getElementById('title-' + id);
+    if(!span) return;
+    const old = span.textContent;
+    const input = document.createElement('input');
+    input.className = 'rename-input';
+    input.value = old;
+    span.replaceWith(input);
+    input.focus(); input.select();
+    const finish = () => {{
+        const val = input.value.trim() || old;
+        const chat = chats.find(c => c.id === id);
+        if(chat) chat.title = val;
+        renderChatList();
+    }};
+    input.onblur = finish;
+    input.onkeydown = e => {{ if(e.key === 'Enter') input.blur(); if(e.key === 'Escape') {{ input.value = old; input.blur(); }} }};
+}}
+
+// ════════════════════════════════════════════════════════════════
+// RENDERIZAR LISTA DE CHATS
+// ════════════════════════════════════════════════════════════════
+function renderChatList() {{
+    const q    = (document.getElementById('searchInput').value || '').toLowerCase();
+    const list = document.getElementById('chatList');
+    list.innerHTML = '';
+    chats.filter(c => c.title.toLowerCase().includes(q)).forEach(chat => {{
+        const div = document.createElement('div');
+        div.className = 'chat-item' + (chat.id === activeChatId ? ' active' : '');
+        div.innerHTML = `
+            <div class="chat-item-left" onclick="selectChat(${{chat.id}})">
+                <i class="fa-regular fa-comment"></i>
+                <span class="chat-title-span" id="title-${{chat.id}}"
+                      ondblclick="startRename(${{chat.id}})">${{chat.title}}</span>
+            </div>
+            <div class="chat-item-actions">
+                <i class="fa-solid fa-pen action-icon" onclick="startRename(${{chat.id}})" title="Renomear"></i>
+                <i class="fa-solid fa-trash-can action-icon" onclick="deleteChat(${{chat.id}})" title="Excluir"></i>
+            </div>`;
+        list.appendChild(div);
+    }});
+}}
+
+// ════════════════════════════════════════════════════════════════
+// RENDERIZAR MENSAGENS DO CHAT ATIVO
+// ════════════════════════════════════════════════════════════════
 function renderChat() {{
-  const win = document.getElementById('chatWindow');
-  win.innerHTML = '';
-  const chat = chats.find(c=>c.id===activeChatId);
-  if(!chat) return;
-  chat.messages.forEach(msg => {{
+    const win  = document.getElementById('chatWindow');
+    const chat = chats.find(c => c.id === activeChatId);
+    win.innerHTML = '';
+    if(!chat) return;
+    chat.messages.forEach(msg => appendMessage(msg.sender, msg.text, false));
+    win.scrollTop = win.scrollHeight;
+}}
+
+function appendMessage(sender, text, animate=true) {{
+    const win = document.getElementById('chatWindow');
     const div = document.createElement('div');
-    div.className = 'message '+msg.sender;
-    div.innerHTML = `<div class="avatar">${{msg.sender==='user'?'PM':'FZ'}}</div>
-                     <div class="msg-bubble">${{msg.text}}</div>`;
+    div.className = 'message ' + sender;
+    if(!animate) div.style.animation = 'none';
+    div.innerHTML = `<div class="avatar">${{sender === 'user' ? 'PM' : 'FZ'}}</div>
+                     <div class="msg-bubble">${{text}}</div>`;
     win.appendChild(div);
-  }});
-  win.scrollTop = win.scrollHeight;
+    win.scrollTop = win.scrollHeight;
+    return div;
 }}
 
-// ── Enviar mensagem ───────────────────────────────────────────
+// ════════════════════════════════════════════════════════════════
+// ENVIAR MENSAGEM → vai ao Python via query_params
+// Mostra loading imediatamente enquanto aguarda
+// ════════════════════════════════════════════════════════════════
 function sendMsg() {{
-  const inp = document.getElementById('userInput');
-  const val = inp.value.trim();
-  if(!val) return;
-  inp.value = '';
-  toPython('send', {{msg: val, db: activeDb}});
+    const inp = document.getElementById('userInput');
+    const val = inp.value.trim();
+    if(!val) return;
+    inp.value = '';
+    inp.disabled = true;
+
+    // Garante que o chat ativo existe nos chats locais
+    const chat = chats.find(c => c.id === activeChatId);
+    if(!chat) return;
+
+    // Adiciona mensagem do usuário localmente (feedback imediato)
+    chat.messages.push({{ sender:'user', text: val }});
+    appendMessage('user', val);
+
+    // Mostra indicador de carregamento
+    const loadDiv = document.createElement('div');
+    loadDiv.className = 'message bot';
+    loadDiv.id = 'loadingMsg';
+    loadDiv.innerHTML = `<div class="avatar">FZ</div>
+        <div class="loading-bubble"><div class="dot-flashing"></div></div>`;
+    document.getElementById('chatWindow').appendChild(loadDiv);
+    document.getElementById('chatWindow').scrollTop = 99999;
+
+    // Envia ao Python com o estado completo dos chats
+    const url = new URL(window.location.href);
+    url.searchParams.set('action',      'send');
+    url.searchParams.set('msg',         val);
+    url.searchParams.set('db',          activeDb);
+    url.searchParams.set('chat_id',     activeChatId);
+    url.searchParams.set('chats_state', JSON.stringify(chats));
+    window.location.href = url.toString();
 }}
 
-// ── Botões quentes ────────────────────────────────────────────
+// ════════════════════════════════════════════════════════════════
+// BOTÕES QUENTES
+// ════════════════════════════════════════════════════════════════
 function hotTrigger(type) {{
-  const msgs = {{
-    estoque: 'Quais itens com estoque crítico? Faça uma tabela comparando com a concorrência.',
-    preco:   'Ache o produto mais barato do mercado e mostre a diferença para o preço da Farmazzini.',
-    promos:  'Quais as maiores promoções de combos ou descontos progressivos da FarmaPonte ou Vera Cruz?'
-  }};
-  toPython('send', {{msg: msgs[type], db: activeDb}});
+    const msgs = {{
+        estoque: 'Quais itens com estoque crítico? Faça uma tabela comparando com a concorrência.',
+        preco:   'Ache o produto mais barato do mercado e mostre a diferença para o preço da Farmazzini.',
+        promos:  'Quais as maiores promoções de combos ou descontos progressivos da FarmaPonte ou Vera Cruz?'
+    }};
+    document.getElementById('userInput').value = msgs[type];
+    sendMsg();
 }}
 
-// ── Toast CSV ─────────────────────────────────────────────────
-function triggerCSV() {{
-  const t = document.getElementById('toast');
-  t.style.display='block';
-  setTimeout(()=>t.style.display='none', 3500);
+// ════════════════════════════════════════════════════════════════
+// EXPORTAR CSV
+// ════════════════════════════════════════════════════════════════
+function exportCSV() {{
+    showToast('✅ CSV exportado com sucesso!', '#10b981', '#0d2818', '#4ade80');
 }}
 
+// ════════════════════════════════════════════════════════════════
+// TOAST GENÉRICO
+// ════════════════════════════════════════════════════════════════
+function showToast(msg, borderColor, bg, color) {{
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.style.background    = bg      || '#0d2818';
+    t.style.borderColor   = borderColor || '#1e5e2f';
+    t.style.color         = color   || '#4ade80';
+    t.style.display = 'block';
+    setTimeout(() => t.style.display = 'none', 3000);
+}}
 
+// Fecha modal clicando fora
+document.getElementById('deleteModal').addEventListener('click', function(e) {{
+    if(e.target === this) closeModal();
+}});
 </script>
 </body>
 </html>"""
+
