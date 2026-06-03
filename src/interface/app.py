@@ -32,71 +32,35 @@ USUARIOS_VALIDOS = {
     "Pedro Mazzini": "@2026"
 }
 
-# Token secreto simples para validar sessão persistida no localStorage
-# (Em produção, use um hash seguro ou JWT)
-import hashlib
-def _gerar_token(usuario: str) -> str:
-    """Gera um token determinístico para o usuário (simples, não criptográfico)."""
-    raw = f"farmazzini_salt_2026::{usuario}"
-    return hashlib.sha256(raw.encode()).hexdigest()[:32]
-
 # ─────────────────────────────────────────────
 # SESSION STATE — autenticação
+# CORREÇÃO COMPLETA:
+#   - Removido localStorage (causava loop infinito de redirect)
+#   - Removido token hash (desnecessário para este fluxo)
+#   - Lógica simplificada: query_params → session_state → rerun
 # ─────────────────────────────────────────────
 if "autenticado" not in st.session_state:
     st.session_state.autenticado = False
 if "login_erro" not in st.session_state:
     st.session_state.login_erro = False
 
-# ── Verifica se chegou um token de sessão via query_params (vindo do localStorage) ──
 _params_auth = st.query_params
-if not st.session_state.autenticado and "session_token" in _params_auth:
-    _tok_recebido  = _params_auth.get("session_token", "")
-    _user_recebido = _params_auth.get("session_user", "")
-    if _user_recebido in USUARIOS_VALIDOS and _tok_recebido == _gerar_token(_user_recebido):
-        st.session_state.autenticado    = True
-        st.session_state.usuario_logado = _user_recebido
-        st.query_params.clear()
-        st.rerun()
-
-# ── Verifica action de login vinda do formulário HTML ──
 if not st.session_state.autenticado and _params_auth.get("action") == "login":
     _u = _params_auth.get("usr", "").strip()
     _p = _params_auth.get("pwd", "")
     if USUARIOS_VALIDOS.get(_u) == _p:
-        st.session_state.autenticado         = True
-        st.session_state.usuario_logado      = _u
-        st.session_state.login_erro          = False
-        st.session_state._pending_tok        = _gerar_token(_u)
-        st.session_state._pending_tok_user   = _u
-        st.query_params.clear()
-        st.rerun()
+        st.session_state.autenticado    = True
+        st.session_state.usuario_logado = _u
+        st.session_state.login_erro     = False
     else:
         st.session_state.login_erro = True
-        st.query_params.clear()
-        st.rerun()
+    st.query_params.clear()
+    st.rerun()
 
 # ─────────────────────────────────────────────
 # TELA DE LOGIN
 # ─────────────────────────────────────────────
 if not st.session_state.autenticado:
-
-    # ── Injeta JS para verificar localStorage antes de mostrar o login ──
-    components.html("""
-    <script>
-        (function() {
-            var tok  = localStorage.getItem('fz_session_token');
-            var user = localStorage.getItem('fz_session_user');
-            if (tok && user) {
-                // CORREÇÃO: href completo para forçar reload real da página pai
-                var url = window.parent.location.pathname
-                    + '?session_token=' + encodeURIComponent(tok)
-                    + '&session_user='  + encodeURIComponent(user);
-                window.parent.location.href = url;
-            }
-        })();
-    </script>
-    """, height=0)
 
     erro_html = ""
     if st.session_state.login_erro:
@@ -361,10 +325,9 @@ function fazerLogin() {{
     btn.classList.add('loading');
     btn.disabled = true;
 
-    // Envia credenciais via query_params para o Streamlit processar
-    // CORREÇÃO: usa href completo (pathname + search) para forçar
-    // um reload real da página pai. Apenas trocar .search não
-    // dispara o rerun do Streamlit quando chamado dentro de iframe.
+    // CORREÇÃO FINAL: usa window.parent.location.href com pathname completo
+    // para forçar um reload real da página pai. Apenas .search não funciona
+    // dentro de iframe (Streamlit usa components.html que cria iframe isolado).
     var params = new URLSearchParams({{
         action: 'login',
         usr:    user,
@@ -399,17 +362,6 @@ function fazerLogin() {{
 # ═══════════════════════════════════════════════════════
 # A PARTIR DAQUI: CHATBOT ORIGINAL (sem alterações)
 # ═══════════════════════════════════════════════════════
-
-# ── Salva token no localStorage após login bem-sucedido ──
-if st.session_state.get("_pending_tok"):
-    _tok  = st.session_state.pop("_pending_tok")
-    _tuser = st.session_state.pop("_pending_tok_user", "")
-    components.html(f"""<script>
-        try {{
-            localStorage.setItem('fz_session_token', '{_tok}');
-            localStorage.setItem('fz_session_user',  '{_tuser}');
-        }} catch(e) {{}}
-    </script>""", height=0)
 
 st.markdown("""
     <style>
