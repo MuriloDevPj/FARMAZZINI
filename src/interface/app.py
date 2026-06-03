@@ -2,12 +2,28 @@
 ╔══════════════════════════════════════════════════════════════════╗
 ║           FARMAZZINI INTEL — APP PRINCIPAL (STREAMLIT)          ║
 ║              VERSÃO ULTRA-FLUIDA COM TRÊS PONTOS DE LOADING      ║
+║                                                                  ║
+║  PROBLEMA RESOLVIDO:                                             ║
+║  O processamento na AWS demorava e deixava o iframe em ecrã      ║
+║  preto ou travado devido à latência de rede em navegação direta. ║
+║                                                                  ║
+║  SOLUÇÃO DE FLUIDEZ MÁXIMA COM TEMPO MÍNIMO DE TRANSIÇÃO:        ║
+║  1. A ação "send" guarda a pergunta e adiciona um balão de       ║
+║     loading com a animação clássica de 3 pontos (dot-flashing).  ║
+║  2. O Streamlit limpa a URL e atualiza o iframe em milissegundos.║
+║  3. O renderizador HTML (components.html) é executado PRIMEIRO.  ║
+║     Isto garante que o utilizador veja a animação de carregamento║
+║     a pulsar imediatamente no ecrã, sem congelar ou escurecer.   ║
+║  4. No segundo plano (após renderização), o script processa      ║
+║     a AWS, respeita um tempo mínimo de exibição de 3.5s para     ║
+║     cobrir completamente a transição e substitui a mensagem de   ║
+║     carregamento de forma limpa e suave.                         ║
 ╚══════════════════════════════════════════════════════════════════╝
 """
 
 import sys
 import os
-import time
+import time  # Adicionado para medir e garantir o tempo mínimo de transição
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import streamlit as st
@@ -25,206 +41,6 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
-# ─────────────────────────────────────────────
-# SESSION STATE — autenticação (sem verificação)
-# ─────────────────────────────────────────────
-if "autenticado" not in st.session_state:
-    st.session_state.autenticado = False
-
-_params_auth = st.query_params
-if not st.session_state.autenticado and _params_auth.get("action") == "login":
-    st.session_state.autenticado    = True
-    st.session_state.usuario_logado = "visitante"
-    st.query_params.clear()
-    st.rerun()
-
-# ─────────────────────────────────────────────
-# TELA DE LOGIN
-# ─────────────────────────────────────────────
-if not st.session_state.autenticado:
-
-    login_page = f"""<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<style>
-*{{ box-sizing:border-box; margin:0; padding:0; }}
-html, body {{
-    font-family: 'Urbanist', sans-serif;
-    height: 100%; width: 100%;
-    background: transparent;
-    display: flex; align-items: center; justify-content: center;
-    overflow: hidden;
-}}
-
-/* Glows */
-.glow-orb {{ position:fixed; pointer-events:none; border-radius:50%; z-index:0; }}
-.glow-orb-1 {{
-    top:-20%; left:15%; width:70vw; height:70vw;
-    background: radial-gradient(ellipse at center, rgba(220,30,55,0.30) 0%, rgba(140,5,30,0.18) 35%, rgba(80,0,15,0.08) 60%, transparent 80%);
-    filter: blur(90px);
-    animation: drift1 12s ease-in-out infinite alternate;
-}}
-.glow-orb-2 {{
-    bottom:-15%; right:5%; width:55vw; height:55vw;
-    background: radial-gradient(ellipse at center, rgba(160,10,35,0.22) 0%, rgba(90,0,20,0.12) 40%, transparent 70%);
-    filter: blur(110px);
-    animation: drift2 15s ease-in-out infinite alternate;
-}}
-@keyframes drift1 {{ from{{transform:translate(0,0) scale(1)}} to{{transform:translate(3vw,2vh) scale(1.08)}} }}
-@keyframes drift2 {{ from{{transform:translate(0,0) scale(1)}} to{{transform:translate(-2vw,-3vh) scale(1.05)}} }}
-
-/* Wrapper */
-.login-wrapper {{
-    display:flex; flex-direction:column; align-items:center;
-    gap:28px; width:440px; position:relative; z-index:2;
-    animation: cardIn 0.65s cubic-bezier(0.16,1,0.3,1) both;
-}}
-@keyframes cardIn {{
-    from {{ opacity:0; transform:translateY(28px) scale(0.97); }}
-    to   {{ opacity:1; transform:translateY(0)    scale(1);    }}
-}}
-
-/* Marca */
-.login-brand {{ display:flex; flex-direction:column; align-items:center; gap:10px; }}
-.brand-pill {{
-    background: rgba(232,37,58,0.12);
-    border: 1px solid rgba(232,37,58,0.28);
-    border-radius: 100px; padding: 5px 18px;
-    font-size: 11px; font-weight: 700; letter-spacing: 2.5px;
-    text-transform: uppercase; color: #E8253A;
-}}
-.brand-logo {{
-    font-size: 36px; font-weight: 800; letter-spacing: 5px; color: #fff; line-height: 1;
-}}
-.brand-logo .zz {{ color: #E8253A; }}
-.brand-sub {{ font-size: 13px; color: #9a9a9f; font-weight: 500; letter-spacing: 0.5px; }}
-
-/* Card */
-.login-card {{
-    background: rgba(10,3,14,0.93);
-    border: 1px solid rgba(200,30,55,0.14);
-    border-radius: 28px;
-    padding: 40px 44px 36px;
-    width: 440px;
-    backdrop-filter: blur(40px);
-    box-shadow:
-        0 32px 80px rgba(0,0,0,0.80),
-        0 0 0 1px rgba(255,255,255,0.03),
-        0 0 100px rgba(160,10,30,0.12),
-        inset 0 1px 0 rgba(255,255,255,0.04);
-}}
-.card-title {{ font-size: 22px; font-weight: 700; color: #fff; margin-bottom: 6px; }}
-.card-desc  {{ font-size: 14px; color: #9a9a9f; margin-bottom: 28px; }}
-/* Botão */
-.btn-login {{
-    width: 100%; height: 54px; margin-top: 28px;
-    background: linear-gradient(135deg, #E8253A 0%, #C01535 40%, #8B0828 100%);
-    border: 1px solid rgba(255,80,100,0.22);
-    border-radius: 16px;
-    color: #fff; font-family: 'Urbanist', sans-serif;
-    font-size: 16px; font-weight: 700; letter-spacing: 0.5px;
-    cursor: pointer;
-    box-shadow:
-        0 8px 28px rgba(200,20,50,0.42),
-        0 2px 8px rgba(230,40,60,0.25),
-        inset 0 1px 0 rgba(255,120,140,0.18);
-    transition: transform 0.22s, box-shadow 0.22s;
-    display: flex; align-items: center; justify-content: center; gap: 10px;
-}}
-.btn-login:hover {{
-    transform: translateY(-2px);
-    box-shadow: 0 14px 36px rgba(200,20,50,0.58), 0 4px 12px rgba(230,40,60,0.32);
-}}
-.btn-login:active {{ transform: translateY(0); }}
-.btn-login .spinner {{
-    width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.3);
-    border-top-color: #fff; border-radius: 50%;
-    animation: spin 0.7s linear infinite;
-    display: none;
-}}
-.btn-login.loading .spinner {{ display: block; }}
-.btn-login.loading .btn-text {{ opacity: 0.7; }}
-@keyframes spin {{ to {{ transform: rotate(360deg); }} }}
-
-/* Rodapé */
-.card-foot {{
-    text-align: center; font-size: 11px; color: rgba(154,154,159,0.45);
-    line-height: 1.75; margin-top: 16px;
-}}
-.card-foot strong {{ color: rgba(232,37,58,0.70); font-weight: 700; }}
-</style>
-</head>
-<body>
-
-<div class="glow-orb glow-orb-1"></div>
-<div class="glow-orb glow-orb-2"></div>
-
-<div class="login-wrapper">
-
-    <!-- Marca -->
-    <div class="login-brand">
-        <div class="brand-pill">Inteligência de Mercado</div>
-        <div class="brand-logo">FARMA<span class="zz">ZZ</span>INI</div>
-        <div class="brand-sub">Intel &mdash; Análise Competitiva em Tempo Real</div>
-    </div>
-
-    <!-- Card -->
-    <div class="login-card">
-        <div class="card-title">Bem-vindo 👋</div>
-        <div class="card-desc">Clique abaixo para acessar o painel de inteligência.</div>
-
-        <button class="btn-login" id="btn-login" onclick="fazerLogin()">
-            <div class="spinner"></div>
-            <span class="btn-text">&#8594;&nbsp; Entrar no painel</span>
-        </button>
-
-        <div class="card-foot" style="margin-top:24px;">
-            Plataforma de inteligência de mercado da rede <strong>Farmazzini</strong>.
-        </div>
-    </div>
-
-</div>
-
-<script>
-function fazerLogin() {{
-    var btn = document.getElementById('btn-login');
-    btn.classList.add('loading');
-    btn.disabled = true;
-
-    var params = new URLSearchParams({{ action: 'login' }});
-    window.parent.location.href = window.parent.location.pathname + '?' + params.toString();
-}}
-</script>
-</body>
-</html>"""
-
-    components.html(login_page, height=10000, scrolling=False)
-    st.markdown("""
-    <style>
-    [data-testid="stHeader"],[data-testid="stToolbar"],[data-testid="stDecoration"],
-    [data-testid="stStatusWidget"],header,footer{{display:none!important;}}
-    html,body,[data-testid="stAppViewContainer"],[data-testid="stAppViewBlockContainer"],
-    [data-testid="stVerticalBlock"],[data-testid="stVerticalBlockBorderWrapper"],
-    .main,.block-container,.stApp{{
-        padding:0!important;margin:0!important;max-width:100%!important;
-        background-color:#08030A!important;overflow:hidden!important;
-        height:100dvh!important;min-height:unset!important;
-    }}
-    iframe{{display:block!important;border:none!important;width:100vw!important;
-        height:100dvh!important;margin:0!important;padding:0!important;
-        position:fixed!important;top:0!important;left:0!important;}}
-    </style>
-    """, unsafe_allow_html=True)
-
-    st.stop()
-
-# ═══════════════════════════════════════════════════════
-# A PARTIR DAQUI: CHATBOT ORIGINAL (sem alterações)
-# ═══════════════════════════════════════════════════════
-
 st.markdown("""
     <style>
         [data-testid="stAppViewContainer"] { padding: 0 !important; }
@@ -239,6 +55,10 @@ st.markdown("""
 # ─────────────────────────────────────────────
 # SESSION STATE
 # ─────────────────────────────────────────────
+# CORREÇÃO: restaura o estado completo dos chats enviado pelo frontend
+# via query param 'state' (JSON serializado pelo JavaScript antes do redirect).
+# Isso garante que chats criados localmente no JS (newChat, rename, etc.)
+# sobrevivam ao recarregamento do Streamlit.
 _params_init = st.query_params
 if "state" in _params_init:
     try:
@@ -248,7 +68,7 @@ if "state" in _params_init:
         st.session_state.active_db      = _state.get("active_db",      st.session_state.get("active_db", "todas"))
         st.session_state.next_id        = _state.get("next_id",        st.session_state.get("next_id", 2))
     except (json.JSONDecodeError, Exception):
-        pass
+        pass  # fallback para os valores padrão abaixo
 
 if "chats" not in st.session_state:
     st.session_state.chats = [
@@ -299,15 +119,20 @@ if "action" in params:
             )
 
             if chat:
+                # Evita duplicar mensagem se o Streamlit re-renderizar
+                # sem reprocessar (ex: hot reload em desenvolvimento)
                 ultima = chat["messages"][-1] if chat["messages"] else {}
                 ja_tem = (ultima.get("sender") == "user" and ultima.get("text") == user_msg)
 
                 if not ja_tem:
+                    # 1. Adiciona a mensagem do utilizador instantaneamente
                     chat["messages"].append({"sender": "user", "text": user_msg})
 
                     if chat["title"].startswith("Nova Consulta"):
                         chat["title"] = (user_msg[:20] + "...") if len(user_msg) > 20 else user_msg
 
+                    # 2. ADICIONA OS 3 PONTOS DE CARREGAMENTO IMEDIATAMENTE (dot-flashing)
+                    # Não executa a query pesada aqui para manter o ecrã instantâneo
                     loading_html = """
                     <div class="loading-container" style="display: flex; align-items: center; padding: 12px 18px; min-height: 40px;">
                         <div class="dot-flashing"></div>
@@ -316,9 +141,9 @@ if "action" in params:
                     chat["messages"].append({
                         "sender": "bot",
                         "text": loading_html,
-                        "is_loading": True,
-                        "raw_query": user_msg,
-                        "saved_db": db_filter
+                        "is_loading": True,       # Flag para identificar o processamento pendente
+                        "raw_query": user_msg,    # Guarda a pergunta para usar na AWS no ciclo seguinte
+                        "saved_db": db_filter     # Guarda o filtro de base de dados correspondente
                     })
 
     elif action == "new_chat":
@@ -364,8 +189,11 @@ active_db      = st.session_state.active_db
 next_id        = st.session_state.next_id
 
 # ─────────────────────────────────────────────
-# RENDERIZAR HTML
+# RENDERIZAR HTML (PRIMEIRO PASSO)
 # ─────────────────────────────────────────────
+# Ao renderizar o HTML antes de iniciar a query lenta no segundo plano,
+# o navegador recebe e desenha imediatamente a animação de loading no chat.
+# Isto impede que o iframe fique escuro ou congelado durante o tempo de resposta da AWS.
 from ui import render_full_ui
 
 html_content = render_full_ui(
@@ -375,6 +203,9 @@ html_content = render_full_ui(
     next_id=next_id,
 )
 
+# ─────────────────────────────────────────────
+# CSS — iframe ocupa 100dvh
+# ─────────────────────────────────────────────
 st.markdown("""
 <style>
     [data-testid="stHeader"],
@@ -415,11 +246,15 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+# Desenha o iframe no ecrã contendo o estado atual (pergunta e o loading animado dos 3 pontos)
 components.html(html_content, height=10000, scrolling=False)
 
 # ─────────────────────────────────────────────
-# PIPELINE AWS (SEGUNDO PLANO)
+# SEGUNDO PLANO: PROCESSAR PIPELINE PESADO DA AWS (SEGUNDO PASSO)
 # ─────────────────────────────────────────────
+# Com o HTML enviado ao cliente, o script continua a executar silenciosamente.
+# Se detetar que a última mensagem requer processamento pesado, corre o pipeline 
+# da AWS em background sem prejudicar a responsividade visual do iframe ativo.
 chat_atual = next(
     (c for c in st.session_state.chats if c["id"] == st.session_state.active_chat_id),
     None
@@ -429,25 +264,37 @@ if chat_atual and chat_atual["messages"]:
     ultima_msg = chat_atual["messages"][-1]
 
     if ultima_msg.get("is_loading") is True:
+        # Registamos o início do processamento para controlar o tempo mínimo de visualização
         start_time = time.time()
 
+        # Recupera as informações do estado pendente
         query_pendente = ultima_msg.get("raw_query")
-        db_pendente    = ultima_msg.get("saved_db", "todas")
+        db_pendente = ultima_msg.get("saved_db", "todas")
 
+        # Corre o processamento da AWS em segundo plano estável, sem bloquear a exibição do ecrã
         resposta = processar_mensagem(
             mensagem=query_pendente,
             db_filter=db_pendente,
-            historico=chat_atual["messages"][:-1]
+            historico=chat_atual["messages"][:-1]  # Envia o histórico sem o bloco temporário de loading
         )
 
-        tempo_minimo    = 3.5
+        # Calculamos o tempo decorrido e estendemos para pelo menos 3.5 segundos de exibição fluida.
+        # Isto garante que o utilizador veja os 3 pontos pulsarem e oculta qualquer tela preta de recarregamento!
+        tempo_minimo = 3.5
         tempo_decorrido = time.time() - start_time
         if tempo_decorrido < tempo_minimo:
             time.sleep(tempo_minimo - tempo_decorrido)
 
-        chat_atual["messages"][-1] = {"sender": "bot", "text": f"\n            {resposta}\n        "}
-
+        bot_text = f"""
+            {resposta}
+        """
+        
+        # Substitui o bloco de carregamento temporário de 3 pontos pelo HTML final com os botões de ação
+        chat_atual["messages"][-1] = {"sender": "bot", "text": bot_text}
+        
+        # Desmarca a flag para que o próximo ciclo não re-execute o bloco de processamento
         if "is_loading" in chat_atual["messages"][-1]:
             del chat_atual["messages"][-1]["is_loading"]
 
+        # Força uma atualização limpa para exibir o resultado final de forma instantânea
         st.rerun()
