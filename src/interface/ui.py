@@ -1,15 +1,22 @@
 def render_full_ui(chats: str, active_chat_id: int, active_db: str) -> str:
     db_label = {"todas": "Todas", "ponte": "FarmaPonte", "veracruz": "Vera Cruz"}.get(active_db, "Todas")
-    return f"""<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    return f"""
 <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <style>
+#fz-root {{
+    font-family:'Urbanist',sans-serif !important;
+    background:var(--bg-main) !important;
+    color:var(--text-main) !important;
+    height:100vh !important;
+    width:100vw !important;
+    overflow:hidden !important;
+    position:fixed !important;
+    top:0 !important; left:0 !important;
+    z-index:9999 !important;
+    box-sizing:border-box !important;
+}}
+#fz-root *, #fz-root *::before, #fz-root *::after {{ box-sizing:border-box; margin:0; padding:0; }}
 :root {{
     --bg-main:      #060608;
     --bg-sidebar:   rgba(12,12,16,0.92);
@@ -22,17 +29,7 @@ def render_full_ui(chats: str, active_chat_id: int, active_db: str) -> str:
     --glow-red:     rgba(230,57,70,0.22);
 }}
 *{{ box-sizing:border-box; margin:0; padding:0; }}
-html, body {{
-    font-family:'Urbanist',sans-serif;
-    background:var(--bg-main);
-    color:var(--text-main);
-    height:100vh;
-    min-height:100vh;
-    margin:0;
-    padding:0;
-    overflow:hidden;
-    position:relative;
-}}
+/* estilos base movidos para #fz-root acima */
 .fluid-glow-1 {{
     position:fixed; top:-15%; left:20%;
     width:60vw; height:60vw;
@@ -45,7 +42,7 @@ html, body {{
     background:radial-gradient(circle,rgba(230,57,70,0.15) 0%,rgba(139,0,0,0.03) 60%,transparent 80%);
     filter:blur(100px); z-index:1; pointer-events:none; border-radius:50%;
 }}
-.app-shell {{ display:flex; width:100%; height:100vh; min-height:100vh; position:relative; z-index:2; }}
+.app-shell {{ display:flex; width:100%; height:100%; position:relative; z-index:2; }}
 
 /* ── SIDEBAR ── */
 .sidebar {{
@@ -144,7 +141,7 @@ html, body {{
     flex-grow:1; display:flex; flex-direction:column;
     background:var(--bg-card); overflow:hidden;
     position:relative; z-index:2;
-    width:100%; height:100vh; min-height:100vh;
+    width:100%; height:100%;
     transition:padding-left 0.35s cubic-bezier(0.25,0.8,0.25,1);
     padding-left:352px;
 }}
@@ -313,8 +310,7 @@ tr:last-child td {{ border-bottom:none; }}
     .hot-buttons-wrapper,.input-container {{ padding-left:20px; padding-right:20px; }}
 }}
 </style>
-</head>
-<body>
+<div id="fz-root">
 
 <div class="fluid-glow-1"></div>
 <div class="fluid-glow-2"></div>
@@ -518,5 +514,4 @@ function triggerCSV() {{
 
 
 </script>
-</body>
-</html>"""
+</div>"""
