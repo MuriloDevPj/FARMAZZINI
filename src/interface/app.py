@@ -88,7 +88,9 @@ if not st.session_state.autenticado:
             var tok  = localStorage.getItem('fz_session_token');
             var user = localStorage.getItem('fz_session_user');
             if (tok && user) {
-                var url = window.parent.location.pathname
+                // CORREÇÃO: constrói href completo para forçar reload real
+                var base = window.parent.location.pathname;
+                var url  = base
                     + '?session_token=' + encodeURIComponent(tok)
                     + '&session_user='  + encodeURIComponent(user);
                 window.parent.location.href = url;
@@ -361,12 +363,14 @@ function fazerLogin() {{
     btn.disabled = true;
 
     // Envia credenciais via query_params para o Streamlit processar
+    // CORREÇÃO: usa href completo para garantir reload real da página pai
     var params = new URLSearchParams({{
         action: 'login',
         usr:    user,
         pwd:    pass
     }});
-    window.parent.location.search = params.toString();
+    var base = window.parent.location.pathname;
+    window.parent.location.href = base + '?' + params.toString();
 }}
 </script>
 </body>
