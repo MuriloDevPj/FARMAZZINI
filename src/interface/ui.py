@@ -714,23 +714,23 @@ tr:last-child td {{ border-bottom:none; }}
         <span class="tab-dot tab-dot-fp"></span> Comparativo de Preços
       </div>
       <div class="intel-tab" id="tab-c2" onclick="intelSwitchTab('c2')">
-        <span class="tab-dot tab-dot-vc"></span> Elasticidade / Modalidades
+        <span class="tab-dot tab-dot-vc"></span> Formas de Pagamento
       </div>
       <div class="intel-tab" id="tab-c3" onclick="intelSwitchTab('c3')">
-        <span class="tab-dot tab-dot-both"></span> Presença &amp; Ruptura
+        <span class="tab-dot tab-dot-both"></span> Disponibilidade
       </div>
     </div>
 
     <!-- ══ PAINEL 1: COMPARATIVO DE PREÇOS (LÍDER) ══ -->
     <div class="intel-panel active" id="panel-c1">
 
-      <div class="intel-filter-strip">
+      <div class="intel-filter-strip" style="flex-direction:column;align-items:flex-start;gap:8px;">
         <label>Modalidade de Preço</label>
-        <select class="intel-select" id="c1-modalidade" onchange="intelRenderC1()">
-          <option value="preco_original">Preço Original (Gôndola)</option>
-          <option value="preco_pix">Preço PIX</option>
-          <option value="preco_cartao">Preço Cartão</option>
-        </select>
+        <div style="display:flex;background:rgba(0,0,0,0.4);border-radius:10px;padding:3px;border:1px solid rgba(255,255,255,0.05);">
+          <div class="modal-pill active" data-mod="preco_original" onclick="setModalidade('preco_original',this)" style="flex:1;padding:8px 14px;text-align:center;font-size:12px;font-weight:600;color:var(--text-muted);cursor:pointer;border-radius:8px;transition:all 0.2s;user-select:none;white-space:nowrap;">Gôndola</div>
+          <div class="modal-pill" data-mod="preco_pix" onclick="setModalidade('preco_pix',this)" style="flex:1;padding:8px 14px;text-align:center;font-size:12px;font-weight:600;color:var(--text-muted);cursor:pointer;border-radius:8px;transition:all 0.2s;user-select:none;white-space:nowrap;">PIX</div>
+          <div class="modal-pill" data-mod="preco_cartao" onclick="setModalidade('preco_cartao',this)" style="flex:1;padding:8px 14px;text-align:center;font-size:12px;font-weight:600;color:var(--text-muted);cursor:pointer;border-radius:8px;transition:all 0.2s;user-select:none;white-space:nowrap;">Cartão</div>
+        </div>
       </div>
 
       <div class="intel-kpi-row" id="c1-kpis"></div>
@@ -1314,13 +1314,25 @@ function intelSwitchTab(tabId) {{
     if(tabId === 'c3') intelRenderC3();
 }}
 
-// ══════════════════════════════════════════════════════════════════════════════
-// CRUZAMENTO 1 — COMPARATIVO DE PREÇOS (LÍDER)
-// ══════════════════════════════════════════════════════════════════════════════
+// Modalidade ativa no painel 1
+let _activeModalidade = 'preco_original';
+
+function setModalidade(mod, el) {{
+    _activeModalidade = mod;
+    document.querySelectorAll('.modal-pill').forEach(p => {{
+        const isActive = p.dataset.mod === mod;
+        p.style.background = isActive ? 'var(--primary)' : '';
+        p.style.color = isActive ? 'white' : 'var(--text-muted)';
+        p.style.boxShadow = isActive ? '0 4px 12px rgba(230,57,70,0.3)' : '';
+    }});
+    intelRenderC1();
+}}
+
+
 function intelRenderC1() {{
     if(!_intelPayload) return;
     const p        = _intelPayload;
-    const mod      = document.getElementById('c1-modalidade').value;
+    const mod      = _activeModalidade;
     const farmacias = p.farmacias || [];
     const dadosMod = (p.cruzamento1 || {{}})[mod] || {{}};
 
@@ -1532,7 +1544,7 @@ function intelRenderC2() {{
 }}
 
 // ══════════════════════════════════════════════════════════════════════════════
-// CRUZAMENTO 3 — PRESENÇA & RUPTURA DE PRATELEIRA
+// CRUZAMENTO 3 — DISPONIBILIDADE
 // ══════════════════════════════════════════════════════════════════════════════
 function intelRenderC3() {{
     if(!_intelPayload) return;
@@ -1540,30 +1552,38 @@ function intelRenderC3() {{
     const farmacias = p.farmacias || [];
     const c3        = p.cruzamento3 || {{}};
 
-    // Totais para o donut
-    let totalDisp = 0, totalIndisp = 0;
+    // Totais para o donut — soma apenas os disponíveis de todas as farmácias
+    let totalDisp = 0, totalGeral = 0;
     farmacias.forEach(f => {{
         const d = c3[f] || {{}};
-        totalDisp   += d.disponivel   || 0;
-        totalIndisp += d.indisponivel || 0;
+        totalDisp  += d.disponivel || 0;
+        totalGeral += d.total      || 0;
     }});
-    const totalGeral = totalDisp + totalIndisp;
+    // % disponível = disponível / total (corrigido: disponível é positivo, não ruptura)
     const pctDisp = totalGeral > 0 ? Math.round((totalDisp / totalGeral) * 100) : 0;
 
-    // Donut
+    // Donut — exibe apenas disponibilidade positiva por farmácia
     _chartC3 = destroyChart(_chartC3);
     const ctx = document.getElementById('c3-donut').getContext('2d');
     const donutColors = farmacias.map(f => corFarmacia(f));
-    const donutData   = farmacias.map(f => (c3[f] || {{}}).disponivel || 0);
+    // Cada fatia = quantidade disponível da farmácia (não ruptura)
+    const donutData = farmacias.map(f => (c3[f] || {{}}).disponivel || 0);
+
+    // Se todas as farmácias têm 0 disponível, mostra um anel cinza como fallback
+    const totalDonut = donutData.reduce((a,b) => a+b, 0);
+    const finalData   = totalDonut > 0 ? donutData : [1];
+    const finalColors = totalDonut > 0 ? donutColors.map(c => c + 'cc') : ['rgba(80,80,80,0.4)'];
+    const finalBorder = totalDonut > 0 ? donutColors : ['#444'];
+    const finalLabels = totalDonut > 0 ? farmacias : ['Sem dados'];
 
     _chartC3 = new Chart(ctx, {{
         type: 'doughnut',
         data: {{
-            labels: farmacias,
+            labels: finalLabels,
             datasets: [{{
-                data: donutData,
-                backgroundColor: donutColors.map(c => c + 'cc'),
-                borderColor: donutColors,
+                data: finalData,
+                backgroundColor: finalColors,
+                borderColor: finalBorder,
                 borderWidth: 2,
                 hoverOffset: 6,
             }}]
@@ -1590,7 +1610,7 @@ function intelRenderC3() {{
         }}
     }});
 
-    // Centro do donut
+    // Centro do donut — mostra % disponível (positivo)
     document.getElementById('c3-donut-val').textContent = pctDisp + '%';
 
     // Legenda do donut
@@ -1602,18 +1622,20 @@ function intelRenderC3() {{
          </div>`
     ).join('');
 
-    // Tabela de ruptura
+    // Tabela de ruptura — ruptura = indisponível / total (coluna "Ruptura" correta)
     const tabelaEl = document.getElementById('c3-tabela');
     tabelaEl.innerHTML = '';
     farmacias.forEach(f => {{
-        const d         = c3[f] || {{}};
-        const total     = d.total     || 0;
-        const disp      = d.disponivel   || 0;
-        const indisp    = d.indisponivel || 0;
-        const pctDisp_f = total > 0 ? Math.round((disp / total) * 100) : 0;
-        const pctRup_f  = 100 - pctDisp_f;
-        const cor       = corFarmacia(f);
-        const rupCor    = pctRup_f >= 40 ? '#e11d48' : pctRup_f >= 20 ? '#eab308' : '#22c55e';
+        const d      = c3[f] || {{}};
+        const total  = d.total        || 0;
+        const disp   = d.disponivel   || 0;
+        const indisp = d.indisponivel || 0;
+        // pctDisp_f = disponível/total; pctRup_f = indisponível/total
+        const pctDisp_f = total > 0 ? Math.round((disp  / total) * 100) : 0;
+        const pctRup_f  = total > 0 ? Math.round((indisp / total) * 100) : 0;
+        const cor    = corFarmacia(f);
+        // Barra representa a ruptura; cor vermelha quando alta
+        const rupCor = pctRup_f >= 40 ? '#e11d48' : pctRup_f >= 20 ? '#eab308' : '#22c55e';
 
         tabelaEl.innerHTML += `
         <tr>
@@ -1628,21 +1650,23 @@ function intelRenderC3() {{
         </tr>`;
     }});
 
-    // CTA de oportunidade tática
+    // CTA — usa ruptura (indisponível) corretamente; não confunde com disponível
     const ctaEl = document.getElementById('c3-cta-text');
     if(farmacias.length > 0) {{
-        // Encontra a farmácia com maior ruptura
         let maiorRupF = '', maiorRupPct = -1;
         farmacias.forEach(f => {{
             const d = c3[f] || {{}};
             const t = d.total || 0;
+            // Ruptura = indisponível / total (corrigido)
             const r = t > 0 ? Math.round(((d.indisponivel || 0) / t) * 100) : 0;
             if(r > maiorRupPct) {{ maiorRupPct = r; maiorRupF = f; }}
         }});
         if(maiorRupF && maiorRupPct >= 0) {{
             const label = maiorRupPct >= 40
-                ? `⚠️ Janela de oportunidade tática: <strong>${{maiorRupF}}</strong> com maior ruptura de prateleira (<strong>${{maiorRupPct}}%</strong>). Acionar reposicionamento de preço por escassez local — quando atingir 100%, acionar reposicionamento imediato.`
-                : `<strong>${{maiorRupF}}</strong> apresenta ${{maiorRupPct}}% de ruptura. Monitorar evolução para ajuste tático de preços por escassez.`;
+                ? `⚠️ Janela de oportunidade tática: <strong>${{maiorRupF}}</strong> com maior ruptura de prateleira (<strong>${{maiorRupPct}}%</strong>). Acionar reposicionamento de preço por escassez local.`
+                : maiorRupPct === 0
+                ? `<strong>${{maiorRupF}}</strong> está com <strong>100% de disponibilidade</strong>. Monitorar evolução para ajuste tático de preços.`
+                : `<strong>${{maiorRupF}}</strong> apresenta <strong>${{maiorRupPct}}% de ruptura</strong>. Monitorar evolução para ajuste tático de preços por escassez.`;
             ctaEl.innerHTML = label;
         }}
     }} else {{
