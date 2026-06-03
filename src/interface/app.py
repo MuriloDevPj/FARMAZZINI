@@ -186,16 +186,12 @@ html_content = render_full_ui(
 )
 
 # ─────────────────────────────────────────────
-# ALTURA DINÂMICA — elimina barra preta no zoom out
-# Captura a altura real da viewport via JS e ajusta o iframe
+# ALTURA DINÂMICA — iframe ocupa exatamente a viewport
+# JS mede innerHeight real e aplica no iframe (funciona no zoom out/in)
 # ─────────────────────────────────────────────
 st.markdown("""
 <style>
-    /* Remove qualquer espaço residual ao redor do iframe */
-    iframe[title="streamlit_components_v1.html"] {
-        display: block !important;
-        border: none !important;
-    }
+    html, body,
     [data-testid="stAppViewContainer"],
     [data-testid="stAppViewBlockContainer"],
     .main, .block-container {
@@ -203,23 +199,32 @@ st.markdown("""
         margin: 0 !important;
         max-width: 100% !important;
         background-color: #060608 !important;
+        overflow: hidden !important;
+    }
+    iframe {
+        display: block !important;
+        border: none !important;
     }
 </style>
 <script>
-    // Ajusta o iframe para ocupar 100% da viewport ao redimensionar
-    function ajustarIframe() {
-        const iframes = window.parent.document.querySelectorAll('iframe');
-        iframes.forEach(f => {
-            f.style.height = window.parent.innerHeight + 'px';
-            f.style.minHeight = '100vh';
-        });
-    }
-    window.parent.addEventListener('resize', ajustarIframe);
-    ajustarIframe();
+    (function() {
+        function ajustarIframe() {
+            const iframes = window.parent.document.querySelectorAll('iframe');
+            const h = window.parent.innerHeight;
+            iframes.forEach(f => {
+                f.style.height = h + 'px';
+                f.style.maxHeight = h + 'px';
+                f.style.overflow = 'hidden';
+            });
+        }
+        ajustarIframe();
+        window.parent.addEventListener('resize', ajustarIframe);
+        setTimeout(ajustarIframe, 100);
+        setTimeout(ajustarIframe, 500);
+    })();
 </script>
 """, unsafe_allow_html=True)
 
-# Usa a altura da viewport do navegador dinamicamente
-# O valor 10000 é intencionalmente alto — o CSS height:100vh do HTML interno
-# controla o tamanho real; scrolling=False evita barra dupla
+# height=10000 garante que o Streamlit não corte o iframe internamente;
+# o JS acima sobrescreve a altura visual para innerHeight real do navegador.
 components.html(html_content, height=10000, scrolling=False)
