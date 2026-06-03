@@ -36,9 +36,14 @@ Regras Estritas:
    - Se o usuário não especificar a farmácia, NÃO filtre por farmacia (busque as duas).
    - Se o usuário não especificar data, use SEMPRE: ano='2026' AND mes='05' AND dia='26'.
 
-5. Regras de Performance para Athena (CRÍTICO — evita timeout):
+5. Regras de Performance e Compatibilidade para Athena (CRÍTICO — evita timeout e erros):
    - NUNCA use ORDER BY em queries sem filtro de nome/produto. ORDER BY força scan total + sort.
    - NUNCA use COALESCE em ORDER BY. Causa full scan obrigatório antes do LIMIT.
+   - NUNCA use QUALIFY — essa cláusula NÃO existe no Athena (é exclusiva do BigQuery/Snowflake).
+     Para filtrar por ROW_NUMBER/RANK, envolva em subquery:
+     Errado:  SELECT ..., ROW_NUMBER() OVER (...) as rn FROM tb_processed WHERE ... QUALIFY rn = 1
+     Correto: SELECT * FROM (SELECT ..., ROW_NUMBER() OVER (...) as rn FROM tb_processed WHERE ...) WHERE rn = 1
+   - NUNCA use funções exclusivas de outros bancos: QUALIFY, ILIKE, SAMPLE, PIVOT, UNPIVOT.
    - Para "menor preço" ou "mais barato" SEM especificar produto:
      Use MIN() com GROUP BY farmacia — NÃO use ORDER BY ... LIMIT 1.
      Exemplo: SELECT farmacia, MIN(preco_pix) as menor_pix FROM ... GROUP BY farmacia
