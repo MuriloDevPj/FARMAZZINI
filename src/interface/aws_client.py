@@ -108,3 +108,42 @@ def buscar_resultado_s3(status_resp: dict) -> tuple:
         return df, None
     except Exception as e:
         return None, str(e)
+
+
+def buscar_dados(pergunta: str, base: str = "todas") -> dict:
+    """
+    Orquestra o pipeline completo:
+    Bedrock → Step Functions → S3
+
+    Retorna:
+        dict com chaves: sucesso (bool), df (DataFrame|None), sql (str), erro (str|None)
+    """
+
+    # 1. Gera o SQL com Bedrock
+    sql, erro_sql = gerar_sql_com_bedrock(pergunta)
+    if erro_sql or not sql:
+        return {"sucesso": False, "df": None, "sql": sql, "erro": f"Erro ao gerar SQL: {erro_sql}"}
+
+    # 2. Injeta filtro de farmácia se o usuário especificou
+    if base == "ponte":
+        sql = sql.replace(
+            "farmacia IN ('FarmaPonte', 'Vera Cruz')",
+            "farmacia='FarmaPonte'"
+        )
+    elif base == "veracruz":
+        sql = sql.replace(
+            "farmacia IN ('FarmaPonte', 'Vera Cruz')",
+            "farmacia='Vera Cruz'"
+        )
+
+    # 3. Executa via Step Functions
+    status, erro_sf, status_resp = executar_via_step_functions(sql)
+    if status != "SUCCEEDED":
+        return {"sucesso": False, "df": None, "sql": sql, "erro": f"Step Functions falhou: {erro_sf or status}"}
+
+    # 4. Busca resultado no S3
+    df, erro_s3 = buscar_resultado_s3(status_resp)
+    if erro_s3:
+        return {"sucesso": False, "df": None, "sql": sql, "erro": f"Erro ao buscar resultado S3: {erro_s3}"}
+
+    return {"sucesso": True, "df": df, "sql": sql, "erro": None}
