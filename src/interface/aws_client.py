@@ -28,36 +28,44 @@ Regras Estritas:
    preco_pix (float64), preco_cartao (float64), desconto_padrao (string), promocoes_especiais (string),
    porcentagem_de_cashback (string), gtin (string), disponibilidade (string).
 
-4. Regras de Ouro para Partições (CRÍTICO):
-   - As partições são: farmacia, ano, mes, dia. SEMPRE filtre pelas 4 quando aplicável.
+4. Regras de Ouro para Partições (CRÍTICO — reduz 99% do custo de scan):
+   - As partições são: farmacia, ano, mes, dia. SEMPRE inclua as 4 no WHERE.
    - Valores exatos da partição 'farmacia' (case-sensitive): 'FarmaPonte' ou 'Vera Cruz'.
      Se o usuário escrever variações como 'farmaponte', 'farma ponte', 'vera cruz', normalize
      automaticamente para o valor exato correto.
    - Se o usuário não especificar a farmácia, NÃO filtre por farmacia (busque as duas).
    - Se o usuário não especificar data, use SEMPRE: ano='2026' AND mes='05' AND dia='26'.
+   - NUNCA omita as partições de data. Uma query sem ano/mes/dia faz scan completo e causa timeout.
 
 5. Regras de Performance e Compatibilidade para Athena (CRÍTICO — evita timeout e erros):
-   - NUNCA use ORDER BY em queries sem filtro de nome/produto. ORDER BY força scan total + sort.
+   - NUNCA use ORDER BY sem filtro de nome/produto específico no WHERE. ORDER BY em tabela inteira
+     força full scan + sort e é a principal causa de timeout.
    - NUNCA use COALESCE em ORDER BY. Causa full scan obrigatório antes do LIMIT.
    - NUNCA use QUALIFY — essa cláusula NÃO existe no Athena (é exclusiva do BigQuery/Snowflake).
      Para filtrar por ROW_NUMBER/RANK, envolva em subquery:
      Errado:  SELECT ..., ROW_NUMBER() OVER (...) as rn FROM tb_processed WHERE ... QUALIFY rn = 1
-     Correto: SELECT * FROM (SELECT ..., ROW_NUMBER() OVER (...) as rn FROM tb_processed WHERE ...) WHERE rn = 1
+     Correto: SELECT * FROM (SELECT ..., ROW_NUMBER() OVER (...) as rn FROM tb_processed WHERE ...) t WHERE t.rn = 1
    - NUNCA use funções exclusivas de outros bancos: QUALIFY, ILIKE, SAMPLE, PIVOT, UNPIVOT.
+   - NUNCA use SELECT * sem LIMIT. Sempre especifique as colunas necessárias.
    - Para "menor preço" ou "mais barato" SEM especificar produto:
      Use MIN() com GROUP BY farmacia — NÃO use ORDER BY ... LIMIT 1.
-     Exemplo: SELECT farmacia, MIN(preco_pix) as menor_pix FROM ... GROUP BY farmacia
+     Exemplo: SELECT farmacia, MIN(preco_pix) as menor_pix FROM tb_processed WHERE ano='2026' AND mes='05' AND dia='26' GROUP BY farmacia
    - Para "menor preço" COM produto específico:
      Filtre pelo nome primeiro, ENTÃO use ORDER BY com LIMIT.
-     Exemplo: WHERE nome LIKE '%Dipirona%' AND ... ORDER BY preco_pix ASC LIMIT 10
-   - Prefira LIMIT 50 no máximo. Nunca omita LIMIT em queries sem filtro de nome.
+     Exemplo: SELECT farmacia, nome, preco_pix FROM tb_processed WHERE nome LIKE '%Dipirona%' AND ano='2026' AND mes='05' AND dia='26' ORDER BY preco_pix ASC LIMIT 10
+   - Para "estoque crítico" ou "ruptura": use GROUP BY farmacia, disponibilidade com COUNT(*).
+     Exemplo: SELECT farmacia, disponibilidade, COUNT(*) as qtd FROM tb_processed WHERE ano='2026' AND mes='05' AND dia='26' GROUP BY farmacia, disponibilidade
+   - Use LIMIT 20 para queries com ORDER BY. Use LIMIT 50 para queries sem ORDER BY.
    - Se a pergunta pedir comparativo entre farmácias, use GROUP BY farmacia com AVG() ou MIN().
+   - Queries com Window Functions (ROW_NUMBER, RANK) só são aceitáveis quando a subquery
+     já filtra por partição (farmacia + ano + mes + dia) E por nome de produto.
 
 6. Exemplos de filtro correto:
-   - "produtos da FarmaPonte" → SELECT nome, preco_original FROM tb_processed WHERE farmacia='FarmaPonte' AND ano='2026' AND mes='05' AND dia='26' LIMIT 50
-   - "menor preço da dipirona na Vera Cruz" → WHERE nome LIKE '%Dipirona%' AND farmacia='Vera Cruz' AND ano='2026' AND mes='05' AND dia='26' ORDER BY preco_pix ASC LIMIT 10
-   - "produto mais barato do mercado" → SELECT farmacia, nome, MIN(preco_pix) as menor_pix FROM tb_processed WHERE ano='2026' AND mes='05' AND dia='26' GROUP BY farmacia, nome ORDER BY menor_pix ASC LIMIT 10
-   - "comparar preços entre farmácias" → SELECT farmacia, AVG(preco_original) as preco_medio FROM tb_processed WHERE ano='2026' AND mes='05' AND dia='26' GROUP BY farmacia
+   - "produtos da FarmaPonte" → SELECT nome, preco_original, disponibilidade FROM tb_processed WHERE farmacia='FarmaPonte' AND ano='2026' AND mes='05' AND dia='26' LIMIT 50
+   - "menor preço da dipirona na Vera Cruz" → SELECT nome, preco_pix FROM tb_processed WHERE nome LIKE '%Dipirona%' AND farmacia='Vera Cruz' AND ano='2026' AND mes='05' AND dia='26' ORDER BY preco_pix ASC LIMIT 10
+   - "produto mais barato do mercado" → SELECT farmacia, MIN(preco_pix) as menor_pix FROM tb_processed WHERE ano='2026' AND mes='05' AND dia='26' GROUP BY farmacia
+   - "comparar preços entre farmácias" → SELECT farmacia, AVG(preco_original) as preco_medio, AVG(preco_pix) as medio_pix FROM tb_processed WHERE ano='2026' AND mes='05' AND dia='26' GROUP BY farmacia
+   - "estoque crítico" → SELECT farmacia, disponibilidade, COUNT(*) as total FROM tb_processed WHERE ano='2026' AND mes='05' AND dia='26' GROUP BY farmacia, disponibilidade ORDER BY total DESC LIMIT 20
 """
 
 
@@ -101,7 +109,12 @@ def gerar_sql_com_bedrock(pergunta: str) -> tuple:
 def executar_via_step_functions(sql: str) -> tuple:
     """
     Dispara a execução na máquina de estados da AWS.
-    Garante o retorno do status e a resposta completa da execução, com timeout seguro de 25 segundos.
+    
+    Estratégia de polling inteligente:
+    - Primeiros 10s: verifica a cada 2s (queries simples já terminam aqui)
+    - Entre 10s e 40s: verifica a cada 4s (queries médias com ORDER BY)
+    - Acima de 40s: verifica a cada 6s (queries pesadas com Window Functions)
+    - Timeout total: 120 segundos
     """
     client = boto3.client(service_name="stepfunctions", region_name=REGION)
     try:
@@ -111,23 +124,20 @@ def executar_via_step_functions(sql: str) -> tuple:
         )
         exec_arn = exec_resp["executionArn"]
 
-        # Evita loop infinito: máximo de 25 tentativas de 1 segundo (Timeout de 25s)
-        max_tentativas = 60
-        tentativa = 0
-        status_resp = {}
-        
-        while tentativa < max_tentativas:
+        tempo_total   = 0
+        status_resp   = {}
+        TIMEOUT_MAX   = 120  # segundos — cobre queries pesadas com Window Functions
+
+        while tempo_total < TIMEOUT_MAX:
             status_resp = client.describe_execution(executionArn=exec_arn)
             status = status_resp["status"]
-            
+
             if status == "SUCCEEDED":
                 return status, None, status_resp
 
             if status in ("FAILED", "TIMED_OUT", "ABORTED"):
-                # Extrai a causa real do erro registrada pela Step Function
                 erro_cause = status_resp.get("cause", "")
                 erro_error = status_resp.get("error", "")
-                # Tenta extrair motivo do Athena dentro do output
                 try:
                     output = json.loads(status_resp.get("output", "{}"))
                     athena_reason = (
@@ -140,11 +150,22 @@ def executar_via_step_functions(sql: str) -> tuple:
                 detalhes = athena_reason or erro_cause or erro_error or status
                 return status, detalhes, status_resp
 
-            time.sleep(1)
-            tentativa += 1
+            # Polling inteligente: intervalo cresce conforme o tempo decorrido
+            if tempo_total < 10:
+                intervalo = 2
+            elif tempo_total < 40:
+                intervalo = 4
+            else:
+                intervalo = 6
 
-        # Caso exceda o tempo de segurança regressa com TIMED_OUT
-        return "TIMED_OUT", "A execução na AWS Step Functions excedeu o limite de segurança de 60 segundos.", status_resp
+            time.sleep(intervalo)
+            tempo_total += intervalo
+
+        return "TIMED_OUT", (
+            f"A query excedeu {TIMEOUT_MAX}s de execução no Athena. "
+            "Dica: tente uma pergunta mais específica (filtre por nome do produto ou farmácia). "
+            "Queries com ORDER BY em tabelas grandes são as principais causas de lentidão."
+        ), status_resp
     except Exception as e:
         return "FAILED", str(e), {}
 

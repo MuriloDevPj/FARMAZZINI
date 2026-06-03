@@ -30,33 +30,41 @@ Regras Estritas:
    preco_pix (float64), preco_cartao (float64), desconto_padrao (string), promocoes_especiais (string),
    porcentagem_de_cashback (string), gtin (string), disponibilidade (string).
 
-4. Regras de Ouro para Partições (CRÍTICO):
-   - As partições são: farmacia, ano, mes, dia. SEMPRE filtre pelas 4 quando aplicável.
+4. Regras de Ouro para Partições (CRÍTICO — reduz 99% do custo de scan):
+   - As partições são: farmacia, ano, mes, dia. SEMPRE inclua as 4 no WHERE.
    - Valores exatos da partição 'farmacia' (case-sensitive): 'FarmaPonte' ou 'Vera Cruz'.
      Se o usuário escrever variações como 'farmaponte', 'farma ponte', 'vera cruz', normalize
      automaticamente para o valor exato correto.
    - Se o usuário não especificar a farmácia, NÃO filtre por farmacia (busque as duas).
    - Se o usuário não especificar data, use SEMPRE: ano='{DEFAULT_ANO}' AND mes='{DEFAULT_MES}' AND dia='{DEFAULT_DIA}'.
+   - NUNCA omita as partições de data. Uma query sem ano/mes/dia faz scan completo e causa timeout.
 
 5. Regras de Performance e Compatibilidade para Athena (CRÍTICO — evita timeout e erros):
-   - NUNCA use ORDER BY sem filtro de nome/produto. ORDER BY em tabela inteira força full scan.
+   - NUNCA use ORDER BY sem filtro de nome/produto específico no WHERE. ORDER BY em tabela inteira
+     força full scan + sort e é a principal causa de timeout.
    - NUNCA use COALESCE em ORDER BY. Causa full scan obrigatório antes do LIMIT.
    - NUNCA use QUALIFY — essa cláusula NÃO existe no Athena (é exclusiva do BigQuery/Snowflake).
      Para filtrar por ROW_NUMBER/RANK, envolva em subquery:
      Errado:  SELECT ..., ROW_NUMBER() OVER (...) as rn FROM tb_processed WHERE ... QUALIFY rn = 1
-     Correto: SELECT * FROM (SELECT ..., ROW_NUMBER() OVER (...) as rn FROM tb_processed WHERE ...) WHERE rn = 1
+     Correto: SELECT * FROM (SELECT ..., ROW_NUMBER() OVER (...) as rn FROM tb_processed WHERE ...) t WHERE t.rn = 1
    - NUNCA use funções exclusivas de outros bancos: QUALIFY, ILIKE, SAMPLE, PIVOT, UNPIVOT.
+   - NUNCA use SELECT * sem LIMIT. Sempre especifique as colunas necessárias.
    - Para 'menor preço' SEM produto específico: use MIN() com GROUP BY farmacia.
-     Exemplo: SELECT farmacia, MIN(preco_pix) as menor_pix FROM ... GROUP BY farmacia
+     Exemplo: SELECT farmacia, MIN(preco_pix) as menor_pix FROM tb_processed WHERE ano='{DEFAULT_ANO}' AND mes='{DEFAULT_MES}' AND dia='{DEFAULT_DIA}' GROUP BY farmacia
    - Para 'menor preço' COM produto: filtre pelo nome primeiro, depois ORDER BY com LIMIT.
-     Exemplo: WHERE nome LIKE '%Dipirona%' AND ... ORDER BY preco_pix ASC LIMIT 10
-   - Prefira LIMIT 50 no máximo. Nunca omita LIMIT em queries sem filtro de nome.
-   - Comparativo entre farmácias: use GROUP BY farmacia com AVG() ou MIN().
+     Exemplo: SELECT farmacia, nome, preco_pix FROM tb_processed WHERE nome LIKE '%Dipirona%' AND ano='{DEFAULT_ANO}' AND mes='{DEFAULT_MES}' AND dia='{DEFAULT_DIA}' ORDER BY preco_pix ASC LIMIT 10
+   - Para 'estoque crítico' ou 'ruptura': use GROUP BY farmacia, disponibilidade com COUNT(*).
+     Exemplo: SELECT farmacia, disponibilidade, COUNT(*) as qtd FROM tb_processed WHERE ano='{DEFAULT_ANO}' AND mes='{DEFAULT_MES}' AND dia='{DEFAULT_DIA}' GROUP BY farmacia, disponibilidade
+   - Use LIMIT 20 para queries com ORDER BY. Use LIMIT 50 para queries sem ORDER BY.
+   - Se a pergunta pedir comparativo entre farmácias, use GROUP BY farmacia com AVG() ou MIN().
+   - Queries com Window Functions (ROW_NUMBER, RANK) só são aceitáveis quando a subquery
+     já filtra por partição (farmacia + ano + mes + dia) E por nome de produto.
 
 6. Exemplos de filtro correto:
-   - "produtos da FarmaPonte" → SELECT nome, preco_original FROM tb_processed WHERE farmacia='FarmaPonte' AND ano='{DEFAULT_ANO}' AND mes='{DEFAULT_MES}' AND dia='{DEFAULT_DIA}' LIMIT 50
-   - "menor preço da dipirona" → WHERE nome LIKE '%Dipirona%' AND ano='{DEFAULT_ANO}' AND mes='{DEFAULT_MES}' AND dia='{DEFAULT_DIA}' ORDER BY preco_pix ASC LIMIT 10
-   - "produto mais barato" → SELECT farmacia, nome, MIN(preco_pix) as menor_pix FROM tb_processed WHERE ano='{DEFAULT_ANO}' AND mes='{DEFAULT_MES}' AND dia='{DEFAULT_DIA}' GROUP BY farmacia, nome ORDER BY menor_pix ASC LIMIT 10
-   - "todos os produtos"      → WHERE ano='{DEFAULT_ANO}' AND mes='{DEFAULT_MES}' AND dia='{DEFAULT_DIA}' LIMIT 50
+   - "produtos da FarmaPonte" → SELECT nome, preco_original, disponibilidade FROM tb_processed WHERE farmacia='FarmaPonte' AND ano='{DEFAULT_ANO}' AND mes='{DEFAULT_MES}' AND dia='{DEFAULT_DIA}' LIMIT 50
+   - "menor preço da dipirona" → SELECT nome, preco_pix FROM tb_processed WHERE nome LIKE '%Dipirona%' AND ano='{DEFAULT_ANO}' AND mes='{DEFAULT_MES}' AND dia='{DEFAULT_DIA}' ORDER BY preco_pix ASC LIMIT 10
+   - "produto mais barato" → SELECT farmacia, MIN(preco_pix) as menor_pix FROM tb_processed WHERE ano='{DEFAULT_ANO}' AND mes='{DEFAULT_MES}' AND dia='{DEFAULT_DIA}' GROUP BY farmacia
+   - "todos os produtos" → SELECT farmacia, nome, preco_original FROM tb_processed WHERE ano='{DEFAULT_ANO}' AND mes='{DEFAULT_MES}' AND dia='{DEFAULT_DIA}' LIMIT 50
+   - "estoque crítico" → SELECT farmacia, disponibilidade, COUNT(*) as total FROM tb_processed WHERE ano='{DEFAULT_ANO}' AND mes='{DEFAULT_MES}' AND dia='{DEFAULT_DIA}' GROUP BY farmacia, disponibilidade ORDER BY total DESC LIMIT 20
 
 Pergunta: {{user_prompt}}"""
