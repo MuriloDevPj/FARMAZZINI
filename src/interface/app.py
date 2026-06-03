@@ -185,5 +185,41 @@ html_content = render_full_ui(
     active_db=active_db
 )
 
-# Injeta o HTML via components — preserva 100% do design
-components.html(html_content, height=800, scrolling=False)
+# ─────────────────────────────────────────────
+# ALTURA DINÂMICA — elimina barra preta no zoom out
+# Captura a altura real da viewport via JS e ajusta o iframe
+# ─────────────────────────────────────────────
+st.markdown("""
+<style>
+    /* Remove qualquer espaço residual ao redor do iframe */
+    iframe[title="streamlit_components_v1.html"] {
+        display: block !important;
+        border: none !important;
+    }
+    [data-testid="stAppViewContainer"],
+    [data-testid="stAppViewBlockContainer"],
+    .main, .block-container {
+        padding: 0 !important;
+        margin: 0 !important;
+        max-width: 100% !important;
+        background-color: #060608 !important;
+    }
+</style>
+<script>
+    // Ajusta o iframe para ocupar 100% da viewport ao redimensionar
+    function ajustarIframe() {
+        const iframes = window.parent.document.querySelectorAll('iframe');
+        iframes.forEach(f => {
+            f.style.height = window.parent.innerHeight + 'px';
+            f.style.minHeight = '100vh';
+        });
+    }
+    window.parent.addEventListener('resize', ajustarIframe);
+    ajustarIframe();
+</script>
+""", unsafe_allow_html=True)
+
+# Usa a altura da viewport do navegador dinamicamente
+# O valor 10000 é intencionalmente alto — o CSS height:100vh do HTML interno
+# controla o tamanho real; scrolling=False evita barra dupla
+components.html(html_content, height=10000, scrolling=False)
