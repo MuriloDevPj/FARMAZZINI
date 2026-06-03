@@ -158,24 +158,12 @@ html, body {{
 }}
 .header-left {{ display:flex; align-items:center; gap:20px; }}
 .menu-toggle {{
-    background:rgba(230,57,70,0.06); border:1px solid rgba(230,57,70,0.2);
-    color:var(--primary); width:34px; height:34px; border-radius:10px;
-    cursor:pointer; transition:all 0.22s cubic-bezier(0.4,0,0.2,1);
+    background:rgba(255,255,255,0.03); border:1px solid var(--border);
+    color:var(--text-main); width:40px; height:40px; border-radius:12px;
+    cursor:pointer; transition:all 0.2s;
     display:flex; align-items:center; justify-content:center;
-    font-size:14px; flex-shrink:0;
 }}
-.menu-toggle:hover {{
-    background:rgba(230,57,70,0.14); border-color:rgba(230,57,70,0.5);
-    box-shadow:0 0 12px rgba(230,57,70,0.2); transform:scale(1.07);
-}}
-.menu-toggle.is-collapsed {{
-    background:rgba(255,255,255,0.04); border-color:rgba(255,255,255,0.1);
-    color:var(--text-muted);
-}}
-.menu-toggle.is-collapsed:hover {{
-    background:rgba(230,57,70,0.1); border-color:rgba(230,57,70,0.4);
-    color:var(--primary); box-shadow:0 0 12px rgba(230,57,70,0.15); transform:scale(1.07);
-}}
+.menu-toggle:hover {{ color:var(--primary); border-color:rgba(230,57,70,0.4); background:rgba(230,57,70,0.05); }}
 .logo-placeholder {{ font-size:20px; font-weight:700; letter-spacing:3px; color:var(--text-main); }}
 .logo-placeholder span {{ color:var(--primary); }}
 .tag-badge {{
@@ -370,10 +358,8 @@ tr:last-child td {{ border-bottom:none; }}
 
     <div class="header">
       <div class="header-left">
+        <button class="menu-toggle" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
         <div class="logo-placeholder">FARMAZZINI <span>INTEL</span></div>
-        <button class="menu-toggle" id="menuToggleBtn" onclick="toggleSidebar()" title="Ocultar painel lateral">
-          <i class="fa-solid fa-chevron-left" id="toggleIcon"></i>
-        </button>
       </div>
       <div style="font-size:13px;color:var(--text-muted);display:flex;align-items:center;gap:8px;">
         <span class="tag-badge">✨ Pipeline Ativo</span>
@@ -423,17 +409,6 @@ function toggleSidebar() {{
   sidebarOpen = !sidebarOpen;
   document.getElementById('sidebar').classList.toggle('collapsed', !sidebarOpen);
   document.getElementById('mainContent').classList.toggle('no-sidebar', !sidebarOpen);
-  const btn  = document.getElementById('menuToggleBtn');
-  const icon = document.getElementById('toggleIcon');
-  if (sidebarOpen) {{
-    btn.classList.remove('is-collapsed');
-    icon.className = 'fa-solid fa-chevron-left';
-    btn.title = 'Ocultar painel lateral';
-  }} else {{
-    btn.classList.add('is-collapsed');
-    icon.className = 'fa-solid fa-chevron-right';
-    btn.title = 'Exibir painel lateral';
-  }}
 }}
 
 // ── DB Pills ─────────────────────────────────────────────────

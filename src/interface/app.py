@@ -8,6 +8,7 @@
 """
 
 import streamlit as st
+import streamlit.components.v1 as components
 import json
 from pipeline import processar_mensagem  # ← SEU PIPELINE ENTRA AQUI
 
@@ -24,29 +25,11 @@ st.set_page_config(
 # Remove margens e padding padrão do Streamlit
 st.markdown("""
     <style>
-        [data-testid="stHeader"],
-        [data-testid="stToolbar"],
+        [data-testid="stAppViewContainer"] { padding: 0 !important; }
+        [data-testid="stHeader"] { display: none !important; }
+        [data-testid="stToolbar"] { display: none !important; }
         footer { display: none !important; }
-
-        html, body { margin: 0 !important; padding: 0 !important; overflow: hidden !important; }
-
-        [data-testid="stAppViewContainer"],
-        [data-testid="stMain"],
-        [data-testid="stMainBlockContainer"],
-        .block-container {
-            padding: 0 !important;
-            margin: 0 !important;
-            max-width: 100% !important;
-            height: 100vh !important;
-            overflow: hidden !important;
-        }
-        [data-testid="stHtml"],
-        [data-testid="stHtml"] > div {
-            height: 100vh !important;
-            overflow: hidden !important;
-            padding: 0 !important;
-            margin: 0 !important;
-        }
+        .block-container { padding: 0 !important; max-width: 100% !important; }
     </style>
 """, unsafe_allow_html=True)
 
@@ -203,4 +186,4 @@ html_content = render_full_ui(
 )
 
 # Injeta o HTML via components — preserva 100% do design
-st.html(html_content)
+components.html(html_content, height=800, scrolling=False)
