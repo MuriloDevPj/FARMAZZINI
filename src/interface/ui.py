@@ -175,6 +175,7 @@ html, body {{
 /* ── CHAT SCROLLER ── */
 .chat-scroller {{
     flex:1; overflow-y:auto; padding:40px;
+    padding-bottom:160px; /* espaço para input + botões fixos */
     display:flex; flex-direction:column; gap:24px;
     min-height:0;
 }}
@@ -203,10 +204,21 @@ html, body {{
     box-shadow:0 8px 24px rgba(230,57,70,0.3); color:#fff;
 }}
 
+/* ── ÁREA FIXA NO RODAPÉ — acompanha zoom igual ao Claude ── */
+.bottom-fixed-area {{
+    position:fixed; bottom:0; left:352px; right:0;
+    background:linear-gradient(to top, rgba(6,6,8,0.98) 70%, transparent);
+    padding:16px 40px 28px;
+    display:flex; flex-direction:column; align-items:center; gap:12px;
+    z-index:100;
+    transition:left 0.35s cubic-bezier(0.25,0.8,0.25,1);
+}}
+.bottom-fixed-area.no-sidebar {{ left:0; }}
+
 /* hot buttons */
 .hot-buttons-wrapper {{
     display:flex; gap:12px; justify-content:center;
-    padding:0 40px 16px; flex-wrap:wrap; flex-shrink:0;
+    flex-wrap:wrap;
 }}
 .hot-btn {{
     background:linear-gradient(135deg,var(--primary),var(--primary-dark));
@@ -222,7 +234,7 @@ html, body {{
 
 /* input */
 .input-container {{
-    padding:0 40px 28px; display:flex; justify-content:center; flex-shrink:0;
+    width:100%; display:flex; justify-content:center;
 }}
 .input-box {{
     width:100%; max-width:800px;
@@ -371,17 +383,19 @@ tr:last-child td {{ border-bottom:none; }}
 
     <div class="chat-scroller" id="chatWindow"></div>
 
-    <div class="hot-buttons-wrapper">
-      <button class="hot-btn" onclick="hotTrigger('estoque')"><i class="fa-solid fa-boxes-stacked"></i> Estoque Crítico</button>
-      <button class="hot-btn" onclick="hotTrigger('preco')"><i class="fa-solid fa-tags"></i> Achar Mais Barato</button>
-      <button class="hot-btn" onclick="hotTrigger('promos')"><i class="fa-solid fa-fire"></i> Maiores Promoções</button>
-    </div>
-
-    <div class="input-container">
-      <div class="input-box">
-        <input type="text" id="userInput" placeholder="Faça uma consulta estratégica..."
-               onkeypress="if(event.key==='Enter')sendMsg()">
-        <button class="btn-send" onclick="sendMsg()"><i class="fa-solid fa-paper-plane"></i></button>
+    <!-- Área fixa no rodapé: botões + input sempre visíveis independente de zoom -->
+    <div class="bottom-fixed-area" id="bottomArea">
+      <div class="hot-buttons-wrapper">
+        <button class="hot-btn" onclick="hotTrigger('estoque')"><i class="fa-solid fa-boxes-stacked"></i> Estoque Crítico</button>
+        <button class="hot-btn" onclick="hotTrigger('preco')"><i class="fa-solid fa-tags"></i> Achar Mais Barato</button>
+        <button class="hot-btn" onclick="hotTrigger('promos')"><i class="fa-solid fa-fire"></i> Maiores Promoções</button>
+      </div>
+      <div class="input-container">
+        <div class="input-box">
+          <input type="text" id="userInput" placeholder="Faça uma consulta estratégica..."
+                 onkeypress="if(event.key==='Enter')sendMsg()">
+          <button class="btn-send" onclick="sendMsg()"><i class="fa-solid fa-paper-plane"></i></button>
+        </div>
       </div>
     </div>
   </div>
@@ -410,6 +424,7 @@ function toggleSidebar() {{
   sidebarOpen = !sidebarOpen;
   document.getElementById('sidebar').classList.toggle('collapsed', !sidebarOpen);
   document.getElementById('mainContent').classList.toggle('no-sidebar', !sidebarOpen);
+  document.getElementById('bottomArea').classList.toggle('no-sidebar', !sidebarOpen);
 }}
 
 // ── DB Pills ─────────────────────────────────────────────────
