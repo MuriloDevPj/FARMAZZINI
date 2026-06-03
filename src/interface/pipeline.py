@@ -244,9 +244,18 @@ def processar_mensagem(mensagem: str, db_filter: str = "todas", historico: list 
     # 2. Pipeline falhou
     if not resultado["sucesso"]:
         sql_bloco = _bloco_sql(resultado["sql"]) if resultado.get("sql") else ""
+        erro_msg  = resultado.get("erro", "Erro desconhecido.")
+        dica = ""
+        if erro_msg and "FAILED" in erro_msg and not any(k in erro_msg for k in [":", "COLUMN", "TABLE", "syntax"]):
+            dica = "<br><span style='color:#9a9a9f;font-size:12px;'>&#128161; Step Function retornou FAILED sem detalhes &mdash; verifique permissões IAM e ARN da state machine.</span>"
+        elif erro_msg and ("NoSuchKey" in erro_msg or "S3" in erro_msg):
+            dica = "<br><span style='color:#9a9a9f;font-size:12px;'>&#128161; Resultado não encontrado no S3 &mdash; Athena pode ainda estar escrevendo. Tente novamente.</span>"
+        elif erro_msg and any(k in erro_msg.upper() for k in ["COLUMN", "TABLE", "SYNTAX"]):
+            dica = "<br><span style='color:#9a9a9f;font-size:12px;'>&#128161; Erro de SQL &mdash; verifique nome da tabela, colunas e partições.</span>"
         return f"""
         <span style="color:#f87171;font-weight:600;">❌ Erro na consulta</span><br>
-        <span style="color:#9a9a9f;font-size:13px;">{resultado.get('erro', 'Erro desconhecido.')}</span>
+        <span style="color:#9a9a9f;font-size:13px;">{erro_msg}</span>
+        {dica}
         {sql_bloco}
         """
 

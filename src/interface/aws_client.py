@@ -101,14 +101,31 @@ def executar_via_step_functions(sql: str) -> tuple:
             status_resp = client.describe_execution(executionArn=exec_arn)
             status = status_resp["status"]
             
-            if status in ("SUCCEEDED", "FAILED", "TIMED_OUT", "ABORTED"):
+            if status == "SUCCEEDED":
                 return status, None, status_resp
-                
+
+            if status in ("FAILED", "TIMED_OUT", "ABORTED"):
+                # Extrai a causa real do erro registrada pela Step Function
+                erro_cause = status_resp.get("cause", "")
+                erro_error = status_resp.get("error", "")
+                # Tenta extrair motivo do Athena dentro do output
+                try:
+                    output = json.loads(status_resp.get("output", "{}"))
+                    athena_reason = (
+                        output.get("QueryExecution", {})
+                              .get("Status", {})
+                              .get("StateChangeReason", "")
+                    )
+                except Exception:
+                    athena_reason = ""
+                detalhes = athena_reason or erro_cause or erro_error or status
+                return status, detalhes, status_resp
+
             time.sleep(1)
             tentativa += 1
-            
+
         # Caso exceda o tempo de segurança regressa com TIMED_OUT
-        return "TIMED_OUT", "A execução na AWS Step Functions excedeu o limite de segurança de 25 segundos.", status_resp
+        return "TIMED_OUT", "A execução na AWS Step Functions excedeu o limite de segurança de 60 segundos.", status_resp
     except Exception as e:
         return "FAILED", str(e), {}
 
