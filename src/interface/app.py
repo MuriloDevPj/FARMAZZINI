@@ -15,8 +15,9 @@
 ║     Isto garante que o utilizador veja a animação de carregamento║
 ║     a pulsar imediatamente no ecrã, sem congelar ou escurecer.   ║
 ║  4. No segundo plano (após renderização), o script processa      ║
-║     a AWS, respeita um tempo mínimo de exibição de 2s e substitui║
-║     a mensagem de carregamento de forma limpa e suave.           ║
+║     a AWS, respeita um tempo mínimo de exibição de 3.5s para     ║
+║     cobrir completamente a transição e substitui a mensagem de   ║
+║     carregamento de forma limpa e suave.                         ║
 ╚══════════════════════════════════════════════════════════════════╝
 """
 
@@ -262,8 +263,9 @@ if chat_atual and chat_atual["messages"]:
             historico=chat_atual["messages"][:-1]  # Envia o histórico sem o bloco temporário de loading
         )
 
-        # Calculamos o tempo decorrido e garantimos pelo menos 2.0 segundos de exibição fluida
-        tempo_minimo = 2.0
+        # Calculamos o tempo decorrido e estendemos para pelo menos 3.5 segundos de exibição fluida.
+        # Isto garante que o utilizador veja os 3 pontos pulsarem e oculta qualquer tela preta de recarregamento!
+        tempo_minimo = 3.5
         tempo_decorrido = time.time() - start_time
         if tempo_decorrido < tempo_minimo:
             time.sleep(tempo_minimo - tempo_decorrido)
