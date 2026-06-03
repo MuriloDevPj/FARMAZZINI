@@ -43,7 +43,7 @@ body {{
     background:radial-gradient(circle,rgba(230,57,70,0.15) 0%,rgba(139,0,0,0.03) 60%,transparent 80%);
     filter:blur(100px); z-index:1; pointer-events:none; border-radius:50%;
 }}
-.app-shell {{ display:flex; width:100%; height:100vh; position:relative; z-index:2; }}
+.app-shell {{ display:flex; width:100%; height:100vh; min-height:100vh; position:relative; z-index:2; }}
 
 /* ── SIDEBAR ── */
 .sidebar {{
@@ -142,7 +142,7 @@ body {{
     flex-grow:1; display:flex; flex-direction:column;
     background:var(--bg-card); overflow:hidden;
     position:relative; z-index:2;
-    width:100%; height:100vh;
+    width:100%; height:100vh; min-height:100vh;
     transition:padding-left 0.35s cubic-bezier(0.25,0.8,0.25,1);
     padding-left:352px;
 }}
@@ -514,22 +514,40 @@ function triggerCSV() {{
   setTimeout(()=>t.style.display='none', 3500);
 }}
 
-// ── Ajusta altura do iframe para ocupar 100vh ─────────────────
-// Notifica o Streamlit pai para redimensionar o iframe ao
-// tamanho real da janela do navegador.
+// ── Ajusta altura para ocupar toda a tela ────────────────────
 (function fixHeight() {{
-  function sendHeight() {{
-    const h = window.innerHeight;
+  function applyHeight(h) {{
     document.documentElement.style.height = h + 'px';
+    document.documentElement.style.minHeight = h + 'px';
     document.body.style.height = h + 'px';
-    // Envia a altura real para o Streamlit redimensionar o iframe
-    window.parent.postMessage({{
-      type: 'streamlit:setFrameHeight',
-      height: h
-    }}, '*');
+    document.body.style.minHeight = h + 'px';
+    var shell = document.querySelector('.app-shell');
+    if (shell) {{
+      shell.style.height = h + 'px';
+      shell.style.minHeight = h + 'px';
+    }}
+    var main = document.querySelector('.main-content');
+    if (main) {{
+      main.style.height = h + 'px';
+      main.style.minHeight = h + 'px';
+    }}
+    // Pede ao Streamlit para redimensionar o iframe
+    window.parent.postMessage({{ type: 'streamlit:setFrameHeight', height: h }}, '*');
   }}
-  sendHeight();
-  window.addEventListener('resize', sendHeight);
+
+  function getHeight() {{
+    try {{ return window.parent.innerHeight; }}
+    catch(e) {{ return window.screen.availHeight || 900; }}
+  }}
+
+  function run() {{ applyHeight(getHeight()); }}
+
+  run();
+  // Garante ajuste após fontes/CSS carregarem
+  setTimeout(run, 100);
+  setTimeout(run, 500);
+  setTimeout(run, 1000);
+  window.addEventListener('resize', run);
 }})();
 </script>
 </body>
