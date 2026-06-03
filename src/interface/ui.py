@@ -177,17 +177,14 @@ html, body {{
     width:100%; height:100dvh;
     transition:padding-left 0.35s cubic-bezier(0.25,0.8,0.25,1);
     padding-left:352px;
-    padding-top:80px;
 }}
 .main-content.no-sidebar {{ padding-left:0; }}
 
 .header {{
-    padding:20px 40px;
+    padding:20px 40px; border-bottom:1px solid rgba(200,30,55,0.08);
     display:flex; justify-content:space-between; align-items:center;
     background:transparent;
     flex-shrink:0;
-    position:absolute; top:0; left:0; right:0;
-    z-index:20;
 }}
 
 .header-left {{ display:flex; align-items:center; gap:20px; }}
@@ -373,7 +370,7 @@ tr:last-child td {{ border-bottom:none; }}
 
 @media(max-width:768px){{
     .sidebar {{ top:76px; left:8px; right:8px; width:calc(100% - 16px); }}
-    .main-content {{ padding-left:0 !important; padding-top:70px; }}
+    .main-content {{ padding-left:0 !important; }}
     .header {{ padding:15px 20px; }}
     .chat-scroller {{ padding:20px; }}
     .message {{ max-width:90%; }}
