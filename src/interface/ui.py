@@ -420,6 +420,88 @@ tr:last-child td {{ border-bottom:none; }}
     to  {{ transform:scale(1.15); opacity:1; }}
 }}
 
+/* ── MODAL DE GRÁFICOS ── */
+.chart-modal-overlay {{
+    display:none; position:fixed; inset:0; z-index:500;
+    background:rgba(0,0,0,0.75); backdrop-filter:blur(6px);
+    align-items:center; justify-content:center;
+    animation:overlayFade 0.2s ease;
+}}
+.chart-modal-overlay.open {{ display:flex; }}
+.chart-modal-box {{
+    background:#0d0410;
+    border:1px solid rgba(200,30,55,0.20);
+    border-radius:24px;
+    padding:28px 32px;
+    width:min(92vw, 860px);
+    max-height:90dvh;
+    overflow-y:auto;
+    box-shadow:0 28px 70px rgba(0,0,0,0.85), 0 0 80px rgba(180,10,35,0.08);
+    display:flex; flex-direction:column; gap:20px;
+    position:relative;
+}}
+.chart-modal-box::-webkit-scrollbar {{ width:4px; }}
+.chart-modal-box::-webkit-scrollbar-thumb {{ background:rgba(255,255,255,0.08); border-radius:4px; }}
+.chart-modal-header {{
+    display:flex; align-items:center; justify-content:space-between;
+    border-bottom:1px solid rgba(255,255,255,0.06); padding-bottom:16px;
+}}
+.chart-modal-title {{
+    font-size:15px; font-weight:700; color:#fff; letter-spacing:.3px;
+}}
+.chart-modal-close {{
+    background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.06);
+    color:var(--text-muted); width:36px; height:36px; border-radius:10px;
+    cursor:pointer; display:flex; align-items:center; justify-content:center;
+    font-size:16px; transition:all 0.2s;
+}}
+.chart-modal-close:hover {{ color:var(--primary); border-color:rgba(230,57,70,0.4); }}
+.chart-tabs {{
+    display:flex; gap:6px; flex-wrap:wrap;
+}}
+.chart-tab {{
+    padding:7px 16px; border-radius:20px;
+    font-size:12px; font-weight:600; cursor:pointer;
+    background:rgba(255,255,255,0.03);
+    border:1px solid rgba(255,255,255,0.07);
+    color:var(--text-muted); transition:all 0.2s;
+    font-family:'Urbanist',sans-serif;
+}}
+.chart-tab.active {{
+    background:rgba(232,37,58,0.15);
+    border-color:rgba(232,37,58,0.45);
+    color:#E8253A;
+}}
+.chart-filter-row {{
+    display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+}}
+.chart-filter-row label {{ font-size:12px; color:var(--text-muted); font-weight:600; }}
+.chart-filter-row select {{
+    background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08);
+    color:#fff; padding:6px 12px; border-radius:8px;
+    font-family:'Urbanist',sans-serif; font-size:13px; outline:none; cursor:pointer;
+}}
+.chart-metric-grid {{
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:10px;
+}}
+.chart-metric-card {{
+    background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06);
+    border-radius:12px; padding:12px 14px; text-align:center;
+}}
+.chart-metric-val {{ font-size:20px; font-weight:700; }}
+.chart-metric-lbl {{ font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.8px; margin-top:4px; }}
+.chart-canvas-wrap {{ position:relative; width:100%; }}
+.chart-cta {{
+    font-size:13px; padding:12px 16px; border-radius:12px;
+    border-left:3px solid; line-height:1.5;
+}}
+.chart-legend {{
+    display:flex; gap:14px; flex-wrap:wrap;
+    font-size:12px; color:var(--text-muted);
+}}
+.chart-legend-item {{ display:flex; align-items:center; gap:5px; }}
+.chart-legend-swatch {{ width:10px; height:10px; border-radius:2px; flex-shrink:0; }}
+
 @media(max-width:768px){{
     .sidebar {{ top:76px; left:8px; right:8px; width:calc(100% - 16px); }}
     .main-content {{ padding-left:0 !important; }}

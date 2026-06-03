@@ -28,6 +28,87 @@ def _csv_data_uri(df: pd.DataFrame) -> str:
     return f"data:text/csv;charset=utf-8;base64,{b64}"
 
 
+def _chart_payload(df: pd.DataFrame) -> str:
+    """
+    Constrói o JSON com os dados dos 3 cruzamentos estratégicos.
+    Retorna uma string JSON segura para embutir em atributo HTML data-*.
+    """
+    import json as _json
+
+    FARMACIAS_MAP = {
+        "farmaponte": "FarmaPonte",
+        "farma ponte": "FarmaPonte",
+        "vera cruz": "Vera Cruz",
+        "veracruz": "Vera Cruz",
+        "drogaria vera cruz": "Vera Cruz",
+        "farmazzini": "Farmazzini",
+    }
+
+    # Normaliza a coluna farmacia
+    df = df.copy()
+    if "farmacia" in df.columns:
+        df["farmacia"] = df["farmacia"].apply(
+            lambda v: FARMACIAS_MAP.get(str(v).strip().lower(), str(v).strip())
+            if pd.notna(v) else v
+        )
+    else:
+        # Se o DataFrame não tem coluna farmacia, não há cruzamento competitivo possível
+        return ""
+
+    farmacias = sorted(df["farmacia"].dropna().unique().tolist())
+    if len(farmacias) < 1:
+        return ""
+
+    # ── Cruzamento 1: preço médio por farmácia (original / pix / cartão) ──────
+    cruzamento1 = {}
+    for mod in ("preco_original", "preco_pix", "preco_cartao"):
+        if mod in df.columns:
+            serie = pd.to_numeric(df[mod], errors="coerce")
+            cruzamento1[mod] = (
+                df.assign(_p=serie)
+                .groupby("farmacia")["_p"]
+                .mean()
+                .round(2)
+                .reindex(farmacias)
+                .fillna(0)
+                .to_dict()
+            )
+
+    # ── Cruzamento 2: preços por modalidade por farmácia (mesma estrutura,
+    #    mas focada na leitura de agressividade vertical) ─────────────────────
+    cruzamento2 = cruzamento1  # mesmos dados, gráfico transpõe os eixos no frontend
+
+    # ── Cruzamento 3: share de disponibilidade por farmácia ──────────────────
+    cruzamento3 = {}
+    if "disponibilidade" in df.columns:
+        STATUS_DISPONIVEL = {"disponível", "disponivel", "available", "sim", "yes"}
+        df["_disp"] = df["disponibilidade"].apply(
+            lambda v: "Disponível"
+            if str(v).strip().lower() in STATUS_DISPONIVEL
+            else "Indisponível"
+            if pd.notna(v)
+            else "Indisponível"
+        )
+        for farm in farmacias:
+            sub = df[df["farmacia"] == farm]["_disp"]
+            total = len(sub)
+            disponivel = int(sub.eq("Disponível").sum())
+            cruzamento3[farm] = {
+                "disponivel": disponivel,
+                "indisponivel": total - disponivel,
+                "total": total,
+            }
+
+    payload = {
+        "farmacias": farmacias,
+        "cruzamento1": cruzamento1,
+        "cruzamento2": cruzamento2,
+        "cruzamento3": cruzamento3,
+    }
+    # html-safe: escapa aspas simples e caracteres problemáticos
+    return _json.dumps(payload, ensure_ascii=False).replace("'", "&#39;")
+
+
 # ── Helpers de formatação HTML ────────────────────────────────────────────────
 
 def _df_para_html(df: pd.DataFrame) -> str:
@@ -180,9 +261,20 @@ def processar_mensagem(mensagem: str, db_filter: str = "todas", historico: list 
         {_bloco_sql(sql)}
         """
 
-    # 4. Sucesso — monta resposta com métricas + tabela + SQL + botão de download
+    # 4. Sucesso — monta resposta com métricas + tabela + SQL + botões de ação
     csv_uri = _csv_data_uri(df)
     nome_arquivo = "farmazzini_consulta.csv"
+    chart_json = _chart_payload(df)
+
+    # Botão de gráfico só aparece quando há dados competitivos suficientes
+    btn_grafico = ""
+    if chart_json:
+        btn_grafico = f"""
+        <button class="action-btn" onclick="abrirGrafico('{chart_json}')"
+                style="border-color:rgba(232,37,58,0.35);color:#E8253A;">
+            <i class="fa-solid fa-chart-bar"></i> Gerar Gráfico
+        </button>"""
+
     return f"""
     ✅ Consulta executada com sucesso!
     {_metricas_rapidas(df)}
@@ -192,5 +284,6 @@ def processar_mensagem(mensagem: str, db_filter: str = "todas", historico: list 
         <a href="{csv_uri}" download="{nome_arquivo}" class="action-btn" style="text-decoration:none;">
             <i class="fa-solid fa-file-csv"></i> Exportar CSV
         </a>
+        {btn_grafico}
     </div>
     """
