@@ -515,11 +515,21 @@ function triggerCSV() {{
 }}
 
 // ── Ajusta altura do iframe para ocupar 100vh ─────────────────
-// O Streamlit define height= em px — usamos postMessage para
-// pedir ao pai que ajuste o iframe ao tamanho real da tela.
-(function fixHeight(){{
-  const h = window.screen.height;
-  document.body.style.height = h+'px';
+// Notifica o Streamlit pai para redimensionar o iframe ao
+// tamanho real da janela do navegador.
+(function fixHeight() {{
+  function sendHeight() {{
+    const h = window.innerHeight;
+    document.documentElement.style.height = h + 'px';
+    document.body.style.height = h + 'px';
+    // Envia a altura real para o Streamlit redimensionar o iframe
+    window.parent.postMessage({{
+      type: 'streamlit:setFrameHeight',
+      height: h
+    }}, '*');
+  }}
+  sendHeight();
+  window.addEventListener('resize', sendHeight);
 }})();
 </script>
 </body>
