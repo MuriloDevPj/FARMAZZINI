@@ -622,8 +622,8 @@ function appendMessage(sender, text, animate=true) {{
 }}
 
 // ════════════════════════════════════════════════════════════════
-// ENVIAR MENSAGEM → vai ao Python via query_params
-// Mostra loading imediatamente enquanto aguarda
+// ENVIAR MENSAGEM → postMessage para o Streamlit pai
+// Mostra loading imediatamente enquanto aguarda o rerun
 // ════════════════════════════════════════════════════════════════
 function sendMsg() {{
     const inp = document.getElementById('userInput');
@@ -634,7 +634,7 @@ function sendMsg() {{
 
     // Garante que o chat ativo existe nos chats locais
     const chat = chats.find(c => c.id === activeChatId);
-    if(!chat) return;
+    if(!chat) {{ inp.disabled = false; return; }}
 
     // Adiciona mensagem do usuário localmente (feedback imediato)
     chat.messages.push({{ sender:'user', text: val }});
@@ -649,14 +649,17 @@ function sendMsg() {{
     document.getElementById('chatWindow').appendChild(loadDiv);
     document.getElementById('chatWindow').scrollTop = 99999;
 
-    // Envia ao Python com o estado completo dos chats
-    const url = new URL(window.location.href);
-    url.searchParams.set('action',      'send');
-    url.searchParams.set('msg',         val);
-    url.searchParams.set('db',          activeDb);
-    url.searchParams.set('chat_id',     activeChatId);
-    url.searchParams.set('chats_state', JSON.stringify(chats));
-    window.location.href = url.toString();
+    // ── Envia ao Streamlit pai via postMessage ──────────────────
+    // O app.py tem um componente receptor que escuta esta mensagem
+    // e atualiza st.session_state antes de chamar st.rerun().
+    window.parent.postMessage({{
+        type:       'farmazzini_send',
+        action:     'send',
+        msg:        val,
+        db:         activeDb,
+        chat_id:    activeChatId,
+        chats_state: JSON.stringify(chats)
+    }}, '*');
 }}
 
 // ════════════════════════════════════════════════════════════════

@@ -38,8 +38,6 @@ st.markdown("""
 
 # ─────────────────────────────────────────────
 # INICIALIZAÇÃO DO SESSION STATE
-# Aqui ficam todos os dados que persistem entre
-# interações do usuário sem recarregar a página.
 # ─────────────────────────────────────────────
 if "chats" not in st.session_state:
     st.session_state.chats = [
@@ -65,18 +63,57 @@ if "active_chat_id" not in st.session_state:
 if "active_db" not in st.session_state:
     st.session_state.active_db = "todas"
 
-if "pending_input" not in st.session_state:
-    st.session_state.pending_input = None
-
 if "next_id" not in st.session_state:
     st.session_state.next_id = 2
 
 
 # ─────────────────────────────────────────────
-# PROCESSAR AÇÃO DO USUÁRIO (BRIDGE HTML → PYTHON)
+# COMPONENTE RECEPTOR DE postMessage
 #
-# O HTML envia comandos via query_params.
-# Aqui capturamos e processamos antes de renderizar.
+# Este HTML invisível (height=0) vive na página PAI do Streamlit
+# (fora do iframe). Ele escuta mensagens do iframe filho e as
+# repassa ao Streamlit gravando em st.session_state via
+# st.components.v1.html com um truque de hash na URL —
+# mas a forma mais confiável é usar o Streamlit >= 1.31
+# com st.session_state + st.rerun() acionado por query_params
+# setados na janela PAI (window.location, não window.location
+# do iframe).
+#
+# Como funciona:
+#   1. iframe chama window.parent.postMessage({type:'farmazzini_send', ...})
+#   2. Este script escuta o evento na janela pai
+#   3. Atualiza window.location.search na janela PAI (Streamlit)
+#   4. Streamlit lê os query_params e faz st.rerun()
+# ─────────────────────────────────────────────
+RECEPTOR_HTML = """
+<script>
+(function() {
+    // Evita registrar o listener múltiplas vezes
+    if (window.__farmazzini_listener) return;
+    window.__farmazzini_listener = true;
+
+    window.addEventListener('message', function(event) {
+        const d = event.data;
+        if (!d || d.type !== 'farmazzini_send') return;
+
+        // Monta os query params e navega na janela PAI (Streamlit)
+        const url = new URL(window.location.href);
+        url.searchParams.set('action',  d.action  || 'send');
+        url.searchParams.set('msg',     d.msg     || '');
+        url.searchParams.set('db',      d.db      || 'todas');
+        url.searchParams.set('chat_id', d.chat_id || '');
+        // Não enviamos chats_state — o Python usa seu próprio session_state
+        window.location.href = url.toString();
+    });
+})();
+</script>
+"""
+# height=0 → invisível, mas o script roda na página pai
+components.html(RECEPTOR_HTML, height=0)
+
+
+# ─────────────────────────────────────────────
+# PROCESSAR AÇÃO DO USUÁRIO (BRIDGE HTML → PYTHON)
 # ─────────────────────────────────────────────
 params = st.query_params
 
@@ -89,44 +126,31 @@ if "action" in params:
         db_filter = params.get("db", "todas")
 
         if user_msg:
-            # Atualiza o db ativo
             st.session_state.active_db = db_filter
 
-            # Encontra o chat ativo
             chat = next((c for c in st.session_state.chats
                          if c["id"] == st.session_state.active_chat_id), None)
 
             if chat:
-                # Adiciona mensagem do usuário
                 chat["messages"].append({"sender": "user", "text": user_msg})
 
-                # Renomeia o chat se for novo
                 if chat["title"].startswith("Nova Consulta"):
                     chat["title"] = user_msg[:20] + "..." if len(user_msg) > 20 else user_msg
 
-                # ════════════════════════════════════════════════
+                # ════════════════════════════════════════════
                 # ▼▼▼  PONTO DE INTEGRAÇÃO DO SEU PIPELINE  ▼▼▼
-                #
-                # A função processar_mensagem() está em pipeline.py
-                # Ela recebe:
-                #   - user_msg (str): texto da pergunta do usuário
-                #   - db_filter (str): "todas" | "ponte" | "veracruz"
-                #   - historico (list): lista de mensagens anteriores
-                #
-                # Retorna:
-                #   - resposta (str): HTML ou texto da resposta
-                # ════════════════════════════════════════════════
                 resposta = processar_mensagem(
                     mensagem=user_msg,
                     db_filter=db_filter,
                     historico=chat["messages"]
                 )
+                # ▲▲▲  PONTO DE INTEGRAÇÃO DO SEU PIPELINE  ▲▲▲
+                # ════════════════════════════════════════════
 
-                # Adiciona a resposta do bot com botões de ação
                 bot_text = f"""
                     {resposta}
                     <div class="action-row" style="margin-top:20px; border-top:1px solid var(--border); padding-top:12px;">
-                        <button class="action-btn" onclick="triggerCSV()">
+                        <button class="action-btn" onclick="exportCSV()">
                             <i class="fa-solid fa-file-csv"></i> 📥 Exportar CSV
                         </button>
                     </div>
@@ -169,12 +193,10 @@ if "action" in params:
 
 # ─────────────────────────────────────────────
 # SERIALIZAR ESTADO PARA O HTML
-# Converte o session_state Python em JSON
-# para injetar no JavaScript do HTML.
 # ─────────────────────────────────────────────
-chats_json = json.dumps(st.session_state.chats, ensure_ascii=False)
-active_chat_id = st.session_state.active_chat_id
-active_db = st.session_state.active_db
+chats_json      = json.dumps(st.session_state.chats, ensure_ascii=False)
+active_chat_id  = st.session_state.active_chat_id
+active_db       = st.session_state.active_db
 
 
 # ─────────────────────────────────────────────
@@ -189,12 +211,10 @@ html_content = render_full_ui(
 )
 
 # ─────────────────────────────────────────────
-# CSS mínimo — o layout responsivo está todo no ui.py
-# O iframe ocupa 100dvh e não precisa de JS para ajuste
+# CSS — iframe ocupa 100dvh
 # ─────────────────────────────────────────────
 st.markdown("""
 <style>
-    /* ── Remove TODA estrutura nativa do Streamlit ── */
     [data-testid="stHeader"],
     [data-testid="stToolbar"],
     [data-testid="stDecoration"],
@@ -205,15 +225,12 @@ st.markdown("""
         min-height: 0 !important;
         visibility: hidden !important;
     }
-
-    /* ── Zera margens e padding em toda a cadeia de containers ── */
     html, body,
     [data-testid="stAppViewContainer"],
     [data-testid="stAppViewBlockContainer"],
     [data-testid="stVerticalBlock"],
     [data-testid="stVerticalBlockBorderWrapper"],
-    .main, .block-container,
-    .stApp {
+    .main, .block-container, .stApp {
         padding: 0 !important;
         margin: 0 !important;
         max-width: 100% !important;
@@ -222,8 +239,6 @@ st.markdown("""
         height: 100dvh !important;
         min-height: unset !important;
     }
-
-    /* ── Garante que o iframe ocupe tudo sem folga ── */
     iframe {
         display: block !important;
         border: none !important;
@@ -239,6 +254,4 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# scrolling=False + height grande garante que o Streamlit não corte o conteúdo;
-# o CSS acima faz o iframe ocupar exatamente 100dvh, acompanhando o zoom.
 components.html(html_content, height=10000, scrolling=False)
