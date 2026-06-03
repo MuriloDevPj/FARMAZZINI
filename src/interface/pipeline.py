@@ -16,8 +16,16 @@ import sys
 import os
 sys.path.insert(0, os.path.dirname(__file__))
 
+import base64
 import pandas as pd
 from aws_client import buscar_dados
+
+
+def _csv_data_uri(df: pd.DataFrame) -> str:
+    """Converte o DataFrame em um data URI base64 pronto para download via <a href>."""
+    csv_bytes = df.to_csv(index=False).encode("utf-8")
+    b64 = base64.b64encode(csv_bytes).decode("utf-8")
+    return f"data:text/csv;charset=utf-8;base64,{b64}"
 
 
 # ── Helpers de formatação HTML ────────────────────────────────────────────────
@@ -172,10 +180,17 @@ def processar_mensagem(mensagem: str, db_filter: str = "todas", historico: list 
         {_bloco_sql(sql)}
         """
 
-    # 4. Sucesso — monta resposta com métricas + tabela + SQL
+    # 4. Sucesso — monta resposta com métricas + tabela + SQL + botão de download
+    csv_uri = _csv_data_uri(df)
+    nome_arquivo = "farmazzini_consulta.csv"
     return f"""
     ✅ Consulta executada com sucesso!
     {_metricas_rapidas(df)}
     {_df_para_html(df)}
     {_bloco_sql(sql)}
+    <div class="action-row" style="margin-top:20px;border-top:1px solid var(--border);padding-top:12px;">
+        <a href="{csv_uri}" download="{nome_arquivo}" class="action-btn" style="text-decoration:none;">
+            <i class="fa-solid fa-file-csv"></i> Exportar CSV
+        </a>
+    </div>
     """

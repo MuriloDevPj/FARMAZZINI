@@ -287,11 +287,6 @@ if chat_atual and chat_atual["messages"]:
 
         bot_text = f"""
             {resposta}
-            <div class="action-row" style="margin-top:20px;border-top:1px solid var(--border);padding-top:12px;">
-                <button class="action-btn" onclick="exportCSV()">
-                    <i class="fa-solid fa-file-csv"></i> 📥 Exportar CSV
-                </button>
-            </div>
         """
         
         # Substitui o bloco de carregamento temporário de 3 pontos pelo HTML final com os botões de ação
