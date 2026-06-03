@@ -653,24 +653,6 @@ function sendMsg() {{
     const chat = chats.find(c => c.id === activeChatId);
     if(!chat) {{ inp.disabled = false; return; }}
 
-    // Constrói a URL com os query params para o Streamlit
-    let targetUrl;
-    try {{
-        const parentUrl = new URL(window.parent.location.href);
-        // Limpa params antigos antes de definir novos
-        parentUrl.search = '';
-        parentUrl.searchParams.set('action',  'send');
-        parentUrl.searchParams.set('msg',     val);
-        parentUrl.searchParams.set('db',      activeDb);
-        parentUrl.searchParams.set('chat_id', activeChatId);
-        targetUrl = parentUrl.toString();
-    }} catch(e) {{
-        const base = window.parent.location.origin + window.parent.location.pathname;
-        targetUrl  = base + '?action=send&msg=' + encodeURIComponent(val) +
-                     '&db=' + encodeURIComponent(activeDb) +
-                     '&chat_id=' + encodeURIComponent(activeChatId);
-    }}
-
     // Feedback visual imediato — mostra a mensagem do usuário
     chat.messages.push({{ sender:'user', text: val }});
     appendMessage('user', val);
@@ -684,10 +666,36 @@ function sendMsg() {{
     document.getElementById('chatWindow').appendChild(loadDiv);
     document.getElementById('chatWindow').scrollTop = 99999;
 
-    // Pequeno delay para o usuário ver o loading antes da navegação
-    setTimeout(() => {{
-        window.parent.location.href = targetUrl;
-    }}, 120);
+    // ─────────────────────────────────────────────────────────────
+    // CORREÇÃO: usa fetch() para acionar o Streamlit via query params
+    //
+    // window.parent.location é bloqueado por same-origin policy quando
+    // o iframe roda em domínio diferente (Streamlit Cloud, túneis, etc).
+    // A solução é fazer um GET para a própria origem do iframe (que é
+    // sempre acessível) com os params que o Streamlit lê em st.query_params.
+    // O Streamlit detecta a mudança de params, chama st.rerun() e
+    // rerenderiza o componente com a resposta do bot.
+    // ─────────────────────────────────────────────────────────────
+    const params = new URLSearchParams({{
+        action:  'send',
+        msg:     val,
+        db:      activeDb,
+        chat_id: activeChatId,
+    }});
+
+    // window.location.href dentro do iframe aponta para a URL do Streamlit
+    // (mesmo host/porta), portanto nunca dispara cross-origin block.
+    const targetUrl = window.location.origin + window.location.pathname + '?' + params.toString();
+
+    fetch(targetUrl, {{ method: 'GET', mode: 'no-cors' }})
+        .catch(() => {{}}) // no-cors sempre resolve; ignoramos o resultado opaco
+        .finally(() => {{
+            // Após o fetch, recarrega o iframe apontando para a mesma URL
+            // com os params — o Streamlit processa e rerenderiza normalmente.
+            setTimeout(() => {{
+                window.location.href = targetUrl;
+            }}, 80);
+        }});
 }}
 
 // ════════════════════════════════════════════════════════════════
