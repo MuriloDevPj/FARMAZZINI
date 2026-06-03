@@ -9,10 +9,9 @@ import time
 import pandas as pd
 from io import StringIO
 
-# Importa constantes diretamente — sem importar deste mesmo arquivo
 REGION         = "us-east-2"
 MODEL_ID       = "us.anthropic.claude-haiku-4-5-20251001-v1:0"
-MAX_TOKENS     = 500
+MAX_TOKENS     = 600
 API_VERSION    = "bedrock-2023-05-31"
 STATE_MACHINE  = "arn:aws:states:us-east-2:906513713169:stateMachine:StateMachine_farmazzini_equipe6"
 BUCKET         = "farmazzini-equipe6-ohio"
@@ -27,19 +26,34 @@ Regras Estritas:
 3. Colunas disponíveis: ean (string), nome (string), marca (string), preco_original (float64),
    preco_pix (float64), preco_cartao (float64), desconto_padrao (string), promocoes_especiais (string),
    porcentagem_de_cashback (string), gtin (string), disponibilidade (string).
+   - Valores exatos de 'disponibilidade' (case-sensitive): 'Disponível' ou 'Indisponível'
+     (sempre com inicial maiúscula — NUNCA use minúsculo).
 
 4. Regras de Ouro para Partições (CRÍTICO):
-   - As partições são: farmacia, ano, mes, dia. SEMPRE filtre pelas 4 quando aplicável.
+   - As partições obrigatórias são: farmacia, ano, mes, dia. SEMPRE filtre pelas 4.
+   - A coluna 'farmacia' é OBRIGATÓRIA em TODA query — sem exceção. A Lambda de validação
+     rejeita qualquer SQL que não contenha o filtro por 'farmacia'.
    - Valores exatos da partição 'farmacia' (case-sensitive): 'FarmaPonte' ou 'Vera Cruz'.
-     Se o usuário escrever variações como 'farmaponte', 'farma ponte', 'vera cruz', normalize
-     automaticamente para o valor exato correto.
-   - Se o usuário não especificar a farmácia, NÃO filtre por farmacia (busque as duas).
-   - Se o usuário não especificar data, use SEMPRE: ano='2026' AND mes='05' AND dia='26'.
+     Normalize variações do usuário automaticamente para o valor exato correto.
+   - Se o usuário não especificar a farmácia, use: farmacia IN ('FarmaPonte', 'Vera Cruz')
+   - Se o usuário não especificar data, use: ano='2026' AND mes='05' AND dia='26'.
 
 5. Exemplos de filtro correto:
-   - "produtos da FarmaPonte" -> WHERE farmacia='FarmaPonte' AND ano='2026' AND mes='05' AND dia='26'
-   - "produtos da Vera Cruz"  -> WHERE farmacia='Vera Cruz'  AND ano='2026' AND mes='05' AND dia='26'
-   - "todos os produtos"      -> WHERE ano='2026' AND mes='05' AND dia='26'
+   - "produtos da FarmaPonte"   → WHERE farmacia='FarmaPonte' AND ano='2026' AND mes='05' AND dia='26'
+   - "produtos da Vera Cruz"    → WHERE farmacia='Vera Cruz' AND ano='2026' AND mes='05' AND dia='26'
+   - "todos os produtos"        → WHERE farmacia IN ('FarmaPonte', 'Vera Cruz') AND ano='2026' AND mes='05' AND dia='26'
+   - "produtos indisponíveis"   → WHERE farmacia IN ('FarmaPonte', 'Vera Cruz') AND ano='2026' AND mes='05' AND dia='26' AND disponibilidade='Indisponível'
+   - "produtos disponíveis"     → WHERE farmacia IN ('FarmaPonte', 'Vera Cruz') AND ano='2026' AND mes='05' AND dia='26' AND disponibilidade='Disponível'
+
+6. Regras de LIMIT (IMPORTANTE):
+   - Use LIMIT apenas quando o usuário pedir explicitamente um número específico
+     (ex: "os 5 mais caros", "top 10", "os 3 primeiros").
+   - NÃO use LIMIT quando o usuário quiser ver todos os registros de uma categoria
+     (ex: "quais produtos estão indisponíveis", "liste todos os produtos com cashback").
+   - Para queries com ORDER BY sem número específico, use LIMIT 50.
+
+7. Para ordenação por valores numéricos em colunas string, use TRY_CAST(coluna AS DOUBLE)
+   em vez de CAST ou FLOAT.
 
 Pergunta: {user_prompt}"""
 
@@ -94,70 +108,3 @@ def buscar_resultado_s3(status_resp: dict) -> tuple:
         return df, None
     except Exception as e:
         return None, str(e)
-
-
-# ==============================================================================
-# buscar_dados — orquestrador principal chamado pelo endpoint do app.py
-# Encadeia: gerar SQL → Step Functions → S3 → retorna dict padronizado
-# ==============================================================================
-
-def buscar_dados(pergunta: str, base: str = "todas") -> dict:
-    """
-    Orquestra o pipeline completo a partir de uma pergunta em linguagem natural.
-
-    Parâmetros:
-        pergunta : str  — pergunta do usuário vinda do chatbot
-        base     : str  — filtro de farmácia: "todas" | "ponte" | "veracruz"
-
-    Retorna dict com:
-        sucesso  : bool
-        sql      : str   — SQL gerado pelo Bedrock
-        df       : pd.DataFrame | None — resultado do Athena
-        erro     : str | None — mensagem de erro se houver
-    """
-
-    # 1. Enriquecer a pergunta com o filtro de base selecionado no chatbot
-    filtro_map = {
-        "ponte":    "Considere apenas produtos da FarmaPonte. ",
-        "veracruz": "Considere apenas produtos da Vera Cruz. ",
-        "todas":    "",
-    }
-    prefixo_base = filtro_map.get(base, "")
-    pergunta_enriquecida = prefixo_base + pergunta
-
-    # 2. Gerar SQL via Bedrock (Claude Haiku)
-    sql, erro_sql = gerar_sql_com_bedrock(pergunta_enriquecida)
-    if erro_sql or not sql:
-        return {
-            "sucesso": False,
-            "sql": sql,
-            "df": None,
-            "erro": f"Erro ao gerar SQL: {erro_sql}",
-        }
-
-    # 3. Executar SQL via Step Functions → Athena
-    status, erro_sf, status_resp = executar_via_step_functions(sql)
-    if status != "SUCCEEDED":
-        return {
-            "sucesso": False,
-            "sql": sql,
-            "df": None,
-            "erro": f"Step Functions retornou '{status}': {erro_sf}",
-        }
-
-    # 4. Buscar resultado CSV no S3
-    df, erro_s3 = buscar_resultado_s3(status_resp)
-    if erro_s3 or df is None:
-        return {
-            "sucesso": False,
-            "sql": sql,
-            "df": None,
-            "erro": f"Erro ao ler resultado do S3: {erro_s3}",
-        }
-
-    return {
-        "sucesso": True,
-        "sql": sql,
-        "df": df,
-        "erro": None,
-    }
