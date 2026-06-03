@@ -1,6 +1,7 @@
 # ==============================================================================
 # chat.py — Componente principal do chat e exibição de mensagens
 # Projeto Farmazzini | Poli Júnior | Equipe 06
+# Design: Farmazzini Intel (glassmorphism, Urbanist, #E63946)
 # ==============================================================================
 
 import streamlit as st
@@ -26,8 +27,8 @@ def _render_mensagem(msg: dict, idx: int):
     if msg["role"] == "user":
         st.markdown(f"""
         <div class="chat-bubble-user">
-            <span style="font-size:0.7rem;color:#8B1A1A;font-weight:600;
-                         text-transform:uppercase;letter-spacing:0.08em;">Você</span>
+            <span style="font-size:11px; color:rgba(255,255,255,0.7); font-weight:700;
+                         text-transform:uppercase; letter-spacing:2px;">Você</span>
             <br>{msg["content"]}
         </div>
         """, unsafe_allow_html=True)
@@ -35,9 +36,9 @@ def _render_mensagem(msg: dict, idx: int):
     elif msg["role"] == "assistant":
         st.markdown(f"""
         <div class="chat-bubble-assistant">
-            <span style="font-size:0.7rem;color:#555;font-weight:600;
-                         text-transform:uppercase;letter-spacing:0.08em;">💊 Farmazzini BI</span>
-            <br>{msg["content"]}
+            <span style="font-size:11px; color:#E63946; font-weight:700;
+                         text-transform:uppercase; letter-spacing:2px;">✦ Farmazzini Intel</span>
+            <br><br>{msg["content"]}
         </div>
         """, unsafe_allow_html=True)
 
@@ -62,7 +63,11 @@ def _processar_pergunta(user_input: str, filtros: dict):
         sql, erro = gerar_sql_com_bedrock(prompt_enriquecido)
 
     if erro:
-        st.session_state["historico"].append({"role": "assistant", "content": f"❌ Erro ao gerar SQL: `{erro}`", "sql": None, "df": None})
+        st.session_state["historico"].append({
+            "role": "assistant",
+            "content": f"❌ Erro ao gerar SQL: `{erro}`",
+            "sql": None, "df": None,
+        })
         return
 
     # ── Passo B: Step Functions ────────────────────────────────────────────
@@ -71,7 +76,11 @@ def _processar_pergunta(user_input: str, filtros: dict):
 
     if erro or status != "SUCCEEDED":
         mensagem = erro or f"Execução bloqueada. Status: `{status}`"
-        st.session_state["historico"].append({"role": "assistant", "content": f"❌ {mensagem}", "sql": sql, "df": None})
+        st.session_state["historico"].append({
+            "role": "assistant",
+            "content": f"❌ {mensagem}",
+            "sql": sql, "df": None,
+        })
         return
 
     # ── Passo C: S3 ───────────────────────────────────────────────────────
@@ -79,13 +88,18 @@ def _processar_pergunta(user_input: str, filtros: dict):
         df, erro = buscar_resultado_s3(status_resp)
 
     if erro:
-        st.session_state["historico"].append({"role": "assistant", "content": f"✅ Consulta executada, mas erro ao carregar dados: `{erro}`", "sql": sql, "df": None})
+        st.session_state["historico"].append({
+            "role": "assistant",
+            "content": f"✅ Consulta executada, mas erro ao carregar dados: `{erro}`",
+            "sql": sql, "df": None,
+        })
         return
 
     sem_dados = df is None or df.empty
     st.session_state["historico"].append({
         "role": "assistant",
-        "content": "✅ Consulta executada com sucesso!" if not sem_dados else "✅ Consulta executada, mas nenhum registro correspondeu.",
+        "content": "✅ Consulta executada com sucesso!" if not sem_dados
+                   else "✅ Consulta executada, mas nenhum registro correspondeu.",
         "sql": sql,
         "df": df if not sem_dados else None,
         "sem_dados": sem_dados,
@@ -95,26 +109,33 @@ def _processar_pergunta(user_input: str, filtros: dict):
 def render_chat(filtros: dict):
     _init_session()
 
+    # ── Cabeçalho estilo Intel ─────────────────────────────────────────────
     st.markdown("""
-    <div style="margin-bottom:1.5rem;">
-        <h1 style="margin-bottom:0.15rem;">💊 Painel Inteligente de Mercado</h1>
-        <p style="color:#666; font-size:0.9rem; margin:0;">
+    <div style="margin-bottom:2rem;">
+        <div style="font-size:13px; text-transform:uppercase; letter-spacing:3px;
+                    color:#E63946; font-weight:700; margin-bottom:6px;">
+            Intelligence Platform
+        </div>
+        <h1 style="margin:0; font-size:2rem; font-weight:700; letter-spacing:2px;">
+            FARMAZZINI <span style="color:#E63946;">INTEL</span>
+        </h1>
+        <p style="color:#9a9a9f; font-size:0.88rem; margin:8px 0 0 0;">
             Faça perguntas em português sobre os dados dos concorrentes.
             A IA gera o SQL, valida e traz os resultados automaticamente.
         </p>
     </div>
     """, unsafe_allow_html=True)
 
-    # ── Histórico ──────────────────────────────────────────────────────────
+    # ── Histórico de mensagens ─────────────────────────────────────────────
     for idx, msg in enumerate(st.session_state["historico"]):
         _render_mensagem(msg, idx)
 
     if st.session_state["historico"]:
         st.markdown("---")
 
-    # ── Verifica se um exemplo foi clicado na sidebar ──────────────────────
+    # ── Verifica exemplo clicado na sidebar ───────────────────────────────
     executar_agora = st.session_state.pop("executar_exemplo", False)
-    valor_inicial = st.session_state.get("exemplo_selecionado") or ""
+    valor_inicial  = st.session_state.get("exemplo_selecionado") or ""
     if executar_agora:
         st.session_state["exemplo_selecionado"] = None
 
@@ -129,17 +150,65 @@ def render_chat(filtros: dict):
             key="user_input_field",
         )
     with col_btn:
-        executar = st.button("Analisar", type="primary", use_container_width=True)
+        executar = st.button("Analisar ✦", type="primary", use_container_width=True)
 
     if st.session_state["historico"]:
         if st.button("🗑️ Limpar conversa"):
             st.session_state["historico"] = []
             st.rerun()
 
-    # ── Disparo — botão manual OU exemplo clicado na sidebar ──────────────
+    # ── Disparo ────────────────────────────────────────────────────────────
     pergunta_final = user_input.strip() or valor_inicial.strip()
     if (executar or executar_agora) and pergunta_final:
         _processar_pergunta(pergunta_final, filtros)
         st.rerun()
     elif (executar or executar_agora) and not pergunta_final:
         st.warning("Por favor, preencha uma pergunta antes de executar.")
+
+
+# ==============================================================================
+# formatar_resposta_html — usada pelo endpoint FastAPI do app.py
+# Converte o DataFrame do Athena em HTML renderizável pelo chatbot externo
+# ==============================================================================
+
+def formatar_resposta_html(df: pd.DataFrame, pergunta: str) -> str:
+    if df is None or df.empty:
+        return "✅ Consulta executada, mas nenhum registro correspondeu aos filtros."
+
+    if df.shape == (1, 1):
+        valor  = df.iloc[0, 0]
+        coluna = df.columns[0]
+        return f"<strong>{coluna}:</strong> {valor}"
+
+    MAX_LINHAS = 50
+    truncado   = len(df) > MAX_LINHAS
+    df_exibir  = df.head(MAX_LINHAS)
+
+    colunas_html = "".join(f"<th>{col}</th>" for col in df_exibir.columns)
+    cabecalho    = f"<thead><tr>{colunas_html}</tr></thead>"
+
+    linhas_html = ""
+    for _, row in df_exibir.iterrows():
+        celulas      = "".join(f"<td>{val}</td>" for val in row)
+        linhas_html += f"<tr>{celulas}</tr>"
+    corpo = f"<tbody>{linhas_html}</tbody>"
+
+    tabela = (
+        '<div class="table-container">'
+        f"<table>{cabecalho}{corpo}</table>"
+        "</div>"
+    )
+
+    total = (
+        f'<p style="font-size:12px; color:var(--text-muted); margin-top:6px;">'
+        f"📊 <strong>{len(df_exibir)}</strong> registro(s) retornado(s).</p>"
+    )
+
+    aviso = ""
+    if truncado:
+        aviso = (
+            f'<p style="font-size:12px; color:var(--text-muted); margin-top:4px;">'
+            f"⚠️ Exibindo {MAX_LINHAS} de {len(df)} registros encontrados.</p>"
+        )
+
+    return tabela + total + aviso

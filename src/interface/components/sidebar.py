@@ -1,6 +1,7 @@
 # ==============================================================================
-# sidebar.py — Componente da barra lateral
+# sidebar.py — Barra lateral estilo Farmazzini Intel
 # Projeto Farmazzini | Poli Júnior | Equipe 06
+# Design: glassmorphism, Urbanist, #E63946
 # ==============================================================================
 
 import streamlit as st
@@ -9,49 +10,74 @@ from utils.config import FARMACIAS_VALIDAS, DEFAULT_ANO, DEFAULT_MES, DEFAULT_DI
 
 def render_sidebar() -> dict:
     with st.sidebar:
-        # ── Logo ───────────────────────────────────────────────────────────
+
+        # ── Logo estilo Intel ──────────────────────────────────────────────
         st.markdown("""
-        <div style="text-align:center; padding: 1rem 0 0.5rem 0;">
-            <span style="font-family:'Syne',sans-serif; font-size:1.6rem;
-                         font-weight:800; color:#FFFFFF; letter-spacing:-0.02em;">
-                💊 FARMA<span style="color:#C0392B;">ZZINI</span>
-            </span>
-            <p style="color:#666; font-size:0.72rem; margin:0.2rem 0 0 0;
-                      text-transform:uppercase; letter-spacing:0.12em;">
+        <div style="padding: 1rem 0 0.5rem 0;">
+            <div style="font-size:11px; text-transform:uppercase; letter-spacing:2.5px;
+                        color:#E63946; font-weight:700; margin-bottom:4px;">
                 Intelligence Platform
-            </p>
+            </div>
+            <div style="font-family:'Urbanist',sans-serif; font-size:1.5rem;
+                        font-weight:700; color:#ffffff; letter-spacing:3px;">
+                FARMA<span style="color:#E63946;">ZZINI</span>
+            </div>
+            <div style="display:inline-block; margin-top:8px; padding:3px 8px;
+                        background:rgba(99,102,241,0.15); border:1px solid #6366f1;
+                        border-radius:4px; font-size:10px; font-weight:700;
+                        color:#818cf8; text-transform:uppercase; letter-spacing:1px;">
+                ✦ Claude Conectado
+            </div>
         </div>
         """, unsafe_allow_html=True)
 
         st.markdown("---")
 
-        # ── Filtros ────────────────────────────────────────────────────────
-        st.markdown("##### 🔎 Filtros Contextuais")
-        st.caption("Esses filtros orientam a IA na geração do SQL.")
+        # ── Filtro de base de dados (estilo db-pills do HTML) ──────────────
+        st.markdown("""
+        <div style="font-size:11px; text-transform:uppercase; color:#9a9a9f;
+                    font-weight:700; letter-spacing:1px; margin-bottom:8px;">
+            Base de Dados Ativa
+        </div>
+        """, unsafe_allow_html=True)
 
         farmacia_selecionada = st.selectbox(
-            "Farmácia concorrente",
+            label="Farmácia",
             options=["Todas"] + FARMACIAS_VALIDAS,
+            label_visibility="collapsed",
         )
 
         st.markdown("---")
 
         # ── Informações do projeto ─────────────────────────────────────────
-        st.markdown("##### 📋 Projeto")
+        st.markdown("""
+        <div style="font-size:11px; text-transform:uppercase; color:#E63946;
+                    font-weight:700; letter-spacing:2.5px; margin-bottom:10px;">
+            Projeto
+        </div>
+        """, unsafe_allow_html=True)
+
         st.markdown(f"""
-        <div style="font-size:0.8rem; color:#888; line-height:1.7;">
-            <b style="color:#CCC;">Equipe</b> 06 — Poli Júnior<br>
-            <b style="color:#CCC;">Dados</b> {DEFAULT_DIA}/{DEFAULT_MES}/{DEFAULT_ANO}<br>
-            <b style="color:#CCC;">Modelo IA</b> Claude Haiku 4.5<br>
-            <b style="color:#CCC;">Região AWS</b> us-east-2 (Ohio)
+        <div style="font-size:13px; color:#9a9a9f; line-height:2;">
+            <span style="color:#ffffff; font-weight:600;">Equipe</span> &nbsp;06 — Poli Júnior<br>
+            <span style="color:#ffffff; font-weight:600;">Dados</span> &nbsp;{DEFAULT_DIA}/{DEFAULT_MES}/{DEFAULT_ANO}<br>
+            <span style="color:#ffffff; font-weight:600;">Modelo IA</span> &nbsp;Claude Haiku 4.5<br>
+            <span style="color:#ffffff; font-weight:600;">Região AWS</span> &nbsp;us-east-2 (Ohio)
         </div>
         """, unsafe_allow_html=True)
 
         st.markdown("---")
 
         # ── Exemplos de perguntas ──────────────────────────────────────────
-        st.markdown("##### 💡 Exemplos de Perguntas")
-        st.caption("Clique para executar diretamente.")
+        st.markdown("""
+        <div style="font-size:11px; text-transform:uppercase; color:#E63946;
+                    font-weight:700; letter-spacing:2.5px; margin-bottom:4px;">
+            Consultas Rápidas
+        </div>
+        <div style="font-size:12px; color:#9a9a9f; margin-bottom:10px;">
+            Clique para executar diretamente.
+        </div>
+        """, unsafe_allow_html=True)
 
         exemplos = [
             "Qual o produto mais caro da FarmaPonte?",
@@ -63,17 +89,19 @@ def render_sidebar() -> dict:
 
         for ex in exemplos:
             if st.button(ex, key=f"ex_{ex[:25]}", use_container_width=True):
-                # Salva o texto E marca para executar imediatamente
                 st.session_state["exemplo_selecionado"] = ex
-                st.session_state["executar_exemplo"] = True
+                st.session_state["executar_exemplo"]    = True
 
         st.markdown("---")
 
         # ── Créditos ───────────────────────────────────────────────────────
         st.markdown("""
-        <div style="text-align:center; font-size:0.7rem; color:#555; padding-top:0.5rem;">
+        <div style="text-align:center; font-size:11px; color:#9a9a9f; padding-top:0.5rem;
+                    letter-spacing:0.5px;">
             Desenvolvido com ❤️ pela<br>
-            <b style="color:#888;">Poli Júnior</b> × <b style="color:#888;">Farmazzini</b>
+            <span style="color:#ffffff; font-weight:600;">Poli Júnior</span>
+            &nbsp;×&nbsp;
+            <span style="color:#E63946; font-weight:600;">Farmazzini</span>
         </div>
         """, unsafe_allow_html=True)
 

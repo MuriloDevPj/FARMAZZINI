@@ -1,203 +1,356 @@
 /* ==============================================================================
-   custom.css — Tema visual enterprise Farmazzini
-   Paleta: vermelho #8B1A1A | escuro #0D0D0D | cinza #1A1A1A | branco #F5F5F5
+   custom.css — Tema visual Farmazzini Intel
+   Baseado no design do farmazzini_claude.html
+   Paleta: vermelho #E63946 | fundo #060608 | card #0b0b0d | sidebar glassmorphism
    ============================================================================== */
 
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700&display=swap');
+
+/* ── Variáveis globais ────────────────────────────────────────────────────── */
+:root {
+    --bg-main:     #060608;
+    --bg-sidebar:  rgba(12, 12, 16, 0.92);
+    --bg-card:     #0b0b0d;
+    --primary:     #E63946;
+    --primary-dark:#8B0000;
+    --text-main:   #ffffff;
+    --text-muted:  #9a9a9f;
+    --border:      rgba(255, 255, 255, 0.06);
+    --glow-red:    rgba(230, 57, 70, 0.22);
+}
 
 /* ── Reset e base ─────────────────────────────────────────────────────────── */
 html, body, [class*="css"] {
-    font-family: 'DM Sans', sans-serif !important;
-    background-color: #0D0D0D !important;
-    color: #E8E8E8 !important;
+    font-family: 'Urbanist', sans-serif !important;
+    background-color: var(--bg-main) !important;
+    color: var(--text-main) !important;
 }
 
-/* ── Cabeçalho principal ──────────────────────────────────────────────────── */
-h1 {
-    font-family: 'Syne', sans-serif !important;
-    font-weight: 800 !important;
-    font-size: 2rem !important;
-    letter-spacing: -0.03em !important;
-    color: #FFFFFF !important;
+/* ── Fundo com glow orgânico (simula fluid-glow do HTML) ─────────────────── */
+.main {
+    background:
+        radial-gradient(ellipse 60vw 50vw at 30% 0%,   var(--glow-red) 0%, transparent 70%),
+        radial-gradient(ellipse 50vw 40vw at 85% 100%, rgba(230,57,70,0.12) 0%, transparent 75%),
+        var(--bg-main) !important;
 }
+
+/* ── Tipografia ───────────────────────────────────────────────────────────── */
+h1 {
+    font-family: 'Urbanist', sans-serif !important;
+    font-weight: 700 !important;
+    font-size: 1.8rem !important;
+    letter-spacing: 2px !important;
+    color: #ffffff !important;
+}
+
+h1 span { color: var(--primary) !important; }
 
 h2, h3, h4 {
-    font-family: 'Syne', sans-serif !important;
+    font-family: 'Urbanist', sans-serif !important;
     font-weight: 700 !important;
-    color: #FFFFFF !important;
+    color: #ffffff !important;
 }
 
-/* ── Sidebar — estilo sem travar largura ou esconder controles ───────────── */
+/* ── Sidebar — glassmorphism ──────────────────────────────────────────────── */
 [data-testid="stSidebar"] {
-    background-color: #111111 !important;
-    border-right: 1px solid #2A2A2A !important;
+    background: var(--bg-sidebar) !important;
+    border-right: 1px solid var(--border) !important;
+    backdrop-filter: blur(25px) !important;
+    box-shadow: 4px 0 30px rgba(0, 0, 0, 0.6) !important;
 }
 
 [data-testid="stSidebar"] h1,
 [data-testid="stSidebar"] h2,
 [data-testid="stSidebar"] h3,
+[data-testid="stSidebar"] h4,
 [data-testid="stSidebar"] p,
 [data-testid="stSidebar"] label {
-    color: #E8E8E8 !important;
+    color: var(--text-main) !important;
+    font-family: 'Urbanist', sans-serif !important;
 }
 
-/* Garante que o botão de toggle da sidebar seja sempre visível (Streamlit 1.57) */
-[data-testid="stSidebarCollapseButton"],
-[data-testid="collapsedControl"],
-[data-testid="stSidebarCollapsedControl"] {
-    display: flex !important;
-    visibility: visible !important;
-    opacity: 1 !important;
+[data-testid="stSidebar"] .stMarkdown p {
+    color: var(--text-muted) !important;
 }
 
-/* ── Botão primário ───────────────────────────────────────────────────────── */
+/* Título da sidebar em uppercase vermelho (igual ao .sidebar-title do HTML) */
+[data-testid="stSidebar"] h5 {
+    font-size: 11px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 2.5px !important;
+    color: var(--primary) !important;
+    font-weight: 700 !important;
+}
+
+/* ── Selectbox (filtro de farmácia) ───────────────────────────────────────── */
+[data-testid="stSelectbox"] > div > div {
+    background: rgba(255, 255, 255, 0.04) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 14px !important;
+    color: var(--text-main) !important;
+    font-family: 'Urbanist', sans-serif !important;
+    transition: border-color 0.2s !important;
+}
+
+[data-testid="stSelectbox"] > div > div:focus-within {
+    border-color: rgba(230, 57, 70, 0.4) !important;
+}
+
+/* ── Botão primário — degradê vermelho igual ao .hot-btn do HTML ─────────── */
 [data-testid="stButton"] > button[kind="primary"] {
-    background: linear-gradient(135deg, #8B1A1A 0%, #C0392B 100%) !important;
-    color: #FFFFFF !important;
-    border: none !important;
-    border-radius: 8px !important;
-    font-family: 'DM Sans', sans-serif !important;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%) !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 24px !important;
+    font-family: 'Urbanist', sans-serif !important;
     font-weight: 600 !important;
-    font-size: 0.9rem !important;
-    padding: 0.6rem 1.4rem !important;
-    transition: all 0.2s ease !important;
-    box-shadow: 0 4px 15px rgba(139, 26, 26, 0.4) !important;
+    font-size: 0.85rem !important;
+    padding: 0.55rem 1.4rem !important;
+    box-shadow: 0 4px 15px rgba(230, 57, 70, 0.25) !important;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    letter-spacing: 0.3px !important;
 }
 
 [data-testid="stButton"] > button[kind="primary"]:hover {
-    transform: translateY(-1px) !important;
-    box-shadow: 0 6px 20px rgba(139, 26, 26, 0.6) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 25px rgba(230, 57, 70, 0.45) !important;
 }
 
-/* ── Botão secundário ─────────────────────────────────────────────────────── */
+/* ── Botão secundário (exemplos da sidebar) ───────────────────────────────── */
 [data-testid="stButton"] > button:not([kind="primary"]) {
-    background-color: #1E1E1E !important;
-    color: #E8E8E8 !important;
-    border: 1px solid #333 !important;
-    border-radius: 8px !important;
-    font-family: 'DM Sans', sans-serif !important;
+    background: rgba(255, 255, 255, 0.01) !important;
+    color: var(--text-muted) !important;
+    border: 1px solid transparent !important;
+    border-radius: 12px !important;
+    font-family: 'Urbanist', sans-serif !important;
+    font-size: 0.85rem !important;
+    transition: all 0.2s ease !important;
+    text-align: left !important;
 }
 
-/* ── Input de texto ───────────────────────────────────────────────────────── */
+[data-testid="stButton"] > button:not([kind="primary"]):hover {
+    border-color: rgba(230, 57, 70, 0.25) !important;
+    color: var(--text-main) !important;
+    background: rgba(255, 255, 255, 0.03) !important;
+}
+
+/* ── Input de texto — igual ao .input-box do HTML ────────────────────────── */
 [data-testid="stTextInput"] input {
-    background-color: #1A1A1A !important;
-    border: 1px solid #2E2E2E !important;
-    border-radius: 10px !important;
-    color: #F0F0F0 !important;
-    font-family: 'DM Sans', sans-serif !important;
-    padding: 0.75rem 1rem !important;
-    transition: border-color 0.2s ease !important;
+    background: rgba(14, 14, 18, 0.9) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 28px !important;
+    color: var(--text-main) !important;
+    font-family: 'Urbanist', sans-serif !important;
+    font-size: 0.95rem !important;
+    padding: 0.75rem 1.4rem !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4) !important;
+    transition: border-color 0.2s !important;
 }
 
 [data-testid="stTextInput"] input:focus {
-    border-color: #8B1A1A !important;
-    box-shadow: 0 0 0 2px rgba(139, 26, 26, 0.2) !important;
+    border-color: rgba(230, 57, 70, 0.4) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), 0 0 0 2px rgba(230, 57, 70, 0.1) !important;
 }
 
-/* ── Code block (SQL) ─────────────────────────────────────────────────────── */
-[data-testid="stCode"], pre, code {
-    background-color: #141414 !important;
-    border: 1px solid #2A2A2A !important;
-    border-left: 3px solid #8B1A1A !important;
-    border-radius: 8px !important;
-    font-size: 0.82rem !important;
+[data-testid="stTextInput"] input::placeholder {
+    color: var(--text-muted) !important;
+}
+
+/* ── Métricas — igual ao .bg-card com border do HTML ─────────────────────── */
+[data-testid="stMetric"] {
+    background: rgba(30, 30, 40, 0.4) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 18px !important;
+    padding: 1.1rem 1.3rem !important;
+    backdrop-filter: blur(10px) !important;
+    transition: border-color 0.2s !important;
+}
+
+[data-testid="stMetric"]:hover {
+    border-color: rgba(230, 57, 70, 0.25) !important;
+}
+
+[data-testid="stMetricLabel"] {
+    color: var(--text-muted) !important;
+    font-family: 'Urbanist', sans-serif !important;
+    font-size: 11px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1.5px !important;
+    font-weight: 700 !important;
+}
+
+[data-testid="stMetricValue"] {
+    color: var(--primary) !important;
+    font-family: 'Urbanist', sans-serif !important;
+    font-weight: 700 !important;
+    font-size: 1.6rem !important;
 }
 
 /* ── Dataframe / Tabela ───────────────────────────────────────────────────── */
 [data-testid="stDataFrame"] {
-    border: 1px solid #2A2A2A !important;
-    border-radius: 10px !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 16px !important;
     overflow: hidden !important;
+    background: rgba(10, 10, 12, 0.6) !important;
 }
 
-/* ── Métricas ─────────────────────────────────────────────────────────────── */
-[data-testid="stMetric"] {
-    background-color: #161616 !important;
-    border: 1px solid #2A2A2A !important;
-    border-radius: 12px !important;
-    padding: 1rem 1.25rem !important;
-}
-
-[data-testid="stMetricLabel"] {
-    color: #888 !important;
-    font-size: 0.78rem !important;
+[data-testid="stDataFrame"] th {
+    background: rgba(230, 57, 70, 0.08) !important;
+    color: var(--primary) !important;
+    font-family: 'Urbanist', sans-serif !important;
+    font-size: 11px !important;
     text-transform: uppercase !important;
-    letter-spacing: 0.08em !important;
+    letter-spacing: 1px !important;
+    border-bottom: 1px solid var(--border) !important;
 }
 
-[data-testid="stMetricValue"] {
-    color: #FFFFFF !important;
-    font-family: 'Syne', sans-serif !important;
-    font-weight: 700 !important;
+[data-testid="stDataFrame"] td {
+    color: #eeeeee !important;
+    font-family: 'Urbanist', sans-serif !important;
+    font-size: 13px !important;
+    border-bottom: 1px solid var(--border) !important;
 }
 
-/* ── Alertas / banners ────────────────────────────────────────────────────── */
+/* ── Code block (SQL) ─────────────────────────────────────────────────────── */
+[data-testid="stCode"], pre, code {
+    background: rgba(10, 10, 12, 0.85) !important;
+    border: 1px solid var(--border) !important;
+    border-left: 3px solid var(--primary) !important;
+    border-radius: 16px !important;
+    font-size: 0.82rem !important;
+    color: #eee !important;
+}
+
+/* ── Expander (ver SQL) ───────────────────────────────────────────────────── */
+[data-testid="stExpander"] {
+    background: rgba(255, 255, 255, 0.01) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 12px !important;
+}
+
+[data-testid="stExpander"] summary {
+    color: var(--text-muted) !important;
+    font-family: 'Urbanist', sans-serif !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+}
+
+[data-testid="stExpander"] summary:hover {
+    color: var(--primary) !important;
+}
+
+/* ── Alertas ──────────────────────────────────────────────────────────────── */
 [data-testid="stAlert"] {
-    border-radius: 10px !important;
-    border: none !important;
+    border-radius: 14px !important;
+    border: 1px solid var(--border) !important;
+    font-family: 'Urbanist', sans-serif !important;
+    background: rgba(255, 255, 255, 0.02) !important;
 }
 
 /* ── Spinner ──────────────────────────────────────────────────────────────── */
-[data-testid="stSpinner"] {
-    color: #8B1A1A !important;
+[data-testid="stSpinner"] > div {
+    border-top-color: var(--primary) !important;
 }
 
 /* ── Divider ──────────────────────────────────────────────────────────────── */
 hr {
-    border-color: #2A2A2A !important;
-    margin: 1.5rem 0 !important;
+    border-color: var(--border) !important;
+    margin: 1.2rem 0 !important;
 }
 
-/* ── Chat bubble: usuário ─────────────────────────────────────────────────── */
+/* ── Download button ──────────────────────────────────────────────────────── */
+[data-testid="stDownloadButton"] > button {
+    background: rgba(255, 255, 255, 0.03) !important;
+    border: 1px solid var(--border) !important;
+    color: #dddddd !important;
+    border-radius: 8px !important;
+    font-family: 'Urbanist', sans-serif !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    transition: all 0.2s !important;
+}
+
+[data-testid="stDownloadButton"] > button:hover {
+    border-color: var(--primary) !important;
+    color: white !important;
+    background: rgba(230, 57, 70, 0.1) !important;
+}
+
+/* ── Chat bubble: usuário — degradê vermelho igual ao .message.user do HTML ─ */
 .chat-bubble-user {
-    background: linear-gradient(135deg, #8B1A1A22, #8B1A1A11);
-    border: 1px solid #8B1A1A44;
-    border-radius: 16px 16px 4px 16px;
-    padding: 0.85rem 1.1rem;
-    margin: 0.5rem 0;
-    color: #F0F0F0;
+    background: linear-gradient(135deg, #E63946 0%, #B81D24 50%, #820D13 100%);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 18px 18px 4px 18px;
+    padding: 16px 20px;
+    margin: 8px 0 8px auto;
+    color: #ffffff;
     font-size: 0.95rem;
-    max-width: 85%;
-    margin-left: auto;
+    line-height: 1.6;
+    max-width: 75%;
+    box-shadow: 0 8px 24px rgba(230, 57, 70, 0.3);
+    animation: fadeInMsg 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* ── Chat bubble: assistente ──────────────────────────────────────────────── */
+/* ── Chat bubble: assistente — igual ao .message.bot do HTML ─────────────── */
 .chat-bubble-assistant {
-    background-color: #181818;
-    border: 1px solid #2A2A2A;
-    border-radius: 16px 16px 16px 4px;
-    padding: 0.85rem 1.1rem;
-    margin: 0.5rem 0;
-    color: #E8E8E8;
+    background: rgba(30, 30, 40, 0.4);
+    border: 1px solid var(--border);
+    border-radius: 18px 18px 18px 4px;
+    padding: 16px 20px;
+    margin: 8px 0;
+    color: #ffffff;
     font-size: 0.95rem;
-    max-width: 85%;
+    line-height: 1.6;
+    max-width: 75%;
+    animation: fadeInMsg 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* ── Tag de status ────────────────────────────────────────────────────────── */
+@keyframes fadeInMsg {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Status tags ──────────────────────────────────────────────────────────── */
 .status-tag {
     display: inline-block;
-    padding: 0.2rem 0.6rem;
-    border-radius: 20px;
-    font-size: 0.72rem;
-    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.06em;
+    letter-spacing: 1px;
 }
-.status-ok   { background: #0D2E1A; color: #3DDC84; border: 1px solid #1D5C34; }
-.status-erro { background: #2E0D0D; color: #FF6B6B; border: 1px solid #5C1D1D; }
-.status-info { background: #0D1A2E; color: #5BA4F5; border: 1px solid #1D3A5C; }
+.status-ok   { background: rgba(16,185,129,0.15); color: #10b981; border: 1px solid #10b981; }
+.status-erro { background: rgba(230,57,70,0.12);  color: var(--primary); border: 1px solid var(--primary); }
+.status-info { background: rgba(99,102,241,0.15); color: #818cf8; border: 1px solid #6366f1; }
 
 /* ── Scrollbar customizada ────────────────────────────────────────────────── */
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: #111; }
-::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #8B1A1A; }
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(230,57,70,0.4); }
 
 /* ── Ocultar elementos padrão do Streamlit ────────────────────────────────── */
 #MainMenu, footer, header { visibility: hidden !important; }
 
-/* ── Main content padding ─────────────────────────────────────────────────── */
+/* ── Main content ─────────────────────────────────────────────────────────── */
 .main .block-container {
-    padding: 2rem 2.5rem 2rem 2.5rem !important;
+    padding: 2rem 2.5rem !important;
     max-width: 1100px !important;
+    background: transparent !important;
+}
+
+/* ── Caption / textos menores ─────────────────────────────────────────────── */
+[data-testid="stCaptionContainer"] p,
+.stCaption {
+    color: var(--text-muted) !important;
+    font-family: 'Urbanist', sans-serif !important;
+    font-size: 12px !important;
+}
+
+/* ── Warning ──────────────────────────────────────────────────────────────── */
+[data-testid="stAlert"][data-type="warning"] {
+    background: rgba(230, 57, 70, 0.06) !important;
+    border-color: rgba(230, 57, 70, 0.2) !important;
+    color: var(--text-muted) !important;
 }
