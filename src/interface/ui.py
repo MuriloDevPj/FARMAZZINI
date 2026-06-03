@@ -1,3 +1,4 @@
+PY
 def render_full_ui(chats: str, active_chat_id: int, active_db: str) -> str:
     db_label = {"todas": "Todas", "ponte": "FarmaPonte", "veracruz": "Vera Cruz"}.get(active_db, "Todas")
     return f"""<!DOCTYPE html>
@@ -210,7 +211,7 @@ html, body {{
     position:relative;
     flex-shrink:0;
     background:linear-gradient(to top, rgba(6,6,8,0.98) 70%, transparent);
-    padding:16px 40px 12px;
+    padding:16px 40px 28px;
     display:flex; flex-direction:column; align-items:center; gap:12px;
     z-index:100;
     width:100%;
@@ -241,7 +242,8 @@ html, body {{
 .disclaimer {{
     font-size:12px; color:var(--text-muted);
     text-align:center;
-    padding-bottom:16px;
+    padding-bottom:0px;
+    margin-bottom:0px;
     line-height:1.5;
 }}
 .disclaimer a {{
