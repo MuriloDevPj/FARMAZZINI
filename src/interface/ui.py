@@ -210,7 +210,7 @@ html, body {{
     position:relative;
     flex-shrink:0;
     background:linear-gradient(to top, rgba(6,6,8,0.98) 70%, transparent);
-    padding:16px 40px 28px;
+    padding:16px 40px 20px;
     display:flex; flex-direction:column; align-items:center; gap:12px;
     z-index:100;
     width:100%;
@@ -238,6 +238,16 @@ html, body {{
 .input-container {{
     width:100%; display:flex; justify-content:center;
 }}
+.disclaimer {{
+    font-size:12px; color:var(--text-muted);
+    text-align:center; padding-bottom:8px;
+    line-height:1.5;
+}}
+.disclaimer a {{
+    color:var(--text-muted); text-decoration:underline;
+    text-underline-offset:3px; transition:color 0.2s;
+}}
+.disclaimer a:hover {{ color:var(--primary); }}
 .input-box {{
     width:100%; max-width:800px;
     background:rgba(14,14,18,0.9); border:1px solid var(--border);
@@ -399,6 +409,9 @@ tr:last-child td {{ border-bottom:none; }}
           <button class="btn-send" onclick="sendMsg()"><i class="fa-solid fa-paper-plane"></i></button>
         </div>
       </div>
+      <p class="disclaimer">
+        Farmazzini Intel pode cometer erros. Verifique informações importantes antes de tomar decisões estratégicas.
+      </p>
     </div>
   </div>
 </div>
