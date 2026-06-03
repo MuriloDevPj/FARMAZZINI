@@ -1,4 +1,3 @@
-
 def render_full_ui(chats: str, active_chat_id: int, active_db: str) -> str:
     db_label = {"todas": "Todas", "ponte": "FarmaPonte", "veracruz": "Vera Cruz"}.get(active_db, "Todas")
     return f"""<!DOCTYPE html>
@@ -415,6 +414,7 @@ tr:last-child td {{ border-bottom:none; }}
       <p class="disclaimer">
         Farmazzini Intel pode cometer erros. Verifique informações importantes antes de tomar decisões estratégicas.
       </p>
+      <br>
     </div>
   </div>
 </div>
