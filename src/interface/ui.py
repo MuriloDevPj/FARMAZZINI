@@ -727,7 +727,7 @@ tr:last-child td {{ border-bottom:none; }}
       <div class="intel-filter-strip" style="flex-direction:column;align-items:flex-start;gap:8px;">
         <label>Modalidade de Preço</label>
         <div style="display:flex;background:rgba(0,0,0,0.4);border-radius:10px;padding:3px;border:1px solid rgba(255,255,255,0.05);">
-          <div class="modal-pill active" data-mod="preco_original" onclick="setModalidade('preco_original',this)" style="flex:1;padding:8px 14px;text-align:center;font-size:12px;font-weight:600;color:var(--text-muted);cursor:pointer;border-radius:8px;transition:all 0.2s;user-select:none;white-space:nowrap;">Gôndola</div>
+          <div class="modal-pill active" data-mod="preco_original" onclick="setModalidade('preco_original',this)" style="flex:1;padding:8px 14px;text-align:center;font-size:12px;font-weight:600;color:var(--text-muted);cursor:pointer;border-radius:8px;transition:all 0.2s;user-select:none;white-space:nowrap;">Padrão</div>
           <div class="modal-pill" data-mod="preco_pix" onclick="setModalidade('preco_pix',this)" style="flex:1;padding:8px 14px;text-align:center;font-size:12px;font-weight:600;color:var(--text-muted);cursor:pointer;border-radius:8px;transition:all 0.2s;user-select:none;white-space:nowrap;">PIX</div>
           <div class="modal-pill" data-mod="preco_cartao" onclick="setModalidade('preco_cartao',this)" style="flex:1;padding:8px 14px;text-align:center;font-size:12px;font-weight:600;color:var(--text-muted);cursor:pointer;border-radius:8px;transition:all 0.2s;user-select:none;white-space:nowrap;">Cartão</div>
         </div>
@@ -1220,7 +1220,7 @@ const INTEL_COLORS = {{
 }};
 
 const MODAL_LABELS = {{
-    preco_original: 'Preço Original',
+    preco_original: 'Preço Padrão',
     preco_pix:      'Preço PIX',
     preco_cartao:   'Preço Cartão',
 }};

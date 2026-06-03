@@ -89,7 +89,15 @@ def _chart_payload(df: pd.DataFrame) -> str:
             df["farmacia"] = df[label_col].astype(str)
             col_farmacia = "farmacia"
 
-    farmacias = sorted(df["farmacia"].dropna().unique().tolist())
+    # Valores que jamais são nomes de farmácia (status de disponibilidade)
+    NAO_FARMACIAS = {
+        "disponível", "disponivel", "indisponível", "indisponivel",
+        "available", "unavailable", "sim", "não", "yes", "no",
+    }
+    farmacias = sorted([
+        v for v in df["farmacia"].dropna().unique().tolist()
+        if str(v).strip().lower() not in NAO_FARMACIAS
+    ])
     if not farmacias:
         return ""
 
@@ -136,25 +144,68 @@ def _chart_payload(df: pd.DataFrame) -> str:
     cruzamento2 = cruzamento1  # mesmos dados, gráfico transpoem os eixos no frontend
 
     # ── Cruzamento 3: share de disponibilidade por farmácia ──────────────────
+    # Detecta dois formatos possíveis de retorno do Athena:
+    #
+    # FORMATO A — pré-agregado (GROUP BY farmacia, disponibilidade + COUNT):
+    #   farmacia   | disponibilidade | total
+    #   FarmaPonte | Disponível      | 120
+    #   FarmaPonte | Indisponível    | 0
+    #
+    # FORMATO B — linha a linha (SELECT ... disponibilidade FROM tb_processed):
+    #   farmacia   | nome      | disponibilidade
+    #   FarmaPonte | Dipirona  | Disponível
+    #   FarmaPonte | Paracetamol | Indisponível
+    #
     cruzamento3 = {}
     if "disponibilidade" in df.columns:
         STATUS_DISPONIVEL = {"disponível", "disponivel", "available", "sim", "yes"}
-        df["_disp"] = df["disponibilidade"].apply(
-            lambda v: "Disponível"
-            if str(v).strip().lower() in STATUS_DISPONIVEL
-            else "Indisponível"
-            if pd.notna(v)
-            else "Indisponível"
+
+        # Detecta colunas de contagem — hints comuns gerados pelo Athena
+        COUNT_HINTS = ("total", "qtd", "count", "quantidade", "contagem", "_c0")
+        col_count = next(
+            (c for c in df.columns
+             if any(h in c.lower() for h in COUNT_HINTS)
+             and pd.api.types.is_numeric_dtype(pd.to_numeric(df[c], errors="coerce"))),
+            None
         )
-        for farm in farmacias:
-            sub = df[df["farmacia"] == farm]["_disp"]
-            total = len(sub)
-            disponivel = int(sub.eq("Disponível").sum())
-            cruzamento3[farm] = {
-                "disponivel": disponivel,
-                "indisponivel": total - disponivel,
-                "total": total,
-            }
+
+        # FORMATO A: tem coluna de contagem → dados já agregados por (farmacia, disponibilidade)
+        if col_count is not None:
+            for farm in farmacias:
+                sub = df[df["farmacia"] == farm]
+                disp_total = 0
+                indisp_total = 0
+                for _, row in sub.iterrows():
+                    status = str(row["disponibilidade"]).strip().lower()
+                    qtd = int(pd.to_numeric(row[col_count], errors="coerce") or 0)
+                    if status in STATUS_DISPONIVEL:
+                        disp_total += qtd
+                    else:
+                        indisp_total += qtd
+                cruzamento3[farm] = {
+                    "disponivel": disp_total,
+                    "indisponivel": indisp_total,
+                    "total": disp_total + indisp_total,
+                }
+
+        # FORMATO B: sem coluna de contagem → cada linha é um produto individual
+        else:
+            df["_disp"] = df["disponibilidade"].apply(
+                lambda v: "Disponível"
+                if str(v).strip().lower() in STATUS_DISPONIVEL
+                else "Indisponível"
+                if pd.notna(v)
+                else "Indisponível"
+            )
+            for farm in farmacias:
+                sub = df[df["farmacia"] == farm]["_disp"]
+                total = len(sub)
+                disponivel = int(sub.eq("Disponível").sum())
+                cruzamento3[farm] = {
+                    "disponivel": disponivel,
+                    "indisponivel": total - disponivel,
+                    "total": total,
+                }
 
     payload = {
         "farmacias": farmacias,
