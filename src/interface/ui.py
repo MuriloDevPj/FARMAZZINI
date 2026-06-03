@@ -420,70 +420,215 @@ tr:last-child td {{ border-bottom:none; }}
     to  {{ transform:scale(1.15); opacity:1; }}
 }}
 
-/* ── MODAL DE GRÁFICOS ── */
+/* ══════════════════════════════════════════════════════════
+   FARMAZZINI INTEL 2.0 — MODAL DE GRÁFICOS COMPETITIVOS
+   ══════════════════════════════════════════════════════════ */
 .chart-modal-overlay {{
     display:none; position:fixed; inset:0; z-index:500;
-    background:rgba(0,0,0,0.75); backdrop-filter:blur(6px);
+    background:rgba(0,0,0,0.82); backdrop-filter:blur(8px);
     align-items:center; justify-content:center;
     animation:overlayFade 0.2s ease;
 }}
 .chart-modal-overlay.open {{ display:flex; }}
+
 .chart-modal-box {{
-    background:#0d0410;
-    border:1px solid rgba(200,30,55,0.20);
+    background:#0c0c0e;
+    border:1px solid rgba(255,255,255,0.05);
     border-radius:24px;
-    padding:28px 32px;
-    width:min(92vw, 860px);
-    max-height:90dvh;
+    padding:0;
+    width:min(96vw, 980px);
+    max-height:92dvh;
     overflow-y:auto;
-    box-shadow:0 28px 70px rgba(0,0,0,0.85), 0 0 80px rgba(180,10,35,0.08);
-    display:flex; flex-direction:column; gap:20px;
+    overflow-x:hidden;
+    box-shadow:0 32px 80px rgba(0,0,0,0.9), 0 0 100px rgba(59,130,246,0.04);
+    display:flex; flex-direction:column;
     position:relative;
 }}
 .chart-modal-box::-webkit-scrollbar {{ width:4px; }}
-.chart-modal-box::-webkit-scrollbar-thumb {{ background:rgba(255,255,255,0.08); border-radius:4px; }}
-.chart-modal-header {{
+.chart-modal-box::-webkit-scrollbar-thumb {{ background:rgba(255,255,255,0.06); border-radius:4px; }}
+
+/* ── HEADER DO MODAL ── */
+.intel-modal-header {{
     display:flex; align-items:center; justify-content:space-between;
-    border-bottom:1px solid rgba(255,255,255,0.06); padding-bottom:16px;
+    padding:22px 28px 18px;
+    border-bottom:1px solid rgba(255,255,255,0.05);
+    background:rgba(12,12,14,0.95);
+    position:sticky; top:0; z-index:10;
+    backdrop-filter:blur(20px);
 }}
-.chart-modal-title {{
-    font-size:15px; font-weight:700; color:#fff; letter-spacing:.3px;
+.intel-modal-brand {{
+    display:flex; align-items:center; gap:12px;
 }}
-.chart-modal-close {{
+.intel-modal-badge {{
+    background:rgba(59,130,246,0.12); border:1px solid rgba(59,130,246,0.3);
+    color:#3b82f6; font-size:10px; font-weight:700; letter-spacing:1.5px;
+    padding:3px 10px; border-radius:20px; text-transform:uppercase;
+}}
+.intel-modal-title {{
+    font-size:16px; font-weight:700; color:#fff; letter-spacing:.3px;
+}}
+.intel-modal-subtitle {{
+    font-size:12px; color:#9a9a9f; margin-top:2px;
+}}
+.intel-modal-close {{
     background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.06);
-    color:var(--text-muted); width:36px; height:36px; border-radius:10px;
+    color:#9a9a9f; width:36px; height:36px; border-radius:10px;
     cursor:pointer; display:flex; align-items:center; justify-content:center;
     font-size:16px; transition:all 0.2s;
 }}
-.chart-modal-close:hover {{ color:var(--primary); border-color:rgba(230,57,70,0.4); }}
-.chart-tabs {{
-    display:flex; gap:6px; flex-wrap:wrap;
+.intel-modal-close:hover {{ color:var(--primary); border-color:rgba(230,57,70,0.4); }}
+
+/* ── TABS DE NAVEGAÇÃO ── */
+.intel-tabs-bar {{
+    display:flex; gap:4px; padding:14px 28px 0;
+    border-bottom:1px solid rgba(255,255,255,0.05);
+    background:rgba(12,12,14,0.6);
 }}
-.chart-tab {{
-    padding:7px 16px; border-radius:20px;
-    font-size:12px; font-weight:600; cursor:pointer;
+.intel-tab {{
+    padding:10px 18px; font-size:12px; font-weight:700;
+    color:#9a9a9f; cursor:pointer; border-radius:10px 10px 0 0;
+    border:1px solid transparent; border-bottom:none;
+    transition:all 0.2s; font-family:'Urbanist',sans-serif;
+    letter-spacing:.5px; text-transform:uppercase;
+    position:relative; bottom:-1px;
+    display:flex; align-items:center; gap:7px;
+}}
+.intel-tab:hover {{ color:#fff; background:rgba(255,255,255,0.03); }}
+.intel-tab.active {{
+    color:#fff; background:#121215;
+    border-color:rgba(255,255,255,0.07);
+    border-bottom-color:#121215;
+}}
+.intel-tab.active .tab-dot-fp  {{ background:#3b82f6; box-shadow:0 0 6px #3b82f6; }}
+.intel-tab.active .tab-dot-vc  {{ background:#ec4899; box-shadow:0 0 6px #ec4899; }}
+.intel-tab.active .tab-dot-both{{ background:#eab308; box-shadow:0 0 6px #eab308; }}
+.tab-dot {{ width:7px; height:7px; border-radius:50%; background:#555; transition:all 0.3s; }}
+
+/* ── CONTEÚDO DOS PAINÉIS ── */
+.intel-panel {{
+    display:none; flex-direction:column; gap:20px;
+    padding:24px 28px 28px;
+    background:#121215;
+}}
+.intel-panel.active {{ display:flex; }}
+
+/* ── FILTRO DE MODALIDADE (painel 1) ── */
+.intel-filter-strip {{
+    display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+}}
+.intel-filter-strip label {{ font-size:12px; color:#9a9a9f; font-weight:700; letter-spacing:.5px; text-transform:uppercase; }}
+.intel-select {{
+    background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08);
+    color:#fff; padding:7px 14px; border-radius:10px;
+    font-family:'Urbanist',sans-serif; font-size:13px; font-weight:600;
+    outline:none; cursor:pointer; transition:border-color 0.2s;
+}}
+.intel-select:focus {{ border-color:rgba(59,130,246,0.4); }}
+
+/* ── CARDS DE KPI ── */
+.intel-kpi-row {{
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px;
+}}
+.intel-kpi {{
+    background:rgba(255,255,255,0.025); border:1px solid rgba(255,255,255,0.05);
+    border-radius:14px; padding:14px 16px; text-align:center;
+    transition:border-color 0.2s;
+}}
+.intel-kpi:hover {{ border-color:rgba(255,255,255,0.10); }}
+.intel-kpi-val {{ font-size:22px; font-weight:700; margin-bottom:4px; }}
+.intel-kpi-lbl {{ font-size:11px; color:#9a9a9f; text-transform:uppercase; letter-spacing:.8px; }}
+
+/* ── CANVAS ── */
+.intel-canvas-wrap {{ position:relative; width:100%; }}
+
+/* ── CTA / CALLOUTS ── */
+.intel-cta {{
+    display:flex; align-items:flex-start; gap:10px;
+    padding:13px 16px; border-radius:12px; font-size:13px; line-height:1.55;
+}}
+.intel-cta.gold {{
+    background:rgba(234,179,8,0.08); border:1px solid rgba(234,179,8,0.25);
+    border-left:3px solid #eab308; color:#fde68a;
+}}
+.intel-cta.blue {{
+    background:rgba(59,130,246,0.08); border:1px solid rgba(59,130,246,0.20);
+    border-left:3px solid #3b82f6; color:#bfdbfe;
+}}
+.intel-cta.red {{
+    background:rgba(225,29,72,0.08); border:1px solid rgba(225,29,72,0.22);
+    border-left:3px solid #e11d48; color:#fda4af;
+}}
+.intel-cta-icon {{ font-size:16px; flex-shrink:0; margin-top:1px; }}
+.intel-cta-text strong {{ font-weight:700; }}
+
+/* ── LEGENDA ── */
+.intel-legend {{
+    display:flex; gap:16px; flex-wrap:wrap; font-size:12px; color:#9a9a9f;
+    align-items:center;
+}}
+.intel-legend-item {{ display:flex; align-items:center; gap:6px; }}
+.intel-legend-swatch {{ width:11px; height:11px; border-radius:3px; flex-shrink:0; }}
+
+/* ── PAINEL 3: GRID DONUT + TABELA ── */
+.intel-p3-grid {{
+    display:grid; grid-template-columns:1fr 2fr; gap:20px; align-items:start;
+}}
+.intel-donut-wrap {{
+    position:relative; display:flex; align-items:center; justify-content:center;
+}}
+.intel-donut-center {{
+    position:absolute; text-align:center; pointer-events:none;
+}}
+.intel-donut-center-val {{ font-size:24px; font-weight:700; color:#fff; }}
+.intel-donut-center-lbl {{ font-size:11px; color:#9a9a9f; text-transform:uppercase; letter-spacing:.8px; }}
+
+/* ── TABELA DE RUPTURA ── */
+.intel-ruptura-table {{ width:100%; border-collapse:collapse; font-size:13px; }}
+.intel-ruptura-table thead tr {{
     background:rgba(255,255,255,0.03);
+}}
+.intel-ruptura-table th {{
+    padding:10px 14px; text-align:left; font-size:11px; font-weight:700;
+    color:#9a9a9f; text-transform:uppercase; letter-spacing:1px;
+    border-bottom:1px solid rgba(255,255,255,0.06);
+}}
+.intel-ruptura-table td {{
+    padding:10px 14px; border-bottom:1px solid rgba(255,255,255,0.04);
+    color:#e5e7eb;
+}}
+.intel-ruptura-table tr:last-child td {{ border-bottom:none; }}
+.ruptura-bar-wrap {{ background:rgba(255,255,255,0.06); border-radius:4px; height:6px; width:100px; overflow:hidden; display:inline-block; vertical-align:middle; margin-left:8px; }}
+.ruptura-bar-fill {{ height:100%; border-radius:4px; }}
+
+/* ── SECTION TITLES ── */
+.intel-section-title {{
+    font-size:11px; font-weight:700; color:#9a9a9f;
+    text-transform:uppercase; letter-spacing:1.5px;
+    display:flex; align-items:center; gap:8px;
+}}
+.intel-section-title::after {{
+    content:''; flex:1; height:1px; background:rgba(255,255,255,0.05);
+}}
+
+/* ── CHART TABS (compatibilidade) ── */
+.chart-tabs {{ display:flex; gap:6px; flex-wrap:wrap; }}
+.chart-tab {{
+    padding:7px 16px; border-radius:20px; font-size:12px; font-weight:600;
+    cursor:pointer; background:rgba(255,255,255,0.03);
     border:1px solid rgba(255,255,255,0.07);
-    color:var(--text-muted); transition:all 0.2s;
-    font-family:'Urbanist',sans-serif;
+    color:var(--text-muted); transition:all 0.2s; font-family:'Urbanist',sans-serif;
 }}
 .chart-tab.active {{
-    background:rgba(232,37,58,0.15);
-    border-color:rgba(232,37,58,0.45);
-    color:#E8253A;
+    background:rgba(232,37,58,0.15); border-color:rgba(232,37,58,0.45); color:#E8253A;
 }}
-.chart-filter-row {{
-    display:flex; align-items:center; gap:10px; flex-wrap:wrap;
-}}
+.chart-filter-row {{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }}
 .chart-filter-row label {{ font-size:12px; color:var(--text-muted); font-weight:600; }}
 .chart-filter-row select {{
     background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08);
     color:#fff; padding:6px 12px; border-radius:8px;
     font-family:'Urbanist',sans-serif; font-size:13px; outline:none; cursor:pointer;
 }}
-.chart-metric-grid {{
-    display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:10px;
-}}
+.chart-metric-grid {{ display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:10px; }}
 .chart-metric-card {{
     background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06);
     border-radius:12px; padding:12px 14px; text-align:center;
@@ -491,14 +636,8 @@ tr:last-child td {{ border-bottom:none; }}
 .chart-metric-val {{ font-size:20px; font-weight:700; }}
 .chart-metric-lbl {{ font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.8px; margin-top:4px; }}
 .chart-canvas-wrap {{ position:relative; width:100%; }}
-.chart-cta {{
-    font-size:13px; padding:12px 16px; border-radius:12px;
-    border-left:3px solid; line-height:1.5;
-}}
-.chart-legend {{
-    display:flex; gap:14px; flex-wrap:wrap;
-    font-size:12px; color:var(--text-muted);
-}}
+.chart-cta {{ font-size:13px; padding:12px 16px; border-radius:12px; border-left:3px solid; line-height:1.5; }}
+.chart-legend {{ display:flex; gap:14px; flex-wrap:wrap; font-size:12px; color:var(--text-muted); }}
 .chart-legend-item {{ display:flex; align-items:center; gap:5px; }}
 .chart-legend-swatch {{ width:10px; height:10px; border-radius:2px; flex-shrink:0; }}
 
@@ -548,6 +687,136 @@ tr:last-child td {{ border-bottom:none; }}
     </div>
   </div>
 </div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     FARMAZZINI INTEL 2.0 — MODAL DE GRÁFICOS COMPETITIVOS
+     ══════════════════════════════════════════════════════════════ -->
+<div class="chart-modal-overlay" id="chartModal">
+  <div class="chart-modal-box">
+
+    <!-- Header -->
+    <div class="intel-modal-header">
+      <div class="intel-modal-brand">
+        <div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span class="intel-modal-title">Farmazzini Intel</span>
+            <span class="intel-modal-badge">2.0</span>
+          </div>
+          <div class="intel-modal-subtitle">Análise de mercado em tempo real · Athena tb_processed</div>
+        </div>
+      </div>
+      <button class="intel-modal-close" onclick="fecharGrafico()">✕</button>
+    </div>
+
+    <!-- Tabs de navegação -->
+    <div class="intel-tabs-bar">
+      <div class="intel-tab active" id="tab-c1" onclick="intelSwitchTab('c1')">
+        <span class="tab-dot tab-dot-fp"></span> Comparativo de Preços
+      </div>
+      <div class="intel-tab" id="tab-c2" onclick="intelSwitchTab('c2')">
+        <span class="tab-dot tab-dot-vc"></span> Elasticidade / Modalidades
+      </div>
+      <div class="intel-tab" id="tab-c3" onclick="intelSwitchTab('c3')">
+        <span class="tab-dot tab-dot-both"></span> Presença &amp; Ruptura
+      </div>
+    </div>
+
+    <!-- ══ PAINEL 1: COMPARATIVO DE PREÇOS (LÍDER) ══ -->
+    <div class="intel-panel active" id="panel-c1">
+
+      <div class="intel-filter-strip">
+        <label>Modalidade de Preço</label>
+        <select class="intel-select" id="c1-modalidade" onchange="intelRenderC1()">
+          <option value="preco_original">Preço Original (Gôndola)</option>
+          <option value="preco_pix">Preço PIX</option>
+          <option value="preco_cartao">Preço Cartão</option>
+        </select>
+      </div>
+
+      <div class="intel-kpi-row" id="c1-kpis"></div>
+
+      <div class="intel-section-title">Comparativo por Farmácia</div>
+
+      <div class="intel-canvas-wrap" style="height:280px;">
+        <canvas id="c1-canvas"></canvas>
+      </div>
+
+      <div class="intel-legend" id="c1-legend"></div>
+
+      <div class="intel-cta gold" id="c1-cta">
+        <span class="intel-cta-icon">⚡</span>
+        <span class="intel-cta-text" id="c1-cta-text">Carregando análise...</span>
+      </div>
+    </div>
+
+    <!-- ══ PAINEL 2: ELASTICIDADE / MODALIDADES ══ -->
+    <div class="intel-panel" id="panel-c2">
+
+      <div class="intel-kpi-row" id="c2-kpis"></div>
+
+      <div class="intel-section-title">Sacrifício de Margem por Canal de Pagamento</div>
+
+      <div class="intel-canvas-wrap" style="height:300px;">
+        <canvas id="c2-canvas"></canvas>
+      </div>
+
+      <div class="intel-legend" id="c2-legend"></div>
+
+      <div class="intel-cta blue" id="c2-cta">
+        <span class="intel-cta-icon">📊</span>
+        <span class="intel-cta-text" id="c2-cta-text">Carregando análise...</span>
+      </div>
+    </div>
+
+    <!-- ══ PAINEL 3: PRESENÇA & RUPTURA DE PRATELEIRA ══ -->
+    <div class="intel-panel" id="panel-c3">
+
+      <div class="intel-section-title">Share de Presença e Disponibilidade</div>
+
+      <div class="intel-p3-grid">
+        <!-- Donut -->
+        <div style="display:flex;flex-direction:column;gap:14px;align-items:center;">
+          <div class="intel-donut-wrap" style="height:220px;width:220px;">
+            <canvas id="c3-donut" width="220" height="220"></canvas>
+            <div class="intel-donut-center">
+              <div class="intel-donut-center-val" id="c3-donut-val">—</div>
+              <div class="intel-donut-center-lbl">Disponível</div>
+            </div>
+          </div>
+          <div class="intel-legend" id="c3-legend"></div>
+        </div>
+
+        <!-- Tabela de ruptura -->
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          <div class="intel-section-title">Taxa de Ruptura Local por Rede</div>
+          <div style="border-radius:12px;border:1px solid rgba(255,255,255,0.05);overflow:hidden;">
+            <table class="intel-ruptura-table">
+              <thead>
+                <tr>
+                  <th>Farmácia</th>
+                  <th>Disponível</th>
+                  <th>Ruptura</th>
+                  <th>Barra</th>
+                </tr>
+              </thead>
+              <tbody id="c3-tabela"></tbody>
+            </table>
+          </div>
+
+          <div class="intel-cta red" id="c3-cta">
+            <span class="intel-cta-icon">🚨</span>
+            <span class="intel-cta-text" id="c3-cta-text">Carregando análise...</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+<!-- ══ FIM MODAL INTEL 2.0 ══ -->
+
+<!-- Chart.js via CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 
 <div class="app-shell">
 
@@ -935,6 +1204,444 @@ function showToast(msg, borderColor, bg, color) {{
 document.getElementById('deleteModal').addEventListener('click', function(e) {{
     if(e.target === this) closeModal();
 }});
+
+// ════════════════════════════════════════════════════════════════
+// FARMAZZINI INTEL 2.0 — ENGINE DE GRÁFICOS COMPETITIVOS
+// ════════════════════════════════════════════════════════════════
+
+// Paleta de cores conforme especificação do Intel 2.0
+const INTEL_COLORS = {{
+    FarmaPonte: '#3b82f6',
+    'Vera Cruz': '#ec4899',
+    gold:        '#eab308',
+    goldBg:      'rgba(234,179,8,0.10)',
+    blueBg:      'rgba(59,130,246,0.10)',
+    redBg:       'rgba(225,29,72,0.10)',
+}};
+
+const MODAL_LABELS = {{
+    preco_original: 'Preço Original',
+    preco_pix:      'Preço PIX',
+    preco_cartao:   'Preço Cartão',
+}};
+
+// Instâncias de Chart.js ativas (para destruição antes de re-renderizar)
+let _chartC1 = null;
+let _chartC2 = null;
+let _chartC3 = null;
+
+// Dados globais do payload atual
+let _intelPayload = null;
+
+// ── Utilitário: formata moeda BRL ─────────────────────────────────────────────
+function fmtBRL(v) {{
+    if(v == null || isNaN(v)) return '—';
+    return 'R$ ' + Number(v).toFixed(2).replace('.', ',');
+}}
+
+// ── Utilitário: calcula Gap% entre dois valores ───────────────────────────────
+function calcGap(maior, menor) {{
+    if(!menor || menor === 0) return 0;
+    return ((maior / menor) - 1) * 100;
+}}
+
+// ── Utilitário: destrói instância de chart seguramente ────────────────────────
+function destroyChart(ref) {{
+    if(ref) {{ try {{ ref.destroy(); }} catch(e) {{}} }}
+    return null;
+}}
+
+// ── Utilitário: retorna cor por farmácia ──────────────────────────────────────
+function corFarmacia(nome) {{
+    if(nome === 'FarmaPonte') return INTEL_COLORS.FarmaPonte;
+    if(nome === 'Vera Cruz')  return INTEL_COLORS['Vera Cruz'];
+    return '#a78bfa';
+}}
+
+// ── Abre o modal e renderiza todos os painéis ─────────────────────────────────
+function abrirGrafico(chartJsonRaw) {{
+    let payload;
+    try {{
+        const decoded = chartJsonRaw.replace(/&#39;/g, "'");
+        payload = JSON.parse(decoded);
+    }} catch(e) {{
+        showToast('⚠️ Erro ao parsear dados do gráfico', '#f59e0b', '#1c1000', '#fde68a');
+        return;
+    }}
+
+    _intelPayload = payload;
+
+    // Garante que o Chart.js está disponível
+    if(typeof Chart === 'undefined') {{
+        showToast('⏳ Aguardando Chart.js...', '#3b82f6', '#0f172a', '#93c5fd');
+        setTimeout(() => abrirGrafico(chartJsonRaw), 400);
+        return;
+    }}
+
+    document.getElementById('chartModal').classList.add('open');
+    intelSwitchTab('c1');
+}}
+
+// ── Fecha o modal ─────────────────────────────────────────────────────────────
+function fecharGrafico() {{
+    document.getElementById('chartModal').classList.remove('open');
+    _chartC1 = destroyChart(_chartC1);
+    _chartC2 = destroyChart(_chartC2);
+    _chartC3 = destroyChart(_chartC3);
+}}
+
+// Fecha ao clicar no overlay
+document.getElementById('chartModal').addEventListener('click', function(e) {{
+    if(e.target === this) fecharGrafico();
+}});
+
+// ── Troca de aba ──────────────────────────────────────────────────────────────
+function intelSwitchTab(tabId) {{
+    ['c1','c2','c3'].forEach(id => {{
+        document.getElementById('tab-'  + id).classList.toggle('active', id === tabId);
+        document.getElementById('panel-' + id).classList.toggle('active', id === tabId);
+    }});
+    if(!_intelPayload) return;
+    if(tabId === 'c1') intelRenderC1();
+    if(tabId === 'c2') intelRenderC2();
+    if(tabId === 'c3') intelRenderC3();
+}}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// CRUZAMENTO 1 — COMPARATIVO DE PREÇOS (LÍDER)
+// ══════════════════════════════════════════════════════════════════════════════
+function intelRenderC1() {{
+    if(!_intelPayload) return;
+    const p        = _intelPayload;
+    const mod      = document.getElementById('c1-modalidade').value;
+    const farmacias = p.farmacias || [];
+    const dadosMod = (p.cruzamento1 || {{}})[mod] || {{}};
+
+    // KPIs
+    const kpiEl = document.getElementById('c1-kpis');
+    kpiEl.innerHTML = '';
+    farmacias.forEach(f => {{
+        const val = dadosMod[f] || 0;
+        const cor = corFarmacia(f);
+        kpiEl.innerHTML += `
+        <div class="intel-kpi" style="border-color:${{cor}}22;">
+            <div class="intel-kpi-val" style="color:${{cor}};">${{fmtBRL(val)}}</div>
+            <div class="intel-kpi-lbl">${{f}}</div>
+        </div>`;
+    }});
+
+    // Gráfico
+    _chartC1 = destroyChart(_chartC1);
+    const ctx = document.getElementById('c1-canvas').getContext('2d');
+    const values = farmacias.map(f => dadosMod[f] || 0);
+    const colors = farmacias.map(f => corFarmacia(f));
+    const colorsAlpha = colors.map(c => c + '33');
+
+    _chartC1 = new Chart(ctx, {{
+        type: 'bar',
+        data: {{
+            labels: farmacias,
+            datasets: [{{
+                label: MODAL_LABELS[mod] || mod,
+                data: values,
+                backgroundColor: colorsAlpha,
+                borderColor: colors,
+                borderWidth: 2,
+                borderRadius: 10,
+                borderSkipped: false,
+            }}]
+        }},
+        options: {{
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {{
+                legend: {{ display: false }},
+                tooltip: {{
+                    callbacks: {{
+                        label: ctx => ' ' + fmtBRL(ctx.parsed.y)
+                    }},
+                    backgroundColor: '#1a1a2e',
+                    borderColor: 'rgba(255,255,255,0.08)',
+                    borderWidth: 1,
+                    titleColor: '#fff',
+                    bodyColor: '#9a9a9f',
+                    padding: 12,
+                    cornerRadius: 10,
+                }}
+            }},
+            scales: {{
+                x: {{
+                    grid: {{ color: 'rgba(255,255,255,0.04)' }},
+                    ticks: {{ color: '#9a9a9f', font: {{ family: 'Urbanist', weight: '600' }} }}
+                }},
+                y: {{
+                    grid: {{ color: 'rgba(255,255,255,0.04)' }},
+                    ticks: {{
+                        color: '#9a9a9f',
+                        font: {{ family: 'Urbanist' }},
+                        callback: v => fmtBRL(v)
+                    }},
+                    beginAtZero: false,
+                }}
+            }},
+            animation: {{ duration: 600, easing: 'easeOutQuart' }},
+        }}
+    }});
+
+    // Legenda
+    const legEl = document.getElementById('c1-legend');
+    legEl.innerHTML = farmacias.map(f =>
+        `<div class="intel-legend-item">
+            <div class="intel-legend-swatch" style="background:${{corFarmacia(f)}};"></div>
+            ${{f}}
+         </div>`
+    ).join('');
+
+    // CTA automático com Gap%
+    const ctaEl = document.getElementById('c1-cta-text');
+    if(farmacias.length >= 2) {{
+        const vA = dadosMod[farmacias[0]] || 0;
+        const vB = dadosMod[farmacias[1]] || 0;
+        if(vA > 0 && vB > 0) {{
+            const lider   = vA < vB ? farmacias[0] : farmacias[1];
+            const seguidor = vA < vB ? farmacias[1] : farmacias[0];
+            const vLider  = Math.min(vA, vB);
+            const vSeg    = Math.max(vA, vB);
+            const gap     = calcGap(vSeg, vLider).toFixed(1);
+            ctaEl.innerHTML = `<strong>${{lider}}</strong> está aplicando ${{MODAL_LABELS[mod]||mod}} <strong>${{gap}}% menor</strong> que ${{seguidor}} (${{fmtBRL(vLider)}} vs ${{fmtBRL(vSeg)}}). Margem de elasticidade local pressionada pela liderança de ${{lider}}.`;
+        }} else {{
+            ctaEl.innerHTML = 'Dados insuficientes para calcular o gap competitivo.';
+        }}
+    }} else {{
+        ctaEl.innerHTML = 'Apenas uma farmácia nos dados. Sem comparativo disponível.';
+    }}
+}}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// CRUZAMENTO 2 — ELASTICIDADE POR MODALIDADE DE PAGAMENTO
+// ══════════════════════════════════════════════════════════════════════════════
+function intelRenderC2() {{
+    if(!_intelPayload) return;
+    const p         = _intelPayload;
+    const farmacias = p.farmacias || [];
+    const c2        = p.cruzamento2 || {{}};
+    const modalidades = ['preco_original','preco_pix','preco_cartao'];
+    const modLabels   = ['Original', 'PIX', 'Cartão'];
+
+    // KPIs: desconto médio PIX vs Original por farmácia
+    const kpiEl = document.getElementById('c2-kpis');
+    kpiEl.innerHTML = '';
+    farmacias.forEach(f => {{
+        const orig = (c2.preco_original || {{}})[f] || 0;
+        const pix  = (c2.preco_pix      || {{}})[f] || 0;
+        const desconto = orig > 0 ? calcGap(orig, pix).toFixed(1) : '—';
+        const cor = corFarmacia(f);
+        kpiEl.innerHTML += `
+        <div class="intel-kpi" style="border-color:${{cor}}22;">
+            <div class="intel-kpi-val" style="color:#eab308;">${{desconto !== '—' ? desconto + '%' : '—'}}</div>
+            <div class="intel-kpi-lbl">${{f}} · Desconto PIX</div>
+        </div>`;
+    }});
+
+    // Gráfico agrupado
+    _chartC2 = destroyChart(_chartC2);
+    const ctx = document.getElementById('c2-canvas').getContext('2d');
+
+    const datasets = farmacias.map((f, i) => {{
+        const cor = corFarmacia(f);
+        return {{
+            label: f,
+            data: modalidades.map(m => (c2[m] || {{}})[f] || 0),
+            backgroundColor: cor + '33',
+            borderColor: cor,
+            borderWidth: 2,
+            borderRadius: 8,
+            borderSkipped: false,
+        }};
+    }});
+
+    _chartC2 = new Chart(ctx, {{
+        type: 'bar',
+        data: {{ labels: modLabels, datasets }},
+        options: {{
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {{
+                legend: {{ display: false }},
+                tooltip: {{
+                    callbacks: {{ label: ctx => ` ${{ctx.dataset.label}}: ${{fmtBRL(ctx.parsed.y)}}` }},
+                    backgroundColor: '#1a1a2e',
+                    borderColor: 'rgba(255,255,255,0.08)',
+                    borderWidth: 1,
+                    titleColor: '#fff',
+                    bodyColor: '#9a9a9f',
+                    padding: 12,
+                    cornerRadius: 10,
+                }}
+            }},
+            scales: {{
+                x: {{
+                    grid: {{ color: 'rgba(255,255,255,0.04)' }},
+                    ticks: {{ color: '#9a9a9f', font: {{ family: 'Urbanist', weight: '600' }} }}
+                }},
+                y: {{
+                    grid: {{ color: 'rgba(255,255,255,0.04)' }},
+                    ticks: {{
+                        color: '#9a9a9f',
+                        font: {{ family: 'Urbanist' }},
+                        callback: v => fmtBRL(v)
+                    }},
+                    beginAtZero: false,
+                }}
+            }},
+            animation: {{ duration: 600, easing: 'easeOutQuart' }},
+        }}
+    }});
+
+    // Legenda
+    const legEl = document.getElementById('c2-legend');
+    legEl.innerHTML = farmacias.map(f =>
+        `<div class="intel-legend-item">
+            <div class="intel-legend-swatch" style="background:${{corFarmacia(f)}};"></div>
+            ${{f}}
+         </div>`
+    ).join('');
+
+    // CTA analítico
+    const ctaEl = document.getElementById('c2-cta-text');
+    if(farmacias.length >= 2) {{
+        const msgs = farmacias.map(f => {{
+            const orig = (c2.preco_original || {{}})[f] || 0;
+            const pix  = (c2.preco_pix      || {{}})[f] || 0;
+            const gap  = orig > 0 && pix > 0 ? calcGap(orig, pix).toFixed(1) : null;
+            return gap ? `<strong>${{f}}</strong> oferece desconto de <strong>${{gap}}%</strong> via PIX (${{fmtBRL(pix)}} vs ${{fmtBRL(orig)}})` : null;
+        }}).filter(Boolean);
+        ctaEl.innerHTML = msgs.length
+            ? msgs.join('. ') + '. Calibrar gatilho de elasticidade conforme o canal mais agressivo.'
+            : 'Dados insuficientes para análise de elasticidade.';
+    }} else {{
+        ctaEl.innerHTML = 'Apenas uma farmácia nos dados. Sem comparativo de elasticidade disponível.';
+    }}
+}}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// CRUZAMENTO 3 — PRESENÇA & RUPTURA DE PRATELEIRA
+// ══════════════════════════════════════════════════════════════════════════════
+function intelRenderC3() {{
+    if(!_intelPayload) return;
+    const p         = _intelPayload;
+    const farmacias = p.farmacias || [];
+    const c3        = p.cruzamento3 || {{}};
+
+    // Totais para o donut
+    let totalDisp = 0, totalIndisp = 0;
+    farmacias.forEach(f => {{
+        const d = c3[f] || {{}};
+        totalDisp   += d.disponivel   || 0;
+        totalIndisp += d.indisponivel || 0;
+    }});
+    const totalGeral = totalDisp + totalIndisp;
+    const pctDisp = totalGeral > 0 ? Math.round((totalDisp / totalGeral) * 100) : 0;
+
+    // Donut
+    _chartC3 = destroyChart(_chartC3);
+    const ctx = document.getElementById('c3-donut').getContext('2d');
+    const donutColors = farmacias.map(f => corFarmacia(f));
+    const donutData   = farmacias.map(f => (c3[f] || {{}}).disponivel || 0);
+
+    _chartC3 = new Chart(ctx, {{
+        type: 'doughnut',
+        data: {{
+            labels: farmacias,
+            datasets: [{{
+                data: donutData,
+                backgroundColor: donutColors.map(c => c + 'cc'),
+                borderColor: donutColors,
+                borderWidth: 2,
+                hoverOffset: 6,
+            }}]
+        }},
+        options: {{
+            responsive: false,
+            cutout: '72%',
+            plugins: {{
+                legend: {{ display: false }},
+                tooltip: {{
+                    callbacks: {{
+                        label: ctx => ` ${{ctx.label}}: ${{ctx.parsed}} disponíveis`
+                    }},
+                    backgroundColor: '#1a1a2e',
+                    borderColor: 'rgba(255,255,255,0.08)',
+                    borderWidth: 1,
+                    titleColor: '#fff',
+                    bodyColor: '#9a9a9f',
+                    padding: 10,
+                    cornerRadius: 8,
+                }}
+            }},
+            animation: {{ duration: 700, easing: 'easeOutQuart' }},
+        }}
+    }});
+
+    // Centro do donut
+    document.getElementById('c3-donut-val').textContent = pctDisp + '%';
+
+    // Legenda do donut
+    const legEl = document.getElementById('c3-legend');
+    legEl.innerHTML = farmacias.map(f =>
+        `<div class="intel-legend-item">
+            <div class="intel-legend-swatch" style="background:${{corFarmacia(f)}};"></div>
+            ${{f}}
+         </div>`
+    ).join('');
+
+    // Tabela de ruptura
+    const tabelaEl = document.getElementById('c3-tabela');
+    tabelaEl.innerHTML = '';
+    farmacias.forEach(f => {{
+        const d         = c3[f] || {{}};
+        const total     = d.total     || 0;
+        const disp      = d.disponivel   || 0;
+        const indisp    = d.indisponivel || 0;
+        const pctDisp_f = total > 0 ? Math.round((disp / total) * 100) : 0;
+        const pctRup_f  = 100 - pctDisp_f;
+        const cor       = corFarmacia(f);
+        const rupCor    = pctRup_f >= 40 ? '#e11d48' : pctRup_f >= 20 ? '#eab308' : '#22c55e';
+
+        tabelaEl.innerHTML += `
+        <tr>
+            <td style="color:${{cor}};font-weight:700;">${{f}}</td>
+            <td><span style="color:#22c55e;font-weight:700;">${{pctDisp_f}}%</span></td>
+            <td><span style="color:${{rupCor}};font-weight:700;">${{pctRup_f}}%</span></td>
+            <td>
+                <div class="ruptura-bar-wrap">
+                    <div class="ruptura-bar-fill" style="width:${{pctRup_f}}%;background:${{rupCor}};"></div>
+                </div>
+            </td>
+        </tr>`;
+    }});
+
+    // CTA de oportunidade tática
+    const ctaEl = document.getElementById('c3-cta-text');
+    if(farmacias.length > 0) {{
+        // Encontra a farmácia com maior ruptura
+        let maiorRupF = '', maiorRupPct = -1;
+        farmacias.forEach(f => {{
+            const d = c3[f] || {{}};
+            const t = d.total || 0;
+            const r = t > 0 ? Math.round(((d.indisponivel || 0) / t) * 100) : 0;
+            if(r > maiorRupPct) {{ maiorRupPct = r; maiorRupF = f; }}
+        }});
+        if(maiorRupF && maiorRupPct >= 0) {{
+            const label = maiorRupPct >= 40
+                ? `⚠️ Janela de oportunidade tática: <strong>${{maiorRupF}}</strong> com maior ruptura de prateleira (<strong>${{maiorRupPct}}%</strong>). Acionar reposicionamento de preço por escassez local — quando atingir 100%, acionar reposicionamento imediato.`
+                : `<strong>${{maiorRupF}}</strong> apresenta ${{maiorRupPct}}% de ruptura. Monitorar evolução para ajuste tático de preços por escassez.`;
+            ctaEl.innerHTML = label;
+        }}
+    }} else {{
+        ctaEl.innerHTML = 'Dados de disponibilidade não encontrados nesta consulta.';
+    }}
+}}
 </script>
 </body>
 </html>"""
