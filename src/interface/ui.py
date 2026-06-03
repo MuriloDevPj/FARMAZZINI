@@ -622,8 +622,14 @@ function appendMessage(sender, text, animate=true) {{
 }}
 
 // ════════════════════════════════════════════════════════════════
-// ENVIAR MENSAGEM → postMessage para o Streamlit pai
-// Mostra loading imediatamente enquanto aguarda o rerun
+// ENVIAR MENSAGEM → fetch na URL do Streamlit com query params
+//
+// POR QUE MUDAMOS:
+// postMessage + window.parent.location era bloqueado porque
+// tanto o RECEPTOR_HTML quanto este HTML rodavam em iframes
+// separados — nunca se comunicavam. A solução é usar fetch()
+// para chamar a própria URL do Streamlit com os parâmetros
+// como query string, o que aciona st.query_params → st.rerun().
 // ════════════════════════════════════════════════════════════════
 function sendMsg() {{
     const inp = document.getElementById('userInput');
@@ -632,15 +638,14 @@ function sendMsg() {{
     inp.value = '';
     inp.disabled = true;
 
-    // Garante que o chat ativo existe nos chats locais
     const chat = chats.find(c => c.id === activeChatId);
     if(!chat) {{ inp.disabled = false; return; }}
 
-    // Adiciona mensagem do usuário localmente (feedback imediato)
+    // Feedback imediato — mostra a mensagem do usuário
     chat.messages.push({{ sender:'user', text: val }});
     appendMessage('user', val);
 
-    // Mostra indicador de carregamento
+    // Indicador de carregamento
     const loadDiv = document.createElement('div');
     loadDiv.className = 'message bot';
     loadDiv.id = 'loadingMsg';
@@ -649,17 +654,30 @@ function sendMsg() {{
     document.getElementById('chatWindow').appendChild(loadDiv);
     document.getElementById('chatWindow').scrollTop = 99999;
 
-    // ── Envia ao Streamlit pai via postMessage ──────────────────
-    // O app.py tem um componente receptor que escuta esta mensagem
-    // e atualiza st.session_state antes de chamar st.rerun().
-    window.parent.postMessage({{
-        type:       'farmazzini_send',
-        action:     'send',
-        msg:        val,
-        db:         activeDb,
-        chat_id:    activeChatId,
-        chats_state: JSON.stringify(chats)
-    }}, '*');
+    // ── Monta a URL do Streamlit PAI com os query params ────────
+    // window.parent.location.href dá a URL real do Streamlit
+    // (funciona porque o iframe e a página pai são same-origin
+    // quando rodando localmente ou no Streamlit Cloud).
+    try {{
+        const parentUrl = new URL(window.parent.location.href);
+        parentUrl.searchParams.set('action',  'send');
+        parentUrl.searchParams.set('msg',     val);
+        parentUrl.searchParams.set('db',      activeDb);
+        parentUrl.searchParams.set('chat_id', activeChatId);
+
+        // Navega a janela PAI — aciona st.query_params no Python
+        window.parent.location.href = parentUrl.toString();
+    }} catch(e) {{
+        // Fallback: se cross-origin bloqueou, tenta via location.search
+        // (funciona em Streamlit Cloud onde iframe é same-origin)
+        const qs = new URLSearchParams({{
+            action:  'send',
+            msg:     val,
+            db:      activeDb,
+            chat_id: activeChatId
+        }});
+        window.parent.location.search = qs.toString();
+    }}
 }}
 
 // ════════════════════════════════════════════════════════════════
