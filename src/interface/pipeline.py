@@ -12,6 +12,10 @@
 #   3. Formata o resultado como HTML para ser renderizado no chat
 # ==============================================================================
 
+import sys
+import os
+sys.path.insert(0, os.path.dirname(__file__))
+
 import pandas as pd
 from aws_client import buscar_dados
 
