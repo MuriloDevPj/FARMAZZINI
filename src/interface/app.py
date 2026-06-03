@@ -194,26 +194,47 @@ html_content = render_full_ui(
 # ─────────────────────────────────────────────
 st.markdown("""
 <style>
+    /* ── Remove TODA estrutura nativa do Streamlit ── */
+    [data-testid="stHeader"],
+    [data-testid="stToolbar"],
+    [data-testid="stDecoration"],
+    [data-testid="stStatusWidget"],
+    header, footer {
+        display: none !important;
+        height: 0 !important;
+        min-height: 0 !important;
+        visibility: hidden !important;
+    }
+
+    /* ── Zera margens e padding em toda a cadeia de containers ── */
     html, body,
     [data-testid="stAppViewContainer"],
     [data-testid="stAppViewBlockContainer"],
-    .main, .block-container {
+    [data-testid="stVerticalBlock"],
+    [data-testid="stVerticalBlockBorderWrapper"],
+    .main, .block-container,
+    .stApp {
         padding: 0 !important;
         margin: 0 !important;
         max-width: 100% !important;
         background-color: #08030A !important;
         overflow: hidden !important;
         height: 100dvh !important;
+        min-height: unset !important;
     }
-    [data-testid="stHeader"],
-    [data-testid="stToolbar"],
-    [data-testid="stDecoration"],
-    header { display: none !important; height: 0 !important; }
+
+    /* ── Garante que o iframe ocupe tudo sem folga ── */
     iframe {
         display: block !important;
         border: none !important;
-        width: 100% !important;
+        outline: none !important;
+        width: 100vw !important;
         height: 100dvh !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
     }
 </style>
 """, unsafe_allow_html=True)
