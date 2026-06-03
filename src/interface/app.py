@@ -45,10 +45,10 @@ if "login_erro" not in st.session_state:
 # ─────────────────────────────────────────────
 if not st.session_state.autenticado:
 
-    # CSS: esconde tudo do Streamlit, deixa só o fundo e os widgets flutuando
     st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800&display=swap');
+    @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css');
 
     /* ── Esconde chrome do Streamlit ── */
     [data-testid="stHeader"],
@@ -57,18 +57,18 @@ if not st.session_state.autenticado:
     [data-testid="stStatusWidget"],
     header, footer { display:none !important; }
 
-    html, body,
+    html, body { margin:0; padding:0; }
+
     [data-testid="stAppViewContainer"],
-    .main, .block-container, .stApp {
+    .main, .stApp {
         padding: 0 !important;
         margin:  0 !important;
         max-width: 100% !important;
         overflow: hidden !important;
         height: 100dvh !important;
-        background: transparent !important;
     }
 
-    /* ── Fundo com gradientes animados ── */
+    /* ── Fundo escuro com glows vermelhos animados ── */
     [data-testid="stAppViewContainer"] {
         background:
             radial-gradient(ellipse 120% 80% at 50% -10%, rgba(180,20,45,0.38) 0%, rgba(80,0,18,0.20) 40%, transparent 70%),
@@ -77,7 +77,44 @@ if not st.session_state.autenticado:
             #08030A !important;
     }
 
-    /* ── Centraliza o bloco de conteúdo ── */
+    /* ── Glows flutuantes (pseudo-elements no body via div injetado) ── */
+    .glow-orb {
+        position: fixed; pointer-events: none; border-radius: 50%; z-index: 0;
+    }
+    .glow-orb-1 {
+        top:-20%; left:15%; width:70vw; height:70vw;
+        background: radial-gradient(ellipse at center, rgba(220,30,55,0.30) 0%, rgba(140,5,30,0.18) 35%, rgba(80,0,15,0.08) 60%, transparent 80%);
+        filter: blur(90px);
+        animation: drift1 12s ease-in-out infinite alternate;
+    }
+    .glow-orb-2 {
+        bottom:-15%; right:5%; width:55vw; height:55vw;
+        background: radial-gradient(ellipse at center, rgba(160,10,35,0.22) 0%, rgba(90,0,20,0.12) 40%, transparent 70%);
+        filter: blur(110px);
+        animation: drift2 15s ease-in-out infinite alternate;
+    }
+    .glow-orb-3 {
+        top:40%; left:-10%; width:40vw; height:40vw;
+        background: radial-gradient(ellipse at center, rgba(180,20,45,0.15) 0%, rgba(100,0,20,0.06) 50%, transparent 75%);
+        filter: blur(80px);
+        animation: drift3 18s ease-in-out infinite alternate;
+    }
+    @keyframes drift1 { from{transform:translate(0,0) scale(1)} to{transform:translate(3vw,2vh) scale(1.08)} }
+    @keyframes drift2 { from{transform:translate(0,0) scale(1)} to{transform:translate(-2vw,-3vh) scale(1.05)} }
+    @keyframes drift3 { from{transform:translate(0,0) scale(1)} to{transform:translate(4vw,-2vh) scale(1.1)} }
+
+    /* ── Centraliza bloco Streamlit ── */
+    .block-container {
+        padding: 0 !important;
+        max-width: 100% !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        height: 100dvh !important;
+        position: relative;
+        z-index: 2;
+    }
     [data-testid="stVerticalBlock"],
     [data-testid="stVerticalBlockBorderWrapper"],
     [data-testid="stAppViewBlockContainer"] {
@@ -90,107 +127,114 @@ if not st.session_state.autenticado:
         gap: 0 !important;
     }
 
-    /* ── Wrapper do card ── */
-    .login-outer {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 32px;
-        animation: cardIn 0.6s cubic-bezier(0.16,1,0.3,1) both;
-        width: 420px;
+    /* ── Animação de entrada ── */
+    .login-wrapper {
+        display: flex; flex-direction: column; align-items: center;
+        gap: 32px; width: 440px; position: relative; z-index: 2;
+        animation: cardIn 0.65s cubic-bezier(0.16,1,0.3,1) both;
     }
     @keyframes cardIn {
-        from { opacity:0; transform:translateY(24px) scale(0.97); }
+        from { opacity:0; transform:translateY(28px) scale(0.97); }
         to   { opacity:1; transform:translateY(0)    scale(1);    }
     }
 
     /* ── Marca ── */
-    .login-brand {
-        display:flex; flex-direction:column; align-items:center; gap:10px;
-    }
+    .login-brand { display:flex; flex-direction:column; align-items:center; gap:10px; }
     .brand-pill {
-        background:rgba(232,37,58,0.12);
-        border:1px solid rgba(232,37,58,0.28);
-        border-radius:100px;
-        padding:5px 16px;
-        font-size:11px; font-weight:700; letter-spacing:2.5px;
-        text-transform:uppercase; color:#E8253A;
-        font-family:'Urbanist',sans-serif;
+        background: rgba(232,37,58,0.12);
+        border: 1px solid rgba(232,37,58,0.28);
+        border-radius: 100px; padding: 5px 18px;
+        font-size: 11px; font-weight: 700; letter-spacing: 2.5px;
+        text-transform: uppercase; color: #E8253A;
+        font-family: 'Urbanist', sans-serif;
     }
     .brand-logo {
-        font-size:32px; font-weight:800; letter-spacing:4px; color:#fff;
-        font-family:'Urbanist',sans-serif; line-height:1;
+        font-size: 34px; font-weight: 800; letter-spacing: 4px; color: #fff;
+        font-family: 'Urbanist', sans-serif; line-height: 1;
     }
-    .brand-logo .red { color:#E8253A; }
+    .brand-logo .r { color: #E8253A; }
     .brand-sub {
-        font-size:13px; color:#9a9a9f; font-weight:500; letter-spacing:0.5px;
-        font-family:'Urbanist',sans-serif;
+        font-size: 13px; color: #9a9a9f; font-weight: 500; letter-spacing: 0.5px;
+        font-family: 'Urbanist', sans-serif;
     }
 
-    /* ── Card ── */
+    /* ── Card principal ── */
     .login-card {
-        background:rgba(10,3,14,0.92);
-        border:1px solid rgba(200,30,55,0.12);
-        border-radius:28px;
-        padding:40px 44px 36px;
-        width:420px;
-        backdrop-filter:blur(40px);
+        background: rgba(10,3,14,0.93);
+        border: 1px solid rgba(200,30,55,0.14);
+        border-radius: 28px;
+        padding: 40px 44px 36px;
+        width: 440px;
+        backdrop-filter: blur(40px);
+        -webkit-backdrop-filter: blur(40px);
         box-shadow:
-            0 32px 80px rgba(0,0,0,0.75),
+            0 32px 80px rgba(0,0,0,0.80),
             0 0 0 1px rgba(255,255,255,0.03),
-            0 0 80px rgba(160,10,30,0.10);
+            0 0 100px rgba(160,10,30,0.12),
+            inset 0 1px 0 rgba(255,255,255,0.04);
     }
     .card-title {
-        font-size:22px; font-weight:700; color:#fff; letter-spacing:0.3px;
-        margin-bottom:6px; font-family:'Urbanist',sans-serif;
+        font-size: 22px; font-weight: 700; color: #fff;
+        margin-bottom: 6px; font-family: 'Urbanist', sans-serif;
     }
     .card-desc {
-        font-size:14px; color:#9a9a9f; margin-bottom:28px;
-        font-family:'Urbanist',sans-serif;
+        font-size: 14px; color: #9a9a9f; margin-bottom: 32px;
+        font-family: 'Urbanist', sans-serif;
     }
-    .field-label {
-        font-size:11px; font-weight:700; text-transform:uppercase;
-        letter-spacing:1px; color:#9a9a9f; margin-bottom:8px; display:block;
-        font-family:'Urbanist',sans-serif;
+    .field-lbl {
+        font-size: 11px; font-weight: 700; text-transform: uppercase;
+        letter-spacing: 1px; color: #9a9a9f; margin-bottom: 8px;
+        display: block; font-family: 'Urbanist', sans-serif;
     }
-    .error-box {
-        background:rgba(232,37,58,0.10);
-        border:1px solid rgba(232,37,58,0.35);
-        border-radius:12px; padding:11px 16px;
-        display:flex; align-items:center; gap:10px;
-        font-size:13px; font-weight:500; color:#ff6b7a;
-        margin-bottom:20px; font-family:'Urbanist',sans-serif;
-        animation: shake 0.35s ease;
+    .field-lbl-2 {
+        font-size: 11px; font-weight: 700; text-transform: uppercase;
+        letter-spacing: 1px; color: #9a9a9f; margin-bottom: 8px;
+        display: block; font-family: 'Urbanist', sans-serif;
+        margin-top: 4px;
+    }
+
+    /* ── Caixa de erro ── */
+    .err-box {
+        background: rgba(232,37,58,0.10);
+        border: 1px solid rgba(232,37,58,0.35);
+        border-radius: 12px; padding: 12px 16px;
+        display: flex; align-items: center; gap: 10px;
+        font-size: 13px; font-weight: 500; color: #ff6b7a;
+        margin-bottom: 20px; font-family: 'Urbanist', sans-serif;
+        animation: shake 0.38s ease;
     }
     @keyframes shake {
         0%,100%{transform:translateX(0)}
-        20%{transform:translateX(-5px)}
-        40%{transform:translateX(5px)}
-        60%{transform:translateX(-3px)}
-        80%{transform:translateX(3px)}
+        20%{transform:translateX(-6px)}
+        40%{transform:translateX(6px)}
+        60%{transform:translateX(-4px)}
+        80%{transform:translateX(4px)}
     }
-    .divider-line {
-        display:flex; align-items:center; gap:12px;
-        font-size:11px; color:rgba(154,154,159,0.4); font-weight:600;
-        margin:20px 0; font-family:'Urbanist',sans-serif;
-        text-transform:uppercase; letter-spacing:1px;
-    }
-    .divider-line::before, .divider-line::after {
-        content:''; flex:1; height:1px; background:rgba(255,255,255,0.06);
-    }
-    .card-footer-txt {
-        text-align:center; font-size:11px; color:rgba(154,154,159,0.45);
-        line-height:1.7; font-family:'Urbanist',sans-serif; margin-top:20px;
-    }
-    .card-footer-txt strong { color:rgba(232,37,58,0.65); }
 
-    /* ── Estiliza os inputs nativos do Streamlit ── */
-    div[data-testid="stTextInput"] {
-        margin-bottom: 16px !important;
+    /* ── Divisor ── */
+    .divider-row {
+        display: flex; align-items: center; gap: 12px;
+        font-size: 11px; color: rgba(154,154,159,0.4); font-weight: 600;
+        margin: 16px 0 0; font-family: 'Urbanist', sans-serif;
+        text-transform: uppercase; letter-spacing: 1px;
     }
-    div[data-testid="stTextInput"] label {
-        display: none !important;
+    .divider-row::before, .divider-row::after {
+        content:''; flex:1; height:1px; background: rgba(255,255,255,0.06);
     }
+
+    /* ── Rodapé card ── */
+    .card-foot {
+        text-align: center; font-size: 11px; color: rgba(154,154,159,0.45);
+        line-height: 1.75; font-family: 'Urbanist', sans-serif; margin-top: 16px;
+    }
+    .card-foot strong { color: rgba(232,37,58,0.70); font-weight: 700; }
+
+    /* ════════════════════════════════════════════
+       Inputs nativos do Streamlit — visual premium
+    ════════════════════════════════════════════ */
+    div[data-testid="stTextInput"] { margin-bottom: 0 !important; }
+    div[data-testid="stTextInput"] label { display: none !important; }
+    div[data-testid="stTextInput"] > div { border-radius: 14px !important; }
     div[data-testid="stTextInput"] input {
         height: 52px !important;
         background: rgba(255,255,255,0.04) !important;
@@ -202,96 +246,112 @@ if not st.session_state.autenticado:
         font-weight: 500 !important;
         padding: 0 18px !important;
         caret-color: #E8253A !important;
+        transition: border-color 0.25s, box-shadow 0.25s, background 0.25s !important;
     }
     div[data-testid="stTextInput"] input:focus {
-        border-color: rgba(232,37,58,0.50) !important;
+        border-color: rgba(232,37,58,0.55) !important;
         box-shadow: 0 0 0 3px rgba(232,37,58,0.10) !important;
         background: rgba(232,37,58,0.04) !important;
     }
     div[data-testid="stTextInput"] input::placeholder {
-        color: rgba(154,154,159,0.45) !important;
+        color: rgba(154,154,159,0.40) !important;
     }
-    /* Botão nativo do Streamlit → estilo primário vermelho */
+    /* Remove o wrapper azul de foco padrão do Streamlit */
+    div[data-testid="stTextInput"] [data-focused="true"],
+    div[data-testid="stTextInput"] > div:focus-within {
+        border: none !important;
+        box-shadow: none !important;
+    }
+
+    /* ════════════════════════════════════════════
+       Botão nativo — gradiente vermelho premium
+    ════════════════════════════════════════════ */
+    div[data-testid="stButton"] { margin-top: 8px !important; width: 100% !important; }
     div[data-testid="stButton"] button {
         height: 54px !important;
         width: 100% !important;
         background: linear-gradient(135deg, #E8253A 0%, #C01535 40%, #8B0828 100%) !important;
-        border: 1px solid rgba(255,80,100,0.20) !important;
+        border: 1px solid rgba(255,80,100,0.22) !important;
         border-radius: 16px !important;
         color: #fff !important;
         font-family: 'Urbanist', sans-serif !important;
         font-size: 16px !important;
         font-weight: 700 !important;
         letter-spacing: 0.5px !important;
-        box-shadow: 0 8px 28px rgba(200,20,50,0.40),
-                    0 2px 8px rgba(230,40,60,0.25),
-                    inset 0 1px 0 rgba(255,120,140,0.18) !important;
-        transition: all 0.25s !important;
-        margin-top: 4px !important;
+        cursor: pointer !important;
+        box-shadow:
+            0 8px 28px rgba(200,20,50,0.42),
+            0 2px 8px rgba(230,40,60,0.25),
+            inset 0 1px 0 rgba(255,120,140,0.18) !important;
+        transition: transform 0.22s, box-shadow 0.22s !important;
     }
     div[data-testid="stButton"] button:hover {
         transform: translateY(-2px) !important;
-        box-shadow: 0 14px 36px rgba(200,20,50,0.55) !important;
+        box-shadow:
+            0 14px 36px rgba(200,20,50,0.58),
+            0 4px 12px rgba(230,40,60,0.32),
+            inset 0 1px 0 rgba(255,120,140,0.20) !important;
     }
+    div[data-testid="stButton"] button:active { transform: translateY(0) !important; }
     div[data-testid="stButton"] button p {
-        font-size: 16px !important;
-        font-weight: 700 !important;
-        color: #fff !important;
+        font-size: 16px !important; font-weight: 700 !important; color: #fff !important;
     }
-    /* Remove borda azul de foco padrão do Streamlit */
     div[data-testid="stButton"] button:focus {
-        box-shadow: 0 8px 28px rgba(200,20,50,0.40) !important;
         outline: none !important;
+        box-shadow: 0 8px 28px rgba(200,20,50,0.42) !important;
     }
     </style>
     """, unsafe_allow_html=True)
 
-    # ── Marca (HTML puro, só visual) ──
+    # ── Glows animados (divs reais, não pseudo-elements) ──
     st.markdown("""
-    <div class="login-outer">
+    <div class="glow-orb glow-orb-1"></div>
+    <div class="glow-orb glow-orb-2"></div>
+    <div class="glow-orb glow-orb-3"></div>
+
+    <div class="login-wrapper">
         <div class="login-brand">
             <div class="brand-pill">Inteligência de Mercado</div>
-            <div class="brand-logo">FARM<span class="red">A</span>Z<span class="red">Z</span>INI</div>
+            <div class="brand-logo">FARM<span class="r">A</span>Z<span class="r">Z</span>INI</div>
             <div class="brand-sub">Intel &mdash; Análise Competitiva em Tempo Real</div>
         </div>
+
+        <div class="login-card">
+            <div class="card-title">Bem-vindo 👋</div>
+            <div class="card-desc">Faça login para acessar o painel de inteligência.</div>
+            <span class="field-lbl">Usuário</span>
     """, unsafe_allow_html=True)
 
-    # ── Abertura do card ──
-    st.markdown("""
-    <div class="login-card">
-        <div class="card-title">Bem-vindo 👋</div>
-        <div class="card-desc">Faça login para acessar o painel de inteligência.</div>
-        <span class="field-label">Usuário</span>
-    """, unsafe_allow_html=True)
+    usuario_input = st.text_input(
+        "u", placeholder="Seu nome de usuário",
+        key="login_user_input", label_visibility="collapsed"
+    )
 
-    # ── Inputs NATIVOS do Streamlit (funcionam no Streamlit Cloud) ──
-    usuario_input = st.text_input("usuario_label", placeholder="Seu nome de usuário",
-                                   key="login_user_input", label_visibility="collapsed")
+    st.markdown('<span class="field-lbl-2">Senha</span>', unsafe_allow_html=True)
 
-    st.markdown('<span class="field-label">Senha</span>', unsafe_allow_html=True)
+    senha_input = st.text_input(
+        "p", placeholder="Sua senha de acesso",
+        type="password", key="login_pass_input",
+        label_visibility="collapsed"
+    )
 
-    senha_input = st.text_input("senha_label", placeholder="Sua senha de acesso",
-                                 type="password", key="login_pass_input",
-                                 label_visibility="collapsed")
-
-    # Erro de credenciais
     if st.session_state.login_erro:
         st.markdown("""
-        <div class="error-box">
-            ⚠️&nbsp; Usuário ou senha inválidos. Tente novamente.
+        <div class="err-box">
+            ⚠️&nbsp;&nbsp;Usuário ou senha inválidos. Tente novamente.
         </div>
         """, unsafe_allow_html=True)
 
-    # Botão NATIVO do Streamlit
     entrar = st.button("→  Entrar no painel", key="btn_login", use_container_width=True)
 
     st.markdown("""
-        <div class="divider-line">acesso restrito</div>
-        <div class="card-footer-txt">
-            Plataforma exclusiva para a rede <strong>Farmazzini</strong>.<br>
-            Em caso de dúvidas, contacte o administrador do sistema.
-        </div>
-    </div></div>
+            <div class="divider-row">acesso restrito</div>
+            <div class="card-foot">
+                Plataforma exclusiva para a rede <strong>Farmazzini</strong>.<br>
+                Em caso de dúvidas, contacte o administrador do sistema.
+            </div>
+        </div><!-- .login-card -->
+    </div><!-- .login-wrapper -->
     """, unsafe_allow_html=True)
 
     # ── Lógica de autenticação ──
@@ -307,9 +367,9 @@ if not st.session_state.autenticado:
 
     st.stop()
 
-# ─────────────────────────────────────────────
+# ═══════════════════════════════════════════════════════
 # A PARTIR DAQUI: CHATBOT ORIGINAL (sem alterações)
-# ─────────────────────────────────────────────
+# ═══════════════════════════════════════════════════════
 
 st.markdown("""
     <style>
@@ -518,7 +578,7 @@ if chat_atual and chat_atual["messages"]:
         start_time = time.time()
 
         query_pendente = ultima_msg.get("raw_query")
-        db_pendente = ultima_msg.get("saved_db", "todas")
+        db_pendente    = ultima_msg.get("saved_db", "todas")
 
         resposta = processar_mensagem(
             mensagem=query_pendente,
@@ -526,16 +586,12 @@ if chat_atual and chat_atual["messages"]:
             historico=chat_atual["messages"][:-1]
         )
 
-        tempo_minimo = 3.5
+        tempo_minimo    = 3.5
         tempo_decorrido = time.time() - start_time
         if tempo_decorrido < tempo_minimo:
             time.sleep(tempo_minimo - tempo_decorrido)
 
-        bot_text = f"""
-            {resposta}
-        """
-
-        chat_atual["messages"][-1] = {"sender": "bot", "text": bot_text}
+        chat_atual["messages"][-1] = {"sender": "bot", "text": f"\n            {resposta}\n        "}
 
         if "is_loading" in chat_atual["messages"][-1]:
             del chat_atual["messages"][-1]["is_loading"]
