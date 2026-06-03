@@ -32,6 +32,14 @@ USUARIOS_VALIDOS = {
     "Pedro Mazzini": "@2026"
 }
 
+# Token secreto simples para validar sessão persistida no localStorage
+# (Em produção, use um hash seguro ou JWT)
+import hashlib
+def _gerar_token(usuario: str) -> str:
+    """Gera um token determinístico para o usuário (simples, não criptográfico)."""
+    raw = f"farmazzini_salt_2026::{usuario}"
+    return hashlib.sha256(raw.encode()).hexdigest()[:32]
+
 # ─────────────────────────────────────────────
 # SESSION STATE — autenticação
 # ─────────────────────────────────────────────
@@ -40,330 +48,354 @@ if "autenticado" not in st.session_state:
 if "login_erro" not in st.session_state:
     st.session_state.login_erro = False
 
+# ── Verifica se chegou um token de sessão via query_params (vindo do localStorage) ──
+_params_auth = st.query_params
+if not st.session_state.autenticado and "session_token" in _params_auth:
+    _tok_recebido  = _params_auth.get("session_token", "")
+    _user_recebido = _params_auth.get("session_user", "")
+    if _user_recebido in USUARIOS_VALIDOS and _tok_recebido == _gerar_token(_user_recebido):
+        st.session_state.autenticado    = True
+        st.session_state.usuario_logado = _user_recebido
+        st.query_params.clear()
+        st.rerun()
+
+# ── Verifica action de login vinda do formulário HTML ──
+if not st.session_state.autenticado and _params_auth.get("action") == "login":
+    _u = _params_auth.get("usr", "").strip()
+    _p = _params_auth.get("pwd", "")
+    if USUARIOS_VALIDOS.get(_u) == _p:
+        st.session_state.autenticado    = True
+        st.session_state.usuario_logado = _u
+        st.session_state.login_erro     = False
+        # Injeta JS para salvar token no localStorage e redirecionar limpo
+        _token = _gerar_token(_u)
+        st.query_params.clear()
+        components.html(f"""
+        <script>
+            localStorage.setItem('fz_session_token', '{_token}');
+            localStorage.setItem('fz_session_user',  '{_u}');
+            window.parent.location.href = window.parent.location.pathname;
+        </script>
+        """, height=0)
+        st.stop()
+    else:
+        st.session_state.login_erro = True
+        st.query_params.clear()
+        st.rerun()
+
 # ─────────────────────────────────────────────
 # TELA DE LOGIN
 # ─────────────────────────────────────────────
 if not st.session_state.autenticado:
 
-    st.markdown("""
-    <style>
-    @import url('https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800&display=swap');
-    @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css');
+    # ── Injeta JS para verificar localStorage antes de mostrar o login ──
+    components.html("""
+    <script>
+        (function() {
+            var tok  = localStorage.getItem('fz_session_token');
+            var user = localStorage.getItem('fz_session_user');
+            if (tok && user) {
+                var url = window.parent.location.pathname
+                    + '?session_token=' + encodeURIComponent(tok)
+                    + '&session_user='  + encodeURIComponent(user);
+                window.parent.location.href = url;
+            }
+        })();
+    </script>
+    """, height=0)
 
-    /* ── Esconde chrome do Streamlit ── */
-    [data-testid="stHeader"],
-    [data-testid="stToolbar"],
-    [data-testid="stDecoration"],
-    [data-testid="stStatusWidget"],
-    header, footer { display:none !important; }
-
-    html, body { margin:0; padding:0; }
-
-    [data-testid="stAppViewContainer"],
-    .main, .stApp {
-        padding: 0 !important;
-        margin:  0 !important;
-        max-width: 100% !important;
-        overflow: hidden !important;
-        height: 100dvh !important;
-    }
-
-    /* ── Fundo escuro com glows vermelhos animados ── */
-    [data-testid="stAppViewContainer"] {
-        background:
-            radial-gradient(ellipse 120% 80% at 50% -10%, rgba(180,20,45,0.38) 0%, rgba(80,0,18,0.20) 40%, transparent 70%),
-            radial-gradient(ellipse 80%  60% at 85%  90%, rgba(120,0,25,0.28) 0%, transparent 60%),
-            radial-gradient(ellipse 60%  50% at 10%  80%, rgba(160,15,35,0.18) 0%, transparent 55%),
-            #08030A !important;
-    }
-
-    /* ── Glows flutuantes (pseudo-elements no body via div injetado) ── */
-    .glow-orb {
-        position: fixed; pointer-events: none; border-radius: 50%; z-index: 0;
-    }
-    .glow-orb-1 {
-        top:-20%; left:15%; width:70vw; height:70vw;
-        background: radial-gradient(ellipse at center, rgba(220,30,55,0.30) 0%, rgba(140,5,30,0.18) 35%, rgba(80,0,15,0.08) 60%, transparent 80%);
-        filter: blur(90px);
-        animation: drift1 12s ease-in-out infinite alternate;
-    }
-    .glow-orb-2 {
-        bottom:-15%; right:5%; width:55vw; height:55vw;
-        background: radial-gradient(ellipse at center, rgba(160,10,35,0.22) 0%, rgba(90,0,20,0.12) 40%, transparent 70%);
-        filter: blur(110px);
-        animation: drift2 15s ease-in-out infinite alternate;
-    }
-    .glow-orb-3 {
-        top:40%; left:-10%; width:40vw; height:40vw;
-        background: radial-gradient(ellipse at center, rgba(180,20,45,0.15) 0%, rgba(100,0,20,0.06) 50%, transparent 75%);
-        filter: blur(80px);
-        animation: drift3 18s ease-in-out infinite alternate;
-    }
-    @keyframes drift1 { from{transform:translate(0,0) scale(1)} to{transform:translate(3vw,2vh) scale(1.08)} }
-    @keyframes drift2 { from{transform:translate(0,0) scale(1)} to{transform:translate(-2vw,-3vh) scale(1.05)} }
-    @keyframes drift3 { from{transform:translate(0,0) scale(1)} to{transform:translate(4vw,-2vh) scale(1.1)} }
-
-    /* ── Centraliza bloco Streamlit ── */
-    .block-container {
-        padding: 0 !important;
-        max-width: 100% !important;
-        display: flex !important;
-        flex-direction: column !important;
-        align-items: center !important;
-        justify-content: center !important;
-        height: 100dvh !important;
-        position: relative;
-        z-index: 2;
-    }
-    [data-testid="stVerticalBlock"],
-    [data-testid="stVerticalBlockBorderWrapper"],
-    [data-testid="stAppViewBlockContainer"] {
-        display: flex !important;
-        flex-direction: column !important;
-        align-items: center !important;
-        justify-content: center !important;
-        height: 100dvh !important;
-        padding: 0 !important;
-        gap: 0 !important;
-    }
-
-    /* ── Animação de entrada ── */
-    .login-wrapper {
-        display: flex; flex-direction: column; align-items: center;
-        gap: 32px; width: 440px; position: relative; z-index: 2;
-        animation: cardIn 0.65s cubic-bezier(0.16,1,0.3,1) both;
-    }
-    @keyframes cardIn {
-        from { opacity:0; transform:translateY(28px) scale(0.97); }
-        to   { opacity:1; transform:translateY(0)    scale(1);    }
-    }
-
-    /* ── Marca ── */
-    .login-brand { display:flex; flex-direction:column; align-items:center; gap:10px; }
-    .brand-pill {
-        background: rgba(232,37,58,0.12);
-        border: 1px solid rgba(232,37,58,0.28);
-        border-radius: 100px; padding: 5px 18px;
-        font-size: 11px; font-weight: 700; letter-spacing: 2.5px;
-        text-transform: uppercase; color: #E8253A;
-        font-family: 'Urbanist', sans-serif;
-    }
-    .brand-logo {
-        font-size: 34px; font-weight: 800; letter-spacing: 4px; color: #fff;
-        font-family: 'Urbanist', sans-serif; line-height: 1;
-    }
-    .brand-logo .r { color: #E8253A; }
-    .brand-sub {
-        font-size: 13px; color: #9a9a9f; font-weight: 500; letter-spacing: 0.5px;
-        font-family: 'Urbanist', sans-serif;
-    }
-
-    /* ── Card principal ── */
-    .login-card {
-        background: rgba(10,3,14,0.93);
-        border: 1px solid rgba(200,30,55,0.14);
-        border-radius: 28px;
-        padding: 40px 44px 36px;
-        width: 440px;
-        backdrop-filter: blur(40px);
-        -webkit-backdrop-filter: blur(40px);
-        box-shadow:
-            0 32px 80px rgba(0,0,0,0.80),
-            0 0 0 1px rgba(255,255,255,0.03),
-            0 0 100px rgba(160,10,30,0.12),
-            inset 0 1px 0 rgba(255,255,255,0.04);
-    }
-    .card-title {
-        font-size: 22px; font-weight: 700; color: #fff;
-        margin-bottom: 6px; font-family: 'Urbanist', sans-serif;
-    }
-    .card-desc {
-        font-size: 14px; color: #9a9a9f; margin-bottom: 32px;
-        font-family: 'Urbanist', sans-serif;
-    }
-    .field-lbl {
-        font-size: 11px; font-weight: 700; text-transform: uppercase;
-        letter-spacing: 1px; color: #9a9a9f; margin-bottom: 8px;
-        display: block; font-family: 'Urbanist', sans-serif;
-    }
-    .field-lbl-2 {
-        font-size: 11px; font-weight: 700; text-transform: uppercase;
-        letter-spacing: 1px; color: #9a9a9f; margin-bottom: 8px;
-        display: block; font-family: 'Urbanist', sans-serif;
-        margin-top: 4px;
-    }
-
-    /* ── Caixa de erro ── */
-    .err-box {
-        background: rgba(232,37,58,0.10);
-        border: 1px solid rgba(232,37,58,0.35);
-        border-radius: 12px; padding: 12px 16px;
-        display: flex; align-items: center; gap: 10px;
-        font-size: 13px; font-weight: 500; color: #ff6b7a;
-        margin-bottom: 20px; font-family: 'Urbanist', sans-serif;
-        animation: shake 0.38s ease;
-    }
-    @keyframes shake {
-        0%,100%{transform:translateX(0)}
-        20%{transform:translateX(-6px)}
-        40%{transform:translateX(6px)}
-        60%{transform:translateX(-4px)}
-        80%{transform:translateX(4px)}
-    }
-
-    /* ── Divisor ── */
-    .divider-row {
-        display: flex; align-items: center; gap: 12px;
-        font-size: 11px; color: rgba(154,154,159,0.4); font-weight: 600;
-        margin: 16px 0 0; font-family: 'Urbanist', sans-serif;
-        text-transform: uppercase; letter-spacing: 1px;
-    }
-    .divider-row::before, .divider-row::after {
-        content:''; flex:1; height:1px; background: rgba(255,255,255,0.06);
-    }
-
-    /* ── Rodapé card ── */
-    .card-foot {
-        text-align: center; font-size: 11px; color: rgba(154,154,159,0.45);
-        line-height: 1.75; font-family: 'Urbanist', sans-serif; margin-top: 16px;
-    }
-    .card-foot strong { color: rgba(232,37,58,0.70); font-weight: 700; }
-
-    /* ════════════════════════════════════════════
-       Inputs nativos do Streamlit — visual premium
-    ════════════════════════════════════════════ */
-    div[data-testid="stTextInput"] { margin-bottom: 0 !important; }
-    div[data-testid="stTextInput"] label { display: none !important; }
-    div[data-testid="stTextInput"] > div { border-radius: 14px !important; }
-    div[data-testid="stTextInput"] input {
-        height: 52px !important;
-        background: rgba(255,255,255,0.04) !important;
-        border: 1px solid rgba(255,255,255,0.08) !important;
-        border-radius: 14px !important;
-        color: #fff !important;
-        font-family: 'Urbanist', sans-serif !important;
-        font-size: 15px !important;
-        font-weight: 500 !important;
-        padding: 0 18px !important;
-        caret-color: #E8253A !important;
-        transition: border-color 0.25s, box-shadow 0.25s, background 0.25s !important;
-    }
-    div[data-testid="stTextInput"] input:focus {
-        border-color: rgba(232,37,58,0.55) !important;
-        box-shadow: 0 0 0 3px rgba(232,37,58,0.10) !important;
-        background: rgba(232,37,58,0.04) !important;
-    }
-    div[data-testid="stTextInput"] input::placeholder {
-        color: rgba(154,154,159,0.40) !important;
-    }
-    /* Remove o wrapper azul de foco padrão do Streamlit */
-    div[data-testid="stTextInput"] [data-focused="true"],
-    div[data-testid="stTextInput"] > div:focus-within {
-        border: none !important;
-        box-shadow: none !important;
-    }
-
-    /* ════════════════════════════════════════════
-       Botão nativo — gradiente vermelho premium
-    ════════════════════════════════════════════ */
-    div[data-testid="stButton"] { margin-top: 8px !important; width: 100% !important; }
-    div[data-testid="stButton"] button {
-        height: 54px !important;
-        width: 100% !important;
-        background: linear-gradient(135deg, #E8253A 0%, #C01535 40%, #8B0828 100%) !important;
-        border: 1px solid rgba(255,80,100,0.22) !important;
-        border-radius: 16px !important;
-        color: #fff !important;
-        font-family: 'Urbanist', sans-serif !important;
-        font-size: 16px !important;
-        font-weight: 700 !important;
-        letter-spacing: 0.5px !important;
-        cursor: pointer !important;
-        box-shadow:
-            0 8px 28px rgba(200,20,50,0.42),
-            0 2px 8px rgba(230,40,60,0.25),
-            inset 0 1px 0 rgba(255,120,140,0.18) !important;
-        transition: transform 0.22s, box-shadow 0.22s !important;
-    }
-    div[data-testid="stButton"] button:hover {
-        transform: translateY(-2px) !important;
-        box-shadow:
-            0 14px 36px rgba(200,20,50,0.58),
-            0 4px 12px rgba(230,40,60,0.32),
-            inset 0 1px 0 rgba(255,120,140,0.20) !important;
-    }
-    div[data-testid="stButton"] button:active { transform: translateY(0) !important; }
-    div[data-testid="stButton"] button p {
-        font-size: 16px !important; font-weight: 700 !important; color: #fff !important;
-    }
-    div[data-testid="stButton"] button:focus {
-        outline: none !important;
-        box-shadow: 0 8px 28px rgba(200,20,50,0.42) !important;
-    }
-    </style>
-    """, unsafe_allow_html=True)
-
-    # ── Glows animados (divs reais, não pseudo-elements) ──
-    st.markdown("""
-    <div class="glow-orb glow-orb-1"></div>
-    <div class="glow-orb glow-orb-2"></div>
-    <div class="glow-orb glow-orb-3"></div>
-
-    <div class="login-wrapper">
-        <div class="login-brand">
-            <div class="brand-pill">Inteligência de Mercado</div>
-            <div class="brand-logo">FARM<span class="r">A</span>Z<span class="r">Z</span>INI</div>
-            <div class="brand-sub">Intel &mdash; Análise Competitiva em Tempo Real</div>
-        </div>
-
-        <div class="login-card">
-            <div class="card-title">Bem-vindo 👋</div>
-            <div class="card-desc">Faça login para acessar o painel de inteligência.</div>
-            <span class="field-lbl">Usuário</span>
-    """, unsafe_allow_html=True)
-
-    usuario_input = st.text_input(
-        "u", placeholder="Seu nome de usuário",
-        key="login_user_input", label_visibility="collapsed"
-    )
-
-    st.markdown('<span class="field-lbl-2">Senha</span>', unsafe_allow_html=True)
-
-    senha_input = st.text_input(
-        "p", placeholder="Sua senha de acesso",
-        type="password", key="login_pass_input",
-        label_visibility="collapsed"
-    )
-
+    erro_html = ""
     if st.session_state.login_erro:
-        st.markdown("""
+        erro_html = """
         <div class="err-box">
             ⚠️&nbsp;&nbsp;Usuário ou senha inválidos. Tente novamente.
         </div>
-        """, unsafe_allow_html=True)
+        """
 
-    entrar = st.button("→  Entrar no painel", key="btn_login", use_container_width=True)
+    login_page = f"""<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{{ box-sizing:border-box; margin:0; padding:0; }}
+html, body {{
+    font-family: 'Urbanist', sans-serif;
+    height: 100%; width: 100%;
+    background: transparent;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+}}
 
+/* Glows */
+.glow-orb {{ position:fixed; pointer-events:none; border-radius:50%; z-index:0; }}
+.glow-orb-1 {{
+    top:-20%; left:15%; width:70vw; height:70vw;
+    background: radial-gradient(ellipse at center, rgba(220,30,55,0.30) 0%, rgba(140,5,30,0.18) 35%, rgba(80,0,15,0.08) 60%, transparent 80%);
+    filter: blur(90px);
+    animation: drift1 12s ease-in-out infinite alternate;
+}}
+.glow-orb-2 {{
+    bottom:-15%; right:5%; width:55vw; height:55vw;
+    background: radial-gradient(ellipse at center, rgba(160,10,35,0.22) 0%, rgba(90,0,20,0.12) 40%, transparent 70%);
+    filter: blur(110px);
+    animation: drift2 15s ease-in-out infinite alternate;
+}}
+@keyframes drift1 {{ from{{transform:translate(0,0) scale(1)}} to{{transform:translate(3vw,2vh) scale(1.08)}} }}
+@keyframes drift2 {{ from{{transform:translate(0,0) scale(1)}} to{{transform:translate(-2vw,-3vh) scale(1.05)}} }}
+
+/* Wrapper */
+.login-wrapper {{
+    display:flex; flex-direction:column; align-items:center;
+    gap:28px; width:440px; position:relative; z-index:2;
+    animation: cardIn 0.65s cubic-bezier(0.16,1,0.3,1) both;
+}}
+@keyframes cardIn {{
+    from {{ opacity:0; transform:translateY(28px) scale(0.97); }}
+    to   {{ opacity:1; transform:translateY(0)    scale(1);    }}
+}}
+
+/* Marca */
+.login-brand {{ display:flex; flex-direction:column; align-items:center; gap:10px; }}
+.brand-pill {{
+    background: rgba(232,37,58,0.12);
+    border: 1px solid rgba(232,37,58,0.28);
+    border-radius: 100px; padding: 5px 18px;
+    font-size: 11px; font-weight: 700; letter-spacing: 2.5px;
+    text-transform: uppercase; color: #E8253A;
+}}
+.brand-logo {{
+    font-size: 36px; font-weight: 800; letter-spacing: 5px; color: #fff; line-height: 1;
+}}
+.brand-logo .zz {{ color: #E8253A; }}
+.brand-sub {{ font-size: 13px; color: #9a9a9f; font-weight: 500; letter-spacing: 0.5px; }}
+
+/* Card */
+.login-card {{
+    background: rgba(10,3,14,0.93);
+    border: 1px solid rgba(200,30,55,0.14);
+    border-radius: 28px;
+    padding: 40px 44px 36px;
+    width: 440px;
+    backdrop-filter: blur(40px);
+    box-shadow:
+        0 32px 80px rgba(0,0,0,0.80),
+        0 0 0 1px rgba(255,255,255,0.03),
+        0 0 100px rgba(160,10,30,0.12),
+        inset 0 1px 0 rgba(255,255,255,0.04);
+}}
+.card-title {{ font-size: 22px; font-weight: 700; color: #fff; margin-bottom: 6px; }}
+.card-desc  {{ font-size: 14px; color: #9a9a9f; margin-bottom: 28px; }}
+.field-lbl  {{
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1px; color: #9a9a9f; margin-bottom: 8px;
+    display: block;
+}}
+.field-lbl-2 {{
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1px; color: #9a9a9f; margin-bottom: 8px; margin-top: 20px;
+    display: block;
+}}
+
+/* Inputs */
+.field-wrap {{ position: relative; }}
+.field-icon {{
+    position: absolute; left: 16px; top: 50%; transform: translateY(-50%);
+    color: rgba(154,154,159,0.5); font-size: 16px; pointer-events: none;
+}}
+.field-wrap input {{
+    width: 100%; height: 52px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    color: #fff; font-family: 'Urbanist', sans-serif;
+    font-size: 15px; font-weight: 500;
+    padding: 0 48px 0 46px;
+    caret-color: #E8253A;
+    outline: none;
+    transition: border-color 0.25s, box-shadow 0.25s, background 0.25s;
+}}
+.field-wrap input:focus {{
+    border-color: rgba(232,37,58,0.55);
+    box-shadow: 0 0 0 3px rgba(232,37,58,0.10);
+    background: rgba(232,37,58,0.04);
+}}
+.field-wrap input::placeholder {{ color: rgba(154,154,159,0.40); }}
+
+/* Toggle senha */
+.toggle-eye {{
+    position: absolute; right: 16px; top: 50%; transform: translateY(-50%);
+    color: rgba(154,154,159,0.5); cursor: pointer; font-size: 16px;
+    transition: color 0.2s;
+}}
+.toggle-eye:hover {{ color: #E8253A; }}
+
+/* Erro */
+.err-box {{
+    background: rgba(232,37,58,0.10);
+    border: 1px solid rgba(232,37,58,0.35);
+    border-radius: 12px; padding: 12px 16px;
+    display: flex; align-items: center; gap: 10px;
+    font-size: 13px; font-weight: 500; color: #ff6b7a;
+    margin-bottom: 20px;
+    animation: shake 0.38s ease;
+}}
+@keyframes shake {{
+    0%,100%{{transform:translateX(0)}}
+    20%{{transform:translateX(-6px)}}
+    40%{{transform:translateX(6px)}}
+    60%{{transform:translateX(-4px)}}
+    80%{{transform:translateX(4px)}}
+}}
+
+/* Botão */
+.btn-login {{
+    width: 100%; height: 54px; margin-top: 28px;
+    background: linear-gradient(135deg, #E8253A 0%, #C01535 40%, #8B0828 100%);
+    border: 1px solid rgba(255,80,100,0.22);
+    border-radius: 16px;
+    color: #fff; font-family: 'Urbanist', sans-serif;
+    font-size: 16px; font-weight: 700; letter-spacing: 0.5px;
+    cursor: pointer;
+    box-shadow:
+        0 8px 28px rgba(200,20,50,0.42),
+        0 2px 8px rgba(230,40,60,0.25),
+        inset 0 1px 0 rgba(255,120,140,0.18);
+    transition: transform 0.22s, box-shadow 0.22s;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+}}
+.btn-login:hover {{
+    transform: translateY(-2px);
+    box-shadow: 0 14px 36px rgba(200,20,50,0.58), 0 4px 12px rgba(230,40,60,0.32);
+}}
+.btn-login:active {{ transform: translateY(0); }}
+.btn-login .spinner {{
+    width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: #fff; border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    display: none;
+}}
+.btn-login.loading .spinner {{ display: block; }}
+.btn-login.loading .btn-text {{ opacity: 0.7; }}
+@keyframes spin {{ to {{ transform: rotate(360deg); }} }}
+
+/* Divisor + rodapé */
+.divider-row {{
+    display: flex; align-items: center; gap: 12px;
+    font-size: 11px; color: rgba(154,154,159,0.4); font-weight: 600;
+    margin: 20px 0 0; text-transform: uppercase; letter-spacing: 1px;
+}}
+.divider-row::before, .divider-row::after {{
+    content:''; flex:1; height:1px; background: rgba(255,255,255,0.06);
+}}
+.card-foot {{
+    text-align: center; font-size: 11px; color: rgba(154,154,159,0.45);
+    line-height: 1.75; margin-top: 16px;
+}}
+.card-foot strong {{ color: rgba(232,37,58,0.70); font-weight: 700; }}
+</style>
+</head>
+<body>
+
+<div class="glow-orb glow-orb-1"></div>
+<div class="glow-orb glow-orb-2"></div>
+
+<div class="login-wrapper">
+
+    <!-- Marca -->
+    <div class="login-brand">
+        <div class="brand-pill">Inteligência de Mercado</div>
+        <div class="brand-logo">FARM A<span class="zz">ZZ</span>INI</div>
+        <div class="brand-sub">Intel &mdash; Análise Competitiva em Tempo Real</div>
+    </div>
+
+    <!-- Card -->
+    <div class="login-card">
+        <div class="card-title">Bem-vindo de volta 👋</div>
+        <div class="card-desc">Faça login para acessar o painel de inteligência.</div>
+
+        {erro_html}
+
+        <span class="field-lbl">Usuário</span>
+        <div class="field-wrap">
+            <span class="field-icon">&#9901;</span>
+            <input id="inp-user" type="text" placeholder="Seu nome de usuário" autocomplete="username" autofocus>
+        </div>
+
+        <span class="field-lbl-2">Senha</span>
+        <div class="field-wrap">
+            <span class="field-icon">&#128274;</span>
+            <input id="inp-pass" type="password" placeholder="Sua senha de acesso" autocomplete="current-password">
+            <span class="toggle-eye" id="eye-toggle" onclick="toggleSenha()">&#128065;</span>
+        </div>
+
+        <button class="btn-login" id="btn-login" onclick="fazerLogin()">
+            <div class="spinner"></div>
+            <span class="btn-text">&#8594;&nbsp; Entrar no painel</span>
+        </button>
+
+        <div class="divider-row">acesso restrito</div>
+        <div class="card-foot">
+            Plataforma exclusiva para a rede <strong>Farmazzini</strong>.<br>
+            Em caso de dúvidas, contacte o administrador do sistema.
+        </div>
+    </div>
+
+</div>
+
+<script>
+// Permite enviar com Enter
+document.getElementById('inp-user').addEventListener('keydown', function(e) {{
+    if (e.key === 'Enter') document.getElementById('inp-pass').focus();
+}});
+document.getElementById('inp-pass').addEventListener('keydown', function(e) {{
+    if (e.key === 'Enter') fazerLogin();
+}});
+
+function toggleSenha() {{
+    var inp = document.getElementById('inp-pass');
+    inp.type = inp.type === 'password' ? 'text' : 'password';
+}}
+
+function fazerLogin() {{
+    var btn  = document.getElementById('btn-login');
+    var user = document.getElementById('inp-user').value.trim();
+    var pass = document.getElementById('inp-pass').value;
+    if (!user || !pass) return;
+
+    btn.classList.add('loading');
+    btn.disabled = true;
+
+    // Envia credenciais via query_params para o Streamlit processar
+    var params = new URLSearchParams({{
+        action: 'login',
+        usr:    user,
+        pwd:    pass
+    }});
+    window.parent.location.search = params.toString();
+}}
+</script>
+</body>
+</html>"""
+
+    components.html(login_page, height=10000, scrolling=False)
     st.markdown("""
-            <div class="divider-row">acesso restrito</div>
-            <div class="card-foot">
-                Plataforma exclusiva para a rede <strong>Farmazzini</strong>.<br>
-                Em caso de dúvidas, contacte o administrador do sistema.
-            </div>
-        </div><!-- .login-card -->
-    </div><!-- .login-wrapper -->
+    <style>
+    [data-testid="stHeader"],[data-testid="stToolbar"],[data-testid="stDecoration"],
+    [data-testid="stStatusWidget"],header,footer{{display:none!important;}}
+    html,body,[data-testid="stAppViewContainer"],[data-testid="stAppViewBlockContainer"],
+    [data-testid="stVerticalBlock"],[data-testid="stVerticalBlockBorderWrapper"],
+    .main,.block-container,.stApp{{
+        padding:0!important;margin:0!important;max-width:100%!important;
+        background-color:#08030A!important;overflow:hidden!important;
+        height:100dvh!important;min-height:unset!important;
+    }}
+    iframe{{display:block!important;border:none!important;width:100vw!important;
+        height:100dvh!important;margin:0!important;padding:0!important;
+        position:fixed!important;top:0!important;left:0!important;}}
+    </style>
     """, unsafe_allow_html=True)
-
-    # ── Lógica de autenticação ──
-    if entrar:
-        if USUARIOS_VALIDOS.get(usuario_input.strip()) == senha_input:
-            st.session_state.autenticado = True
-            st.session_state.usuario_logado = usuario_input.strip()
-            st.session_state.login_erro = False
-            st.rerun()
-        else:
-            st.session_state.login_erro = True
-            st.rerun()
 
     st.stop()
 
