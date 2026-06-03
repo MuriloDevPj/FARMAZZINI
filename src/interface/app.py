@@ -7,7 +7,7 @@
 ║  O processamento na AWS demorava e deixava o iframe em ecrã      ║
 ║  preto ou travado devido à latência de rede em navegação direta. ║
 ║                                                                  ║
-║  SOLUÇÃO DE FLUIDEZ MÁXIMA:                                      ║
+║  SOLUÇÃO DE FLUIDEZ MÁXIMA COM TEMPO MÍNIMO DE TRANSIÇÃO:        ║
 ║  1. A ação "send" guarda a pergunta e adiciona um balão de       ║
 ║     loading com a animação clássica de 3 pontos (dot-flashing).  ║
 ║  2. O Streamlit limpa a URL e atualiza o iframe em milissegundos.║
@@ -15,12 +15,14 @@
 ║     Isto garante que o utilizador veja a animação de carregamento║
 ║     a pulsar imediatamente no ecrã, sem congelar ou escurecer.   ║
 ║  4. No segundo plano (após renderização), o script processa      ║
-║     a AWS e substitui a mensagem de carregamento de forma limpa. ║
+║     a AWS, respeita um tempo mínimo de exibição de 2s e substitui║
+║     a mensagem de carregamento de forma limpa e suave.           ║
 ╚══════════════════════════════════════════════════════════════════╝
 """
 
 import sys
 import os
+import time  # Adicionado para medir e garantir o tempo mínimo de transição
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import streamlit as st
@@ -246,6 +248,9 @@ if chat_atual and chat_atual["messages"]:
     ultima_msg = chat_atual["messages"][-1]
 
     if ultima_msg.get("is_loading") is True:
+        # Registamos o início do processamento para controlar o tempo mínimo de visualização
+        start_time = time.time()
+
         # Recupera as informações do estado pendente
         query_pendente = ultima_msg.get("raw_query")
         db_pendente = ultima_msg.get("saved_db", "todas")
@@ -256,6 +261,12 @@ if chat_atual and chat_atual["messages"]:
             db_filter=db_pendente,
             historico=chat_atual["messages"][:-1]  # Envia o histórico sem o bloco temporário de loading
         )
+
+        # Calculamos o tempo decorrido e garantimos pelo menos 2.0 segundos de exibição fluida
+        tempo_minimo = 2.0
+        tempo_decorrido = time.time() - start_time
+        if tempo_decorrido < tempo_minimo:
+            time.sleep(tempo_minimo - tempo_decorrido)
 
         bot_text = f"""
             {resposta}
