@@ -788,14 +788,23 @@ function sendMsg() {{
     if(!chat) {{ inp.disabled = false; return; }}
 
     // Exibe o overlay de loading com a pergunta do usuário ANTES do redirect
-    // Isso elimina a tela preta: o usuário vê a animação durante todo o processamento
     showLoadingOverlay(val);
 
+    // CORREÇÃO: serializa o estado COMPLETO dos chats (incluindo os criados
+    // localmente no JS) e envia para o Python via query param 'state'.
+    // Isso evita que chats criados com newChat() sejam perdidos no recarregamento.
+    const statePayload = JSON.stringify({{
+        chats:          chats,
+        active_chat_id: activeChatId,
+        active_db:      activeDb,
+        next_id:        nextId,
+    }});
+
     const params = new URLSearchParams({{
-        action:  'send',
-        msg:     val,
-        db:      activeDb,
-        chat_id: activeChatId,
+        action: 'send',
+        msg:    val,
+        db:     activeDb,
+        state:  statePayload,
     }});
 
     const targetUrl = window.location.origin + window.location.pathname + '?' + params.toString();

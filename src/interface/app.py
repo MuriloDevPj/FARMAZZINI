@@ -55,6 +55,21 @@ st.markdown("""
 # ─────────────────────────────────────────────
 # SESSION STATE
 # ─────────────────────────────────────────────
+# CORREÇÃO: restaura o estado completo dos chats enviado pelo frontend
+# via query param 'state' (JSON serializado pelo JavaScript antes do redirect).
+# Isso garante que chats criados localmente no JS (newChat, rename, etc.)
+# sobrevivam ao recarregamento do Streamlit.
+_params_init = st.query_params
+if "state" in _params_init:
+    try:
+        _state = json.loads(_params_init.get("state"))
+        st.session_state.chats         = _state.get("chats",         st.session_state.get("chats", []))
+        st.session_state.active_chat_id = _state.get("active_chat_id", st.session_state.get("active_chat_id", 1))
+        st.session_state.active_db      = _state.get("active_db",      st.session_state.get("active_db", "todas"))
+        st.session_state.next_id        = _state.get("next_id",        st.session_state.get("next_id", 2))
+    except (json.JSONDecodeError, Exception):
+        pass  # fallback para os valores padrão abaixo
+
 if "chats" not in st.session_state:
     st.session_state.chats = [
         {
