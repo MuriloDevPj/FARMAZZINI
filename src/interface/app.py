@@ -88,9 +88,8 @@ if not st.session_state.autenticado:
             var tok  = localStorage.getItem('fz_session_token');
             var user = localStorage.getItem('fz_session_user');
             if (tok && user) {
-                // CORREÇÃO: constrói href completo para forçar reload real
-                var base = window.parent.location.pathname;
-                var url  = base
+                // CORREÇÃO: href completo para forçar reload real da página pai
+                var url = window.parent.location.pathname
                     + '?session_token=' + encodeURIComponent(tok)
                     + '&session_user='  + encodeURIComponent(user);
                 window.parent.location.href = url;
@@ -363,14 +362,15 @@ function fazerLogin() {{
     btn.disabled = true;
 
     // Envia credenciais via query_params para o Streamlit processar
-    // CORREÇÃO: usa href completo para garantir reload real da página pai
+    // CORREÇÃO: usa href completo (pathname + search) para forçar
+    // um reload real da página pai. Apenas trocar .search não
+    // dispara o rerun do Streamlit quando chamado dentro de iframe.
     var params = new URLSearchParams({{
         action: 'login',
         usr:    user,
         pwd:    pass
     }});
-    var base = window.parent.location.pathname;
-    window.parent.location.href = base + '?' + params.toString();
+    window.parent.location.href = window.parent.location.pathname + '?' + params.toString();
 }}
 </script>
 </body>
