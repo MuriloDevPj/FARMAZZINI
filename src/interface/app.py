@@ -14,6 +14,7 @@ import os
 # onde o CWD pode ser a raiz do repo e não a pasta do app.py
 sys.path.insert(0, os.path.dirname(__file__))
 
+
 import streamlit as st
 import streamlit.components.v1 as components
 import json
