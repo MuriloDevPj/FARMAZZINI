@@ -27,7 +27,8 @@ html, body {{
     background:var(--bg-main);
     color:var(--text-main);
     height:100vh;
-    min-height:100vh;
+    max-height:100vh;
+    min-height:unset;
     margin:0;
     padding:0;
     overflow:hidden;
@@ -45,7 +46,7 @@ html, body {{
     background:radial-gradient(circle,rgba(230,57,70,0.15) 0%,rgba(139,0,0,0.03) 60%,transparent 80%);
     filter:blur(100px); z-index:1; pointer-events:none; border-radius:50%;
 }}
-.app-shell {{ display:flex; width:100%; height:100vh; min-height:100vh; position:relative; z-index:2; }}
+.app-shell {{ display:flex; width:100%; height:100vh; position:relative; z-index:2; overflow:hidden; }}
 
 /* ── SIDEBAR ── */
 .sidebar {{
@@ -144,7 +145,7 @@ html, body {{
     flex-grow:1; display:flex; flex-direction:column;
     background:var(--bg-card); overflow:hidden;
     position:relative; z-index:2;
-    width:100%; height:100vh; min-height:100vh;
+    width:100%; height:100vh;
     transition:padding-left 0.35s cubic-bezier(0.25,0.8,0.25,1);
     padding-left:352px;
 }}
