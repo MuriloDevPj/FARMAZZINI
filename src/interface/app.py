@@ -1,19 +1,19 @@
 """
 ╔══════════════════════════════════════════════════════════════════╗
 ║           FARMAZZINI INTEL — APP PRINCIPAL (STREAMLIT)          ║
-║              VERSÃO ULTRA-FLUIDA COM SEPARAÇÃO DE ESTADOS        ║
+║              VERSÃO ULTRA-FLUIDA COM TRÊS PONTOS DE LOADING      ║
 ║                                                                  ║
 ║  PROBLEMA RESOLVIDO:                                             ║
-║  O processamento na AWS demorava e deixava o iframe em tela      ║
-║  preta ou travada devido à latência de rede em navegação direta. ║
+║  O processamento na AWS demorava e deixava o iframe em ecrã      ║
+║  preto ou travado devido à latência de rede em navegação direta. ║
 ║                                                                  ║
 ║  SOLUÇÃO DE FLUIDEZ MÁXIMA:                                      ║
-║  1. A ação "send" salva a pergunta e adiciona um balão de        ║
-║     loading HTML com ícone de rotação nativo instantaneamente.   ║
+║  1. A ação "send" guarda a pergunta e adiciona um balão de       ║
+║     loading com a animação clássica de 3 pontos (dot-flashing).  ║
 ║  2. O Streamlit limpa a URL e atualiza o iframe em milissegundos.║
 ║  3. O renderizador HTML (components.html) é executado PRIMEIRO.  ║
-║     Isso garante que o usuário veja a animação de carregamento   ║
-║     rodando imediatamente na tela, sem congelar ou escurecer.    ║
+║     Isto garante que o utilizador veja a animação de carregamento║
+║     a pulsar imediatamente no ecrã, sem congelar ou escurecer.   ║
 ║  4. No segundo plano (após renderização), o script processa      ║
 ║     a AWS e substitui a mensagem de carregamento de forma limpa. ║
 ╚══════════════════════════════════════════════════════════════════╝
@@ -101,34 +101,31 @@ if "action" in params:
             )
 
             if chat:
-                # Evita duplicar mensagem se o Streamlit rerenderizar
-                # sem reprocessar (ex: hot reload em dev)
+                # Evita duplicar mensagem se o Streamlit re-renderizar
+                # sem reprocessar (ex: hot reload em desenvolvimento)
                 ultima = chat["messages"][-1] if chat["messages"] else {}
                 ja_tem = (ultima.get("sender") == "user" and ultima.get("text") == user_msg)
 
                 if not ja_tem:
-                    # 1. Adiciona a mensagem do usuário instantaneamente
+                    # 1. Adiciona a mensagem do utilizador instantaneamente
                     chat["messages"].append({"sender": "user", "text": user_msg})
 
                     if chat["title"].startswith("Nova Consulta"):
                         chat["title"] = (user_msg[:20] + "...") if len(user_msg) > 20 else user_msg
 
-                    # 2. ADICIONA O LOADING HTML IMEDIATAMENTE (Atualização em milissegundos)
-                    # Não executa a query pesada aqui para liberar o renderizador do iframe
-                    loading_html = f"""
-                    <div class="loading-container" style="display: flex; align-items: center; gap: 12px; padding: 8px 0; color: #a1a1aa;">
-                        <i class="fa-solid fa-circle-notch fa-spin" style="font-size: 20px; color: #E8253A;"></i>
-                        <span style="font-family: 'Urbanist', sans-serif; font-size: 15px; font-weight: 500; letter-spacing: 0.3px;">
-                            Buscando dados na infraestrutura AWS Farmazzini...
-                        </span>
+                    # 2. ADICIONA OS 3 PONTOS DE CARREGAMENTO IMEDIATAMENTE (dot-flashing)
+                    # Não executa a query pesada aqui para manter o ecrã instantâneo
+                    loading_html = """
+                    <div class="loading-container" style="display: flex; align-items: center; padding: 12px 18px; min-height: 40px;">
+                        <div class="dot-flashing"></div>
                     </div>
                     """
                     chat["messages"].append({
                         "sender": "bot",
                         "text": loading_html,
                         "is_loading": True,       # Flag para identificar o processamento pendente
-                        "raw_query": user_msg,    # Salva a pergunta para usar na AWS no ciclo estável
-                        "saved_db": db_filter     # Salva o filtro de banco de dados correspondente
+                        "raw_query": user_msg,    # Guarda a pergunta para usar na AWS no ciclo seguinte
+                        "saved_db": db_filter     # Guarda o filtro de base de dados correspondente
                     })
 
     elif action == "new_chat":
@@ -174,11 +171,11 @@ active_db      = st.session_state.active_db
 next_id        = st.session_state.next_id
 
 # ─────────────────────────────────────────────
-# RENDERIZAR HTML (EXECUTADO ANTES DO PROCESSAMENTO DA AWS!)
+# RENDERIZAR HTML (PRIMEIRO PASSO)
 # ─────────────────────────────────────────────
 # Ao renderizar o HTML antes de iniciar a query lenta no segundo plano,
 # o navegador recebe e desenha imediatamente a animação de loading no chat.
-# Isso impede que o iframe fique escuro ou congelado durante o tempo de resposta da AWS.
+# Isto impede que o iframe fique escuro ou congelado durante o tempo de resposta da AWS.
 from ui import render_full_ui
 
 html_content = render_full_ui(
@@ -231,14 +228,14 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Desenha o iframe na tela contendo o estado atual (pergunta e o loading animado)
+# Desenha o iframe no ecrã contendo o estado atual (pergunta e o loading animado dos 3 pontos)
 components.html(html_content, height=10000, scrolling=False)
 
 # ─────────────────────────────────────────────
-# SEGUNDO PLANO: PROCESSAR PIPELINE PESADO DA AWS (EXECUTADO DEPOIS DO RENDER)
+# SEGUNDO PLANO: PROCESSAR PIPELINE PESADO DA AWS (SEGUNDO PASSO)
 # ─────────────────────────────────────────────
-# Com o HTML enviado ao cliente, o script continua executando silenciosamente.
-# Se detectar que a última mensagem requer processamento pesado, roda o pipeline 
+# Com o HTML enviado ao cliente, o script continua a executar silenciosamente.
+# Se detetar que a última mensagem requer processamento pesado, corre o pipeline 
 # da AWS em background sem prejudicar a responsividade visual do iframe ativo.
 chat_atual = next(
     (c for c in st.session_state.chats if c["id"] == st.session_state.active_chat_id),
@@ -253,7 +250,7 @@ if chat_atual and chat_atual["messages"]:
         query_pendente = ultima_msg.get("raw_query")
         db_pendente = ultima_msg.get("saved_db", "todas")
 
-        # Roda o processamento da AWS em segundo plano estável, sem bloquear a exibição da tela
+        # Corre o processamento da AWS em segundo plano estável, sem bloquear a exibição do ecrã
         resposta = processar_mensagem(
             mensagem=query_pendente,
             db_filter=db_pendente,
@@ -269,7 +266,7 @@ if chat_atual and chat_atual["messages"]:
             </div>
         """
         
-        # Substitui o bloco de carregamento temporário pelo HTML final com os botões de ação
+        # Substitui o bloco de carregamento temporário de 3 pontos pelo HTML final com os botões de ação
         chat_atual["messages"][-1] = {"sender": "bot", "text": bot_text}
         
         # Desmarca a flag para que o próximo ciclo não re-execute o bloco de processamento
