@@ -60,13 +60,84 @@ Regras Estritas:
    - Queries com Window Functions (ROW_NUMBER, RANK) só são aceitáveis quando a subquery
      já filtra por partição (farmacia + ano + mes + dia) E por nome de produto.
 
-6. Exemplos de filtro correto:
-   - "produtos da FarmaPonte" → SELECT nome, preco_original, disponibilidade FROM tb_processed WHERE farmacia='FarmaPonte' AND ano='2026' AND mes='05' AND dia='26' LIMIT 50
-   - "menor preço da dipirona na Vera Cruz" → SELECT nome, preco_pix FROM tb_processed WHERE nome LIKE '%Dipirona%' AND farmacia='Vera Cruz' AND ano='2026' AND mes='05' AND dia='26' ORDER BY preco_pix ASC LIMIT 10
+6. REGRA OBRIGATÓRIA DE COLUNAS (NUNCA viole esta regra):
+   - Toda query que usa SELECT com colunas individuais (não COUNT/MIN/AVG/MAX agregados)
+     DEVE incluir OBRIGATORIAMENTE: farmacia, disponibilidade.
+   - Toda query que lista produtos individuais DEVE incluir: farmacia, nome, disponibilidade.
+   - Exceção permitida: queries de agregação pura (GROUP BY + funções de agregação sem
+     colunas individuais de produto) não precisam de disponibilidade na lista do SELECT,
+     MAS devem usar GROUP BY farmacia, disponibilidade com COUNT(*).
+
+7. Exemplos de filtro correto:
+   - "produtos da FarmaPonte" → SELECT farmacia, nome, preco_original, disponibilidade FROM tb_processed WHERE farmacia='FarmaPonte' AND ano='2026' AND mes='05' AND dia='26' LIMIT 50
+   - "menor preço da dipirona na Vera Cruz" → SELECT farmacia, nome, preco_pix, disponibilidade FROM tb_processed WHERE nome LIKE '%Dipirona%' AND farmacia='Vera Cruz' AND ano='2026' AND mes='05' AND dia='26' ORDER BY preco_pix ASC LIMIT 10
    - "produto mais barato do mercado" → SELECT farmacia, MIN(preco_pix) as menor_pix FROM tb_processed WHERE ano='2026' AND mes='05' AND dia='26' GROUP BY farmacia
    - "comparar preços entre farmácias" → SELECT farmacia, AVG(preco_original) as preco_medio, AVG(preco_pix) as medio_pix FROM tb_processed WHERE ano='2026' AND mes='05' AND dia='26' GROUP BY farmacia
    - "estoque crítico" → SELECT farmacia, disponibilidade, COUNT(*) as total FROM tb_processed WHERE ano='2026' AND mes='05' AND dia='26' GROUP BY farmacia, disponibilidade ORDER BY total DESC LIMIT 20
+   - "preços de medicamentos" → SELECT farmacia, nome, preco_pix, preco_cartao, disponibilidade FROM tb_processed WHERE ano='2026' AND mes='05' AND dia='26' LIMIT 50
 """
+
+
+def _injetar_colunas_essenciais(sql: str) -> str:
+    """
+    Camada de segurança determinística (pós-LLM).
+
+    Garante que toda query de produto individual contenha farmacia e disponibilidade
+    no SELECT, independentemente do que o Bedrock gerou.
+
+    Lógica:
+    - Só age em queries SELECT simples (não GROUP BY agregado puro).
+    - Nunca toca queries com GROUP BY que já são agregações (COUNT/MIN/AVG).
+    - Injeta apenas o que estiver faltando — não duplica colunas.
+    """
+    import re
+
+    sql_stripped = sql.strip()
+    sql_upper    = sql_stripped.upper()
+
+    # Não processa queries que não são SELECT simples
+    if not sql_upper.startswith("SELECT"):
+        return sql_stripped
+
+    # Queries de agregação pura (GROUP BY com funções de agregação) — não mexer
+    # Detecta: tem GROUP BY E tem COUNT/SUM/AVG/MIN/MAX no SELECT
+    tem_group_by    = "GROUP BY" in sql_upper
+    tem_agregacao   = bool(re.search(r"(COUNT|SUM|AVG|MIN|MAX)\s*\(", sql_upper))
+    if tem_group_by and tem_agregacao:
+        return sql_stripped
+
+    # Extrai a lista do SELECT (entre SELECT e FROM)
+    match = re.match(r"(?i)(SELECT\s+)(.*?)(\s+FROM\s)", sql_stripped, re.DOTALL)
+    if not match:
+        return sql_stripped
+
+    prefix       = match.group(1)   # "SELECT "
+    colunas_str  = match.group(2)   # "nome, preco_pix, ..."
+    suffix       = sql_stripped[match.end(2):]  # " FROM tb_processed WHERE ..."
+
+    # Normaliza para comparação
+    colunas_lower = colunas_str.lower()
+
+    # Verifica quais colunas essenciais estão faltando
+    falta_farmacia       = "farmacia" not in colunas_lower
+    falta_disponibilidade = "disponibilidade" not in colunas_lower
+
+    # Não injeta se a query já tem SELECT * (já traz tudo)
+    if colunas_str.strip() == "*":
+        return sql_stripped
+
+    injecoes = []
+    if falta_farmacia:
+        injecoes.append("farmacia")
+    if falta_disponibilidade:
+        injecoes.append("disponibilidade")
+
+    if not injecoes:
+        return sql_stripped  # nada a fazer
+
+    novas_colunas = ", ".join(injecoes) + ", " + colunas_str
+    sql_corrigido = prefix + novas_colunas + suffix
+    return sql_corrigido
 
 
 def gerar_sql_com_bedrock(pergunta: str) -> tuple:
@@ -100,6 +171,9 @@ def gerar_sql_com_bedrock(pergunta: str) -> tuple:
             sql = sql.split("```sql")[1].split("```")[0].strip()
         elif "```" in sql:
             sql = sql.split("```")[1].split("```")[0].strip()
+
+        # Camada de segurança: garante farmacia + disponibilidade em queries de produto
+        sql = _injetar_colunas_essenciais(sql)
 
         return sql, None
     except Exception as e:
