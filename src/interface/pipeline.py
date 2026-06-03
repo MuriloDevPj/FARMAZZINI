@@ -244,18 +244,9 @@ def processar_mensagem(mensagem: str, db_filter: str = "todas", historico: list 
     # 2. Pipeline falhou
     if not resultado["sucesso"]:
         sql_bloco = _bloco_sql(resultado["sql"]) if resultado.get("sql") else ""
-        erro_msg  = resultado.get("erro", "Erro desconhecido.")
-        dica = ""
-        if erro_msg and "FAILED" in erro_msg and not any(k in erro_msg for k in [":", "COLUMN", "TABLE", "syntax"]):
-            dica = "<br><span style='color:#9a9a9f;font-size:12px;'>&#128161; Step Function retornou FAILED sem detalhes &mdash; verifique permissões IAM e ARN da state machine.</span>"
-        elif erro_msg and ("NoSuchKey" in erro_msg or "S3" in erro_msg):
-            dica = "<br><span style='color:#9a9a9f;font-size:12px;'>&#128161; Resultado não encontrado no S3 &mdash; Athena pode ainda estar escrevendo. Tente novamente.</span>"
-        elif erro_msg and any(k in erro_msg.upper() for k in ["COLUMN", "TABLE", "SYNTAX"]):
-            dica = "<br><span style='color:#9a9a9f;font-size:12px;'>&#128161; Erro de SQL &mdash; verifique nome da tabela, colunas e partições.</span>"
         return f"""
         <span style="color:#f87171;font-weight:600;">❌ Erro na consulta</span><br>
-        <span style="color:#9a9a9f;font-size:13px;">{erro_msg}</span>
-        {dica}
+        <span style="color:#9a9a9f;font-size:13px;">{resultado.get('erro', 'Erro desconhecido.')}</span>
         {sql_bloco}
         """
 
@@ -276,28 +267,15 @@ def processar_mensagem(mensagem: str, db_filter: str = "todas", historico: list 
     chart_json = _chart_payload(df)
 
     # Botão de gráfico só aparece quando há dados competitivos suficientes
-    # CORREÇÃO: JSON embutido em onclick quebra por causa das aspas duplas e simples.
-    # Solução: gravar o payload num <script> com ID único e referenciar por variável JS.
-    import uuid as _uuid
     btn_grafico = ""
-    script_payload = ""
     if chart_json:
-        payload_var = "chartData_" + _uuid.uuid4().hex[:8]
-        # chart_json já tem ensure_ascii=False e &#39; — desfazemos o &#39; aqui pois
-        # vamos embutir dentro de um <script>, não de um atributo HTML.
-        chart_json_raw = chart_json.replace("&#39;", "'")
-        script_payload = f"""<script>
-var {payload_var} = {chart_json_raw};
-</script>"""
         btn_grafico = f"""
-        <button class="action-btn"
-                onclick="abrirGrafico({payload_var})"
+        <button class="action-btn" onclick="abrirGrafico('{chart_json}')"
                 style="border-color:rgba(232,37,58,0.35);color:#E8253A;">
             <i class="fa-solid fa-chart-bar"></i> Gerar Gráfico
         </button>"""
 
     return f"""
-    {script_payload}
     ✅ Consulta executada com sucesso!
     {_metricas_rapidas(df)}
     {_df_para_html(df)}
