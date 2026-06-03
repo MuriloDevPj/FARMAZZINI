@@ -1,4 +1,4 @@
-PY
+
 def render_full_ui(chats: str, active_chat_id: int, active_db: str) -> str:
     db_label = {"todas": "Todas", "ponte": "FarmaPonte", "veracruz": "Vera Cruz"}.get(active_db, "Todas")
     return f"""<!DOCTYPE html>
