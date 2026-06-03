@@ -93,7 +93,7 @@ def executar_via_step_functions(sql: str) -> tuple:
         exec_arn = exec_resp["executionArn"]
 
         # Evita loop infinito: máximo de 25 tentativas de 1 segundo (Timeout de 25s)
-        max_tentativas = 25
+        max_tentativas = 60
         tentativa = 0
         status_resp = {}
         
