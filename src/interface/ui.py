@@ -11,20 +11,26 @@ def render_full_ui(chats: str, active_chat_id: int, active_db: str) -> str:
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <style>
 :root {{
-    --bg-main:      #060608;
-    --bg-sidebar:   rgba(12,12,16,0.92);
-    --bg-card:      #0b0b0d;
-    --primary:      #E63946;
-    --primary-dark: #8B0000;
+    --bg-main:      #08030A;
+    --bg-sidebar:   rgba(10,5,14,0.94);
+    --bg-card:      #09030C;
+    --primary:      #E8253A;
+    --primary-mid:  #B01030;
+    --primary-dark: #6B0018;
+    --primary-deep: #3A000C;
     --text-main:    #ffffff;
     --text-muted:   #9a9a9f;
     --border:       rgba(255,255,255,0.06);
-    --glow-red:     rgba(230,57,70,0.22);
+    --glow-red:     rgba(220,30,55,0.28);
+    --glow-wine:    rgba(100,0,20,0.35);
 }}
 *{{ box-sizing:border-box; margin:0; padding:0; }}
 html, body {{
     font-family:'Urbanist',sans-serif;
-    background:var(--bg-main);
+    background: radial-gradient(ellipse 120% 80% at 50% -10%, rgba(180,20,45,0.35) 0%, rgba(80,0,18,0.18) 40%, transparent 70%),
+                radial-gradient(ellipse 80% 60% at 85% 90%, rgba(120,0,25,0.25) 0%, transparent 60%),
+                radial-gradient(ellipse 60% 50% at 10% 80%, rgba(160,15,35,0.15) 0%, transparent 55%),
+                #08030A;
     color:var(--text-main);
     height:100dvh;
     max-height:100dvh;
@@ -35,28 +41,50 @@ html, body {{
     position:relative;
 }}
 .fluid-glow-1 {{
-    position:fixed; top:-15%; left:20%;
-    width:60vw; height:60vw;
-    background:radial-gradient(circle,var(--glow-red) 0%,rgba(139,0,0,0.05) 50%,transparent 75%);
-    filter:blur(100px); z-index:1; pointer-events:none; border-radius:50%;
+    position:fixed; top:-20%; left:15%;
+    width:70vw; height:70vw;
+    background:radial-gradient(ellipse at center,
+        rgba(220,30,55,0.30) 0%,
+        rgba(140,5,30,0.18) 35%,
+        rgba(80,0,15,0.08) 60%,
+        transparent 80%);
+    filter:blur(90px); z-index:1; pointer-events:none; border-radius:50%;
+    animation: glow-drift1 12s ease-in-out infinite alternate;
 }}
 .fluid-glow-2 {{
-    position:fixed; bottom:-10%; right:10%;
-    width:50vw; height:50vw;
-    background:radial-gradient(circle,rgba(230,57,70,0.15) 0%,rgba(139,0,0,0.03) 60%,transparent 80%);
-    filter:blur(100px); z-index:1; pointer-events:none; border-radius:50%;
+    position:fixed; bottom:-15%; right:5%;
+    width:55vw; height:55vw;
+    background:radial-gradient(ellipse at center,
+        rgba(160,10,35,0.22) 0%,
+        rgba(90,0,20,0.12) 40%,
+        transparent 70%);
+    filter:blur(110px); z-index:1; pointer-events:none; border-radius:50%;
+    animation: glow-drift2 15s ease-in-out infinite alternate;
 }}
+.fluid-glow-3 {{
+    position:fixed; top:40%; left:-10%;
+    width:40vw; height:40vw;
+    background:radial-gradient(ellipse at center,
+        rgba(180,20,45,0.15) 0%,
+        rgba(100,0,20,0.06) 50%,
+        transparent 75%);
+    filter:blur(80px); z-index:1; pointer-events:none; border-radius:50%;
+    animation: glow-drift3 18s ease-in-out infinite alternate;
+}}
+@keyframes glow-drift1 {{ from{{transform:translate(0,0) scale(1)}} to{{transform:translate(3vw,2vh) scale(1.08)}} }}
+@keyframes glow-drift2 {{ from{{transform:translate(0,0) scale(1)}} to{{transform:translate(-2vw,-3vh) scale(1.05)}} }}
+@keyframes glow-drift3 {{ from{{transform:translate(0,0) scale(1)}} to{{transform:translate(4vw,-2vh) scale(1.1)}} }}
 .app-shell {{ display:flex; width:100%; height:100dvh; position:relative; z-index:2; overflow:hidden; }}
 
 /* ── SIDEBAR ── */
 .sidebar {{
     position:absolute; top:16px; left:16px; bottom:16px; width:320px;
-    background:var(--bg-sidebar);
-    border:1px solid var(--border); border-radius:24px;
+    background:rgba(10,3,12,0.93);
+    border:1px solid rgba(200,30,55,0.10); border-radius:24px;
     display:flex; flex-direction:column;
     padding:24px 18px; gap:20px; z-index:10;
-    backdrop-filter:blur(25px);
-    box-shadow:0 16px 40px rgba(0,0,0,0.7);
+    backdrop-filter:blur(30px);
+    box-shadow:0 16px 40px rgba(0,0,0,0.75), 0 0 60px rgba(160,10,30,0.08);
     transition:transform 0.35s cubic-bezier(0.25,0.8,0.25,1),opacity 0.35s ease;
     max-height:calc(100dvh - 32px);
 }}
@@ -144,7 +172,7 @@ html, body {{
 /* ── MAIN ── */
 .main-content {{
     flex-grow:1; display:flex; flex-direction:column;
-    background:var(--bg-card); overflow:hidden;
+    background:transparent; overflow:hidden;
     position:relative; z-index:2;
     width:100%; height:100dvh;
     transition:padding-left 0.35s cubic-bezier(0.25,0.8,0.25,1);
@@ -153,9 +181,9 @@ html, body {{
 .main-content.no-sidebar {{ padding-left:0; }}
 
 .header {{
-    padding:20px 40px; border-bottom:1px solid var(--border);
+    padding:20px 40px; border-bottom:1px solid rgba(200,30,55,0.12);
     display:flex; justify-content:space-between; align-items:center;
-    background:rgba(11,11,13,0.8); backdrop-filter:blur(10px);
+    background:rgba(10,3,10,0.75); backdrop-filter:blur(20px);
     flex-shrink:0;
 }}
 .header-left {{ display:flex; align-items:center; gap:20px; }}
@@ -200,9 +228,17 @@ html, body {{
     padding:16px 20px; border-radius:18px; font-size:15px; line-height:1.6; width:100%;
 }}
 .message.user .msg-bubble {{
-    background:linear-gradient(135deg,#E63946 0%,#B81D24 50%,#820D13 100%);
-    border:1px solid rgba(255,255,255,0.18);
-    box-shadow:0 8px 24px rgba(230,57,70,0.3); color:#fff;
+    background:linear-gradient(135deg,
+        #E8253A 0%,
+        #C01535 30%,
+        #8B0828 65%,
+        #560016 100%);
+    border:1px solid rgba(255,80,100,0.22);
+    box-shadow:
+        0 8px 28px rgba(200,20,50,0.40),
+        0 2px 8px rgba(230,40,60,0.25),
+        inset 0 1px 0 rgba(255,120,140,0.18);
+    color:#fff;
 }}
 
 /* ── ÁREA FIXA NO RODAPÉ — sticky dentro do flex, acompanha zoom igual ao Claude ── */
@@ -345,6 +381,7 @@ tr:last-child td {{ border-bottom:none; }}
 
 <div class="fluid-glow-1"></div>
 <div class="fluid-glow-2"></div>
+<div class="fluid-glow-3"></div>
 <div class="download-toast" id="toast">✅ Dados exportados em CSV!</div>
 
 <div class="app-shell">

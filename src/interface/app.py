@@ -198,7 +198,7 @@ st.markdown("""
         padding: 0 !important;
         margin: 0 !important;
         max-width: 100% !important;
-        background-color: #060608 !important;
+        background-color: #08030A !important;
         overflow: hidden !important;
         height: 100dvh !important;
     }
