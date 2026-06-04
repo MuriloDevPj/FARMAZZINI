@@ -139,14 +139,14 @@ def show_login():
         min-height: 100dvh !important;
     }
 
-    /* ── Centralização vertical da página ── */
+    /* ── Página: sem altura mínima forçada, fluxo natural ── */
     [data-testid="stVerticalBlock"] {
         display: flex !important;
         flex-direction: column !important;
         align-items: center !important;
-        justify-content: center !important;
-        min-height: 100dvh !important;
-        padding: 32px 0 !important;
+        justify-content: flex-start !important;
+        min-height: unset !important;
+        padding: 0 !important;
         gap: 0 !important;
     }
 
@@ -159,15 +159,12 @@ def show_login():
         align-items: stretch !important;
     }
 
-    /* ══ CARD: estiliza o container nativo do Streamlit ══
-       st.container() gera um div[data-testid="stVerticalBlockBorderWrapper"].
-       Esse é o único jeito confiável de ter widgets DENTRO de um card
-       no Streamlit — sem iframes, sem sobreposições. */
+    /* ══ CARD: estiliza o container nativo do Streamlit ══ */
     div[data-testid="stVerticalBlockBorderWrapper"] {
         background: rgba(15,4,5,0.88) !important;
         border: 1px solid rgba(255,255,255,0.09) !important;
         border-radius: 20px !important;
-        padding: 28px 24px 24px !important;
+        padding: 28px 24px 20px !important;
         box-shadow: 0 8px 48px rgba(0,0,0,0.65), 0 1px 0 rgba(255,255,255,0.05) inset !important;
         backdrop-filter: blur(14px) !important;
         -webkit-backdrop-filter: blur(14px) !important;
@@ -260,11 +257,11 @@ def show_login():
 
         # ── CABEÇALHO (logo, badge, tagline) — HTML puro, sem widgets ──
         st.markdown("""
-        <div style="text-align:center; margin-bottom:24px; font-family:'DM Sans',sans-serif;">
+        <div style="text-align:center; padding-top:40px; margin-bottom:20px; font-family:'DM Sans',sans-serif;">
             <div style="display:inline-block; border:1px solid rgba(200,60,60,0.55);
                         border-radius:20px; padding:5px 18px; font-size:10px;
                         letter-spacing:2.5px; color:#c84040; text-transform:uppercase;
-                        font-weight:600; margin-bottom:16px;">
+                        font-weight:600; margin-bottom:14px;">
                 Inteligência de Mercado
             </div>
             <div style="font-family:'Bebas Neue',sans-serif; font-size:52px; letter-spacing:6px;
@@ -323,7 +320,7 @@ def show_login():
 
             # Divisor + rodapé (dentro do card)
             st.markdown("""
-            <div style="display:flex; align-items:center; gap:12px; margin:24px 0 14px;">
+            <div style="display:flex; align-items:center; gap:12px; margin:18px 0 10px;">
                 <div style="flex:1; height:1px; background:rgba(255,255,255,0.07);"></div>
                 <span style="font-size:10px; color:rgba(255,255,255,0.22); letter-spacing:1.5px;
                              text-transform:uppercase; font-weight:600; font-family:'DM Sans',sans-serif;">
@@ -332,7 +329,7 @@ def show_login():
                 <div style="flex:1; height:1px; background:rgba(255,255,255,0.07);"></div>
             </div>
             <div style="font-size:12px; color:rgba(255,255,255,0.25); text-align:center;
-                        line-height:1.8; font-family:'DM Sans',sans-serif;">
+                        line-height:1.7; font-family:'DM Sans',sans-serif; margin-bottom:2px;">
                 Plataforma exclusiva para a rede
                 <span style="color:#d43030; font-weight:600;">Farmazzini</span>.<br>
                 Em caso de dúvidas, contacte o administrador do sistema.
