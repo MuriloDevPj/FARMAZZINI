@@ -1,17 +1,3 @@
-"""
-╔══════════════════════════════════════════════════════════════════╗
-║           FARMAZZINI INTEL — APP PRINCIPAL (STREAMLIT)          ║
-║     VERSÃO COM LOGIN PERSISTENTE SEM DEPENDÊNCIAS EXTERNAS       ║
-╚══════════════════════════════════════════════════════════════════╝
-
-SOLUÇÃO DE PERSISTÊNCIA (sem biblioteca extra):
-  O Streamlit reseta o session_state a cada rerun via query params.
-  Em vez de cookies, usamos um token de sessão gravado em
-  st.session_state E propagado no parâmetro 'state' que o JavaScript
-  já envia a cada ação. O campo "auth" dentro desse JSON mantém
-  o login vivo por toda a sessão sem precisar de nenhuma lib extra.
-"""
-
 import sys
 import os
 import time

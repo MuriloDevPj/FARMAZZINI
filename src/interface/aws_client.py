@@ -1,25 +1,66 @@
- # ==============================================================================
+# ==============================================================================
 # aws_client.py — Integração com Amazon Bedrock, Step Functions e S3
 # Projeto Farmazzini | Poli Júnior | Equipe 06
-# CORREÇÃO: Resiliência contra loops infinitos e latência de escrita assíncrona
+#
+# MELHORIA: Self-Correction Loop para perguntas genéricas/ambíguas
+#   - Camada 0: Expansão de intenção (query expansion) antes de gerar SQL
+#   - Camada 1: Geração de SQL com prompt rico em contexto
+#   - Camada 2: Validação leve + auto-correção em até MAX_SQL_RETRIES tentativas
+#   - Camada 3: Injeção determinística de colunas essenciais (pós-LLM)
 # ==============================================================================
 
 import boto3
 import json
 import time
+import re
 import pandas as pd
 from io import StringIO
 
 REGION         = "us-east-2"
 MODEL_ID       = "us.anthropic.claude-haiku-4-5-20251001-v1:0"
-MAX_TOKENS     = 600
+MAX_TOKENS     = 800
 API_VERSION    = "bedrock-2023-05-31"
 STATE_MACHINE  = "arn:aws:states:us-east-2:906513713169:stateMachine:StateMachine_farmazzini_equipe6"
 BUCKET         = "farmazzini-equipe6-ohio"
 PREFIXO        = "athena-results/"
 
+# Número máximo de tentativas no self-correction loop
+MAX_SQL_RETRIES = 3
+
+# ==============================================================================
+# CAMADA 0 — Prompt de Expansão de Intenção
+# Transforma perguntas vagas em intenções estruturadas antes de gerar SQL.
+# Isso desacopla a linguagem natural do usuário do prompt técnico de SQL.
+# ==============================================================================
+
+INTENT_EXPANSION_PROMPT = """Você é um interpretador de intenções para um sistema de inteligência de mercado farmacêutico.
+
+Sua tarefa é receber uma pergunta em português (que pode ser vaga, genérica ou informal) e reescrevê-la
+de forma estruturada e clara para facilitar a geração de SQL preciso.
+
+Regras:
+1. Retorne APENAS a intenção reescrita. Sem explicações, sem prefixos como "O usuário quer...".
+2. Seja específico sobre: qual métrica interessa (preço, estoque, desconto, cashback), qual escopo
+   (todos os produtos, produto específico, comparativo entre farmácias), e qual ordenação ou agregação faz sentido.
+3. Se a pergunta mencionar farmácia, normalize: 'farmaponte' → 'FarmaPonte', 'vera cruz' → 'Vera Cruz'.
+4. Se a pergunta for muito aberta (ex: "o que tem?", "me mostra algo"), interprete como:
+   "Listar os produtos disponíveis com nome, preço PIX e disponibilidade de todas as farmácias."
+5. Mantenha em português. Seja conciso (1-2 frases).
+
+Exemplos:
+- "quanto tá o remedinho pra dor de cabeça?" → "Listar produtos com nome contendo 'dor de cabeça' ou 'analgésico' ou 'dipirona' ou 'paracetamol', mostrando preço PIX e disponibilidade, ordenado por menor preço."
+- "qual mais barato?" → "Encontrar o produto com menor preço PIX entre todas as farmácias, agrupado por farmácia."
+- "tem promoção?" → "Listar produtos que possuem promoções especiais ou desconto padrão preenchido, mostrando nome, preço original, preço PIX e promoções especiais."
+- "compara as farmácias" → "Comparar preço médio PIX e preço médio original entre FarmaPonte e Vera Cruz, agrupado por farmácia."
+- "estoque" → "Mostrar contagem de produtos disponíveis e indisponíveis por farmácia."
+"""
+
+# ==============================================================================
+# CAMADA 1 — Prompt de Geração de SQL
+# ==============================================================================
+
 SQL_PROMPT = """Você é o assistente inteligente de inteligência de mercado da rede Farmazzini.
-Sua tarefa é transformar a pergunta em português em uma consulta SQL válida para o Amazon Athena.
+Sua tarefa é transformar a intenção estruturada abaixo em uma consulta SQL válida para o Amazon Athena.
 
 Regras Estritas:
 1. Retorne APENAS o código SQL puro. Sem explicações, saudações ou markdown (NÃO use ```sql).
@@ -31,163 +72,280 @@ Regras Estritas:
 4. Regras de Ouro para Partições (CRÍTICO — reduz 99% do custo de scan):
    - As partições são: farmacia, ano, mes, dia. SEMPRE inclua as 4 no WHERE.
    - Valores exatos da partição 'farmacia' (case-sensitive): 'FarmaPonte' ou 'Vera Cruz'.
-     Se o usuário escrever variações como 'farmaponte', 'farma ponte', 'vera cruz', normalize
+     Se a intenção mencionar variações como 'farmaponte', 'farma ponte', 'vera cruz', normalize
      automaticamente para o valor exato correto.
-   - Se o usuário não especificar a farmácia, NÃO filtre por farmacia (busque as duas).
-   - Se o usuário não especificar data, use SEMPRE: ano='2026' AND mes='05' AND dia='26'.
+   - Se a intenção não especificar farmácia, NÃO filtre por farmacia (busque as duas).
+   - Se a intenção não especificar data, use SEMPRE: ano='2026' AND mes='05' AND dia='26'.
    - NUNCA omita as partições de data. Uma query sem ano/mes/dia faz scan completo e causa timeout.
 
-5. Regras de Performance e Compatibilidade para Athena (CRÍTICO — evita timeout e erros):
-   - NUNCA use ORDER BY sem filtro de nome/produto específico no WHERE. ORDER BY em tabela inteira
-     força full scan + sort e é a principal causa de timeout.
-   - NUNCA use COALESCE em ORDER BY. Causa full scan obrigatório antes do LIMIT.
-   - NUNCA use QUALIFY — essa cláusula NÃO existe no Athena (é exclusiva do BigQuery/Snowflake).
-     Para filtrar por ROW_NUMBER/RANK, envolva em subquery:
-     Errado:  SELECT ..., ROW_NUMBER() OVER (...) as rn FROM tb_processed WHERE ... QUALIFY rn = 1
-     Correto: SELECT * FROM (SELECT ..., ROW_NUMBER() OVER (...) as rn FROM tb_processed WHERE ...) t WHERE t.rn = 1
+5. Regras de Performance e Compatibilidade para Athena (CRÍTICO):
+   - NUNCA use ORDER BY sem filtro de nome/produto específico no WHERE.
+   - NUNCA use COALESCE em ORDER BY.
+   - NUNCA use QUALIFY — envolva em subquery com WHERE t.rn = 1.
    - NUNCA use funções exclusivas de outros bancos: QUALIFY, ILIKE, SAMPLE, PIVOT, UNPIVOT.
    - NUNCA use SELECT * sem LIMIT. Sempre especifique as colunas necessárias.
-   - Para "menor preço" ou "mais barato" SEM especificar produto:
-     Use MIN() com GROUP BY farmacia — NÃO use ORDER BY ... LIMIT 1.
-     Exemplo: SELECT farmacia, MIN(preco_pix) as menor_pix FROM tb_processed WHERE ano='2026' AND mes='05' AND dia='26' GROUP BY farmacia
-   - Para "menor preço" COM produto específico:
-     Filtre pelo nome primeiro, ENTÃO use ORDER BY com LIMIT.
-     Exemplo: SELECT farmacia, nome, preco_pix FROM tb_processed WHERE nome LIKE '%Dipirona%' AND ano='2026' AND mes='05' AND dia='26' ORDER BY preco_pix ASC LIMIT 10
-   - Para "estoque crítico" ou "ruptura": use GROUP BY farmacia, disponibilidade com COUNT(*).
-     Exemplo: SELECT farmacia, disponibilidade, COUNT(*) as qtd FROM tb_processed WHERE ano='2026' AND mes='05' AND dia='26' GROUP BY farmacia, disponibilidade
+   - Para "menor preço" SEM produto específico: MIN() com GROUP BY farmacia.
+   - Para "menor preço" COM produto: filtre pelo nome com LIKE, ENTÃO ORDER BY com LIMIT.
+   - Para busca por nome de produto: use LOWER(nome) LIKE LOWER('%termo%') para tolerância a maiúsculas.
+   - Para "estoque crítico" ou "ruptura": GROUP BY farmacia, disponibilidade com COUNT(*).
    - Use LIMIT 20 para queries com ORDER BY. Use LIMIT 50 para queries sem ORDER BY.
-   - Se a pergunta pedir comparativo entre farmácias, use GROUP BY farmacia com AVG() ou MIN().
-   - Queries com Window Functions (ROW_NUMBER, RANK) só são aceitáveis quando a subquery
-     já filtra por partição (farmacia + ano + mes + dia) E por nome de produto.
+   - Se comparativo entre farmácias: GROUP BY farmacia com AVG() ou MIN().
 
-6. REGRA OBRIGATÓRIA DE COLUNAS (NUNCA viole esta regra):
-   - Toda query que usa SELECT com colunas individuais (não COUNT/MIN/AVG/MAX agregados)
-     DEVE incluir OBRIGATORIAMENTE: farmacia, disponibilidade.
+6. REGRA OBRIGATÓRIA DE COLUNAS:
    - Toda query que lista produtos individuais DEVE incluir: farmacia, nome, disponibilidade.
-   - Exceção permitida: queries de agregação pura (GROUP BY + funções de agregação sem
-     colunas individuais de produto) não precisam de disponibilidade na lista do SELECT,
-     MAS devem usar GROUP BY farmacia, disponibilidade com COUNT(*).
+   - Queries de agregação pura (GROUP BY + funções de agregação) não precisam de disponibilidade
+     na lista do SELECT, MAS devem usar GROUP BY farmacia, disponibilidade com COUNT(*) quando
+     o assunto for disponibilidade.
 
-7. Exemplos de filtro correto:
-   - "produtos da FarmaPonte" → SELECT farmacia, nome, preco_original, disponibilidade FROM tb_processed WHERE farmacia='FarmaPonte' AND ano='2026' AND mes='05' AND dia='26' LIMIT 50
-   - "menor preço da dipirona na Vera Cruz" → SELECT farmacia, nome, preco_pix, disponibilidade FROM tb_processed WHERE nome LIKE '%Dipirona%' AND farmacia='Vera Cruz' AND ano='2026' AND mes='05' AND dia='26' ORDER BY preco_pix ASC LIMIT 10
-   - "produto mais barato do mercado" → SELECT farmacia, MIN(preco_pix) as menor_pix FROM tb_processed WHERE ano='2026' AND mes='05' AND dia='26' GROUP BY farmacia
-   - "comparar preços entre farmácias" → SELECT farmacia, AVG(preco_original) as preco_medio, AVG(preco_pix) as medio_pix FROM tb_processed WHERE ano='2026' AND mes='05' AND dia='26' GROUP BY farmacia
-   - "estoque crítico" → SELECT farmacia, disponibilidade, COUNT(*) as total FROM tb_processed WHERE ano='2026' AND mes='05' AND dia='26' GROUP BY farmacia, disponibilidade ORDER BY total DESC LIMIT 20
-   - "preços de medicamentos" → SELECT farmacia, nome, preco_pix, preco_cartao, disponibilidade FROM tb_processed WHERE ano='2026' AND mes='05' AND dia='26' LIMIT 50
+7. Exemplos de mapeamento de intenção → SQL:
+   - "Listar produtos disponíveis com nome, preço PIX e disponibilidade de todas as farmácias."
+     → SELECT farmacia, nome, preco_pix, disponibilidade FROM tb_processed WHERE ano='2026' AND mes='05' AND dia='26' LIMIT 50
+   - "Menor preço PIX agrupado por farmácia."
+     → SELECT farmacia, MIN(preco_pix) as menor_pix FROM tb_processed WHERE ano='2026' AND mes='05' AND dia='26' GROUP BY farmacia
+   - "Produtos com nome contendo dipirona ou paracetamol, ordenados por menor preço."
+     → SELECT farmacia, nome, preco_pix, disponibilidade FROM tb_processed WHERE (LOWER(nome) LIKE '%dipirona%' OR LOWER(nome) LIKE '%paracetamol%') AND ano='2026' AND mes='05' AND dia='26' ORDER BY preco_pix ASC LIMIT 20
+   - "Comparar preço médio PIX entre FarmaPonte e Vera Cruz."
+     → SELECT farmacia, AVG(preco_pix) as media_pix, AVG(preco_original) as media_original FROM tb_processed WHERE ano='2026' AND mes='05' AND dia='26' GROUP BY farmacia
+   - "Contagem de produtos disponíveis e indisponíveis por farmácia."
+     → SELECT farmacia, disponibilidade, COUNT(*) as total FROM tb_processed WHERE ano='2026' AND mes='05' AND dia='26' GROUP BY farmacia, disponibilidade ORDER BY total DESC LIMIT 20
+   - "Produtos com promoções especiais preenchidas."
+     → SELECT farmacia, nome, preco_original, preco_pix, promocoes_especiais, disponibilidade FROM tb_processed WHERE promocoes_especiais IS NOT NULL AND promocoes_especiais <> '' AND ano='2026' AND mes='05' AND dia='26' LIMIT 50
 """
+
+# ==============================================================================
+# CAMADA 2 — Prompt de Auto-Correção (Self-Correction Loop)
+# Recebe o SQL inválido + o erro e pede uma versão corrigida.
+# ==============================================================================
+
+SQL_CORRECTION_PROMPT = """Você é um especialista em SQL para Amazon Athena.
+O SQL abaixo foi gerado para responder a uma intenção de consulta, mas contém um erro.
+
+Sua tarefa é corrigir o SQL e retornar APENAS o SQL corrigido, sem explicações ou markdown.
+
+Regras de correção obrigatórias:
+- NUNCA use QUALIFY — substitua por subquery: SELECT * FROM (...) t WHERE t.rn = 1
+- NUNCA use ILIKE — substitua por LOWER(coluna) LIKE LOWER('%valor%')
+- NUNCA use ORDER BY sem filtro de produto específico no WHERE (causa full scan)
+- NUNCA omita as partições: ano='2026' AND mes='05' AND dia='26' no WHERE
+- NUNCA omita a partição farmacia quando ela for necessária para filtro
+- NUNCA use SELECT * sem LIMIT
+- Se o erro mencionar coluna inexistente, remova-a da query
+- Se o erro mencionar sintaxe, revise cláusulas incompatíveis com Athena (Presto SQL)
+- Mantenha o LIMIT original ou use LIMIT 50 se não houver
+
+Intenção original: {intencao}
+
+SQL com erro:
+{sql}
+
+Erro retornado:
+{erro}
+
+Retorne apenas o SQL corrigido:"""
+
+
+# ==============================================================================
+# Helpers
+# ==============================================================================
+
+def _chamar_bedrock(system_prompt: str, user_content: str) -> tuple[str, str | None]:
+    """
+    Chama o Claude via Bedrock com system + user message.
+    Retorna (texto_resposta, erro_ou_None).
+    """
+    client = boto3.client(service_name="bedrock-runtime", region_name=REGION)
+    try:
+        body = json.dumps({
+            "anthropic_version": API_VERSION,
+            "max_tokens": MAX_TOKENS,
+            "system": system_prompt,
+            "messages": [{"role": "user", "content": user_content}],
+        })
+        response = client.invoke_model(
+            modelId=MODEL_ID,
+            contentType="application/json",
+            accept="application/json",
+            body=body,
+        )
+        response_body = json.loads(response["body"].read())
+        texto = response_body["content"][0]["text"].strip()
+
+        # Remove fences de markdown caso apareçam
+        if "```sql" in texto:
+            texto = texto.split("```sql")[1].split("```")[0].strip()
+        elif "```" in texto:
+            texto = texto.split("```")[1].split("```")[0].strip()
+
+        return texto, None
+    except Exception as e:
+        return "", str(e)
+
+
+def _expandir_intencao(pergunta: str) -> str:
+    """
+    Camada 0: transforma a pergunta bruta numa intenção estruturada.
+    Se a chamada ao Bedrock falhar, retorna a pergunta original (fallback seguro).
+    """
+    intencao, erro = _chamar_bedrock(INTENT_EXPANSION_PROMPT, pergunta)
+    if erro or not intencao:
+        return pergunta  # fallback: usa a pergunta original
+    return intencao
+
+
+def _validar_sql_localmente(sql: str) -> tuple[bool, str]:
+    """
+    Validação leve antes de chamar o Step Functions.
+    Detecta os erros mais comuns que o Athena rejeitaria.
+    Retorna (is_valido, mensagem_de_erro).
+    """
+    sql_upper = sql.upper().strip()
+
+    if not sql_upper.startswith("SELECT"):
+        return False, "A query não começa com SELECT."
+
+    if "QUALIFY" in sql_upper:
+        return False, "Uso de QUALIFY detectado — não suportado no Athena. Use subquery com WHERE t.rn = 1."
+
+    if "ILIKE" in sql_upper:
+        return False, "Uso de ILIKE detectado — não suportado no Athena. Use LOWER(col) LIKE LOWER('%valor%')."
+
+    particoes_data = ("ANO=" in sql_upper or "ANO =" in sql_upper)
+    if not particoes_data:
+        return False, "Partições de data (ano/mes/dia) ausentes no WHERE — causaria full scan."
+
+    if "FROM TB_PROCESSED" not in sql_upper:
+        return False, "Tabela tb_processed não referenciada na query."
+
+    # Detecta ORDER BY sem filtro de nome (risco de full scan)
+    tem_order_by = "ORDER BY" in sql_upper
+    tem_filtro_nome = re.search(r"LOWER\s*\(\s*NOME\s*\)|NOME\s+LIKE", sql_upper)
+    tem_group_by = "GROUP BY" in sql_upper
+    if tem_order_by and not tem_filtro_nome and not tem_group_by:
+        return False, "ORDER BY sem filtro de produto específico — risco de full scan e timeout no Athena."
+
+    return True, ""
 
 
 def _injetar_colunas_essenciais(sql: str) -> str:
     """
     Camada de segurança determinística (pós-LLM).
-
-    Garante que toda query de produto individual contenha farmacia e disponibilidade
-    no SELECT, independentemente do que o Bedrock gerou.
-
-    Lógica:
-    - Só age em queries SELECT simples (não GROUP BY agregado puro).
-    - Nunca toca queries com GROUP BY que já são agregações (COUNT/MIN/AVG).
-    - Injeta apenas o que estiver faltando — não duplica colunas.
+    Garante que toda query de produto individual contenha farmacia e disponibilidade no SELECT.
     """
-    import re
-
     sql_stripped = sql.strip()
     sql_upper    = sql_stripped.upper()
 
-    # Não processa queries que não são SELECT simples
     if not sql_upper.startswith("SELECT"):
         return sql_stripped
 
-    # Queries de agregação pura (GROUP BY com funções de agregação) — não mexer
-    # Detecta: tem GROUP BY E tem COUNT/SUM/AVG/MIN/MAX no SELECT
-    tem_group_by    = "GROUP BY" in sql_upper
-    tem_agregacao   = bool(re.search(r"(COUNT|SUM|AVG|MIN|MAX)\s*\(", sql_upper))
+    tem_group_by  = "GROUP BY" in sql_upper
+    tem_agregacao = bool(re.search(r"(COUNT|SUM|AVG|MIN|MAX)\s*\(", sql_upper))
     if tem_group_by and tem_agregacao:
         return sql_stripped
 
-    # Extrai a lista do SELECT (entre SELECT e FROM)
     match = re.match(r"(?i)(SELECT\s+)(.*?)(\s+FROM\s)", sql_stripped, re.DOTALL)
     if not match:
         return sql_stripped
 
-    prefix       = match.group(1)   # "SELECT "
-    colunas_str  = match.group(2)   # "nome, preco_pix, ..."
-    suffix       = sql_stripped[match.end(2):]  # " FROM tb_processed WHERE ..."
+    prefix      = match.group(1)
+    colunas_str = match.group(2)
+    suffix      = sql_stripped[match.end(2):]
 
-    # Normaliza para comparação
-    colunas_lower = colunas_str.lower()
-
-    # Verifica quais colunas essenciais estão faltando
-    falta_farmacia       = "farmacia" not in colunas_lower
-    falta_disponibilidade = "disponibilidade" not in colunas_lower
-
-    # Não injeta se a query já tem SELECT * (já traz tudo)
     if colunas_str.strip() == "*":
         return sql_stripped
 
+    colunas_lower = colunas_str.lower()
     injecoes = []
-    if falta_farmacia:
+    if "farmacia" not in colunas_lower:
         injecoes.append("farmacia")
-    if falta_disponibilidade:
+    if "disponibilidade" not in colunas_lower:
         injecoes.append("disponibilidade")
 
     if not injecoes:
-        return sql_stripped  # nada a fazer
+        return sql_stripped
 
-    novas_colunas = ", ".join(injecoes) + ", " + colunas_str
-    sql_corrigido = prefix + novas_colunas + suffix
-    return sql_corrigido
+    return prefix + ", ".join(injecoes) + ", " + colunas_str + suffix
 
 
-def gerar_sql_com_bedrock(pergunta: str) -> tuple:
+# ==============================================================================
+# Geração de SQL com Self-Correction Loop
+# ==============================================================================
+
+def gerar_sql_com_bedrock(pergunta: str) -> tuple[str, str | None]:
     """
-    Envia a pergunta do utilizador para o Claude via Bedrock.
-    Retorna (sql, erro)
+    Pipeline completo de geração de SQL com self-correction loop.
+
+    Fluxo:
+      1. Expande a intenção da pergunta (Camada 0)
+      2. Gera o SQL a partir da intenção (Camada 1)
+      3. Valida localmente o SQL (Camada 2a)
+      4. Se inválido, tenta corrigir via Bedrock em até MAX_SQL_RETRIES iterações (Camada 2b)
+      5. Injeta colunas essenciais deterministicamente (Camada 3)
+
+    Retorna (sql, erro_ou_None).
     """
-    client = boto3.client(service_name="bedrock-runtime", region_name=REGION)
-    try:
-        body = json.dumps({
-            "anthropic_version": "bedrock-2023-05-31",
-            "max_tokens": MAX_TOKENS,
-            "messages": [
-                {"role": "user", "content": pergunta}
-            ],
-            "system": SQL_PROMPT
-        })
+    # --- Camada 0: Expansão de intenção ---
+    intencao = _expandir_intencao(pergunta)
 
-        response = client.invoke_model(
-            modelId=MODEL_ID,
-            contentType="application/json",
-            accept="application/json",
-            body=body
-        )
+    # --- Camada 1: Geração inicial de SQL ---
+    sql, erro_geracao = _chamar_bedrock(SQL_PROMPT, intencao)
+    if erro_geracao or not sql:
+        return "", f"Erro ao gerar SQL: {erro_geracao}"
 
-        response_body = json.loads(response.get("body").read())
-        sql = response_body["content"][0]["text"].strip()
+    sql = _injetar_colunas_essenciais(sql)
 
-        # Limpeza preventiva de tags de código markdown
-        if "```sql" in sql:
-            sql = sql.split("```sql")[1].split("```")[0].strip()
-        elif "```" in sql:
-            sql = sql.split("```")[1].split("```")[0].strip()
+    # --- Camada 2: Self-correction loop ---
+    for tentativa in range(MAX_SQL_RETRIES):
+        valido, motivo_erro = _validar_sql_localmente(sql)
 
-        # Camada de segurança: garante farmacia + disponibilidade em queries de produto
-        sql = _injetar_colunas_essenciais(sql)
+        if valido:
+            # SQL aprovado — retorna
+            return sql, None
 
-        return sql, None
-    except Exception as e:
-        return "", str(e)
+        # SQL inválido: tenta corrigir via Bedrock
+        if tentativa < MAX_SQL_RETRIES - 1:
+            prompt_correcao = SQL_CORRECTION_PROMPT.format(
+                intencao=intencao,
+                sql=sql,
+                erro=motivo_erro,
+            )
+            sql_corrigido, erro_correcao = _chamar_bedrock(
+                "Você é um especialista em SQL para Amazon Athena. Retorne apenas SQL puro, sem markdown.",
+                prompt_correcao,
+            )
 
+            if erro_correcao or not sql_corrigido:
+                # Falha na correção — interrompe o loop
+                break
+
+            sql = _injetar_colunas_essenciais(sql_corrigido)
+        else:
+            # Esgotou as tentativas
+            return sql, (
+                f"Não foi possível gerar um SQL válido após {MAX_SQL_RETRIES} tentativas. "
+                f"Último erro detectado: {motivo_erro}. "
+                "Tente reformular a pergunta de forma mais específica."
+            )
+
+    # Chegou aqui sem aprovar — retorna com erro
+    _, motivo_final = _validar_sql_localmente(sql)
+    return sql, (
+        f"SQL gerado não passou na validação após {MAX_SQL_RETRIES} tentativas. "
+        f"Erro: {motivo_final}"
+    )
+
+
+# ==============================================================================
+# Execução e Recuperação de Dados (sem alterações)
+# ==============================================================================
 
 def executar_via_step_functions(sql: str) -> tuple:
     """
     Dispara a execução na máquina de estados da AWS.
-    
+
     Estratégia de polling inteligente:
-    - Primeiros 10s: verifica a cada 2s (queries simples já terminam aqui)
-    - Entre 10s e 40s: verifica a cada 4s (queries médias com ORDER BY)
-    - Acima de 40s: verifica a cada 6s (queries pesadas com Window Functions)
+    - Primeiros 10s: verifica a cada 2s
+    - Entre 10s e 40s: verifica a cada 4s
+    - Acima de 40s: verifica a cada 6s
     - Timeout total: 120 segundos
     """
     client = boto3.client(service_name="stepfunctions", region_name=REGION)
@@ -198,9 +356,9 @@ def executar_via_step_functions(sql: str) -> tuple:
         )
         exec_arn = exec_resp["executionArn"]
 
-        tempo_total   = 0
-        status_resp   = {}
-        TIMEOUT_MAX   = 120  # segundos — cobre queries pesadas com Window Functions
+        tempo_total = 0
+        status_resp = {}
+        TIMEOUT_MAX = 120
 
         while tempo_total < TIMEOUT_MAX:
             status_resp = client.describe_execution(executionArn=exec_arn)
@@ -224,7 +382,6 @@ def executar_via_step_functions(sql: str) -> tuple:
                 detalhes = athena_reason or erro_cause or erro_error or status
                 return status, detalhes, status_resp
 
-            # Polling inteligente: intervalo cresce conforme o tempo decorrido
             if tempo_total < 10:
                 intervalo = 2
             elif tempo_total < 40:
@@ -246,8 +403,7 @@ def executar_via_step_functions(sql: str) -> tuple:
 
 def buscar_resultado_s3(status_resp: dict) -> tuple:
     """
-    Recupera de forma resiliente os resultados consolidados no S3,
-    tratando a latência assíncrona de escrita do Athena.
+    Recupera os resultados consolidados no S3 com tolerância à latência assíncrona.
     """
     client = boto3.client(service_name="s3", region_name=REGION)
     try:
@@ -257,11 +413,10 @@ def buscar_resultado_s3(status_resp: dict) -> tuple:
             return None, "QueryExecutionId não encontrado no output do Step Functions."
 
         chave_s3 = f"{PREFIXO}{query_id}.csv"
-        
-        # Exponential Backoff para lidar com eventual consistência e latência de escrita do Athena no S3
-        max_retries = 4
-        backoff_delay = 0.5 # Começa com meio segundo
-        
+
+        max_retries   = 4
+        backoff_delay = 0.5
+
         for i in range(max_retries):
             try:
                 obj = client.get_object(Bucket=BUCKET, Key=chave_s3)
@@ -269,11 +424,12 @@ def buscar_resultado_s3(status_resp: dict) -> tuple:
                 return df, None
             except client.exceptions.NoSuchKey:
                 if i == max_retries - 1:
-                    # Se for a última tentativa, propaga o erro de chave não encontrada
-                    return None, f"Arquivo de resultado {chave_s3} ainda não disponível no S3 após {max_retries} tentativas."
+                    return None, (
+                        f"Arquivo de resultado {chave_s3} ainda não disponível no S3 "
+                        f"após {max_retries} tentativas."
+                    )
                 time.sleep(backoff_delay)
-                backoff_delay *= 2 # Dobra o tempo de espera para a próxima tentativa (0.5s, 1s, 2s, 4s)
-                
+                backoff_delay *= 2
     except Exception as e:
         return None, str(e)
 
@@ -281,23 +437,25 @@ def buscar_resultado_s3(status_resp: dict) -> tuple:
 def buscar_dados(pergunta: str, base: str = "todas") -> dict:
     """
     Orquestra o pipeline completo:
-    Bedrock → Step Functions → S3
+    Expansão de Intenção → Bedrock (SQL) → Self-Correction → Step Functions → S3
     """
-    # 1. Gera o SQL com o Bedrock
+    # 1. Gera SQL com self-correction loop
     sql, erro_sql = gerar_sql_com_bedrock(pergunta)
     if erro_sql or not sql:
         return {"sucesso": False, "df": None, "sql": sql, "erro": f"Erro ao gerar SQL: {erro_sql}"}
 
-    # 2. Injeta o filtro de farmácia se o utilizador especificou
+    # 2. Injeta filtro de farmácia se especificado pelo usuário na UI
     if base == "ponte":
-        sql = sql.replace(
-            "farmacia IN ('FarmaPonte', 'Vera Cruz')",
-            "farmacia='FarmaPonte'"
+        sql = re.sub(
+            r"farmacia\s*IN\s*\('FarmaPonte',\s*'Vera Cruz'\)",
+            "farmacia='FarmaPonte'",
+            sql,
         )
     elif base == "veracruz":
-        sql = sql.replace(
-            "farmacia IN ('FarmaPonte', 'Vera Cruz')",
-            "farmacia='Vera Cruz'"
+        sql = re.sub(
+            r"farmacia\s*IN\s*\('FarmaPonte',\s*'Vera Cruz'\)",
+            "farmacia='Vera Cruz'",
+            sql,
         )
 
     # 3. Executa via Step Functions
@@ -305,7 +463,7 @@ def buscar_dados(pergunta: str, base: str = "todas") -> dict:
     if status != "SUCCEEDED":
         return {"sucesso": False, "df": None, "sql": sql, "erro": f"Erro na execução da Query: {erro_sf or status}"}
 
-    # 4. Busca os dados no S3 com tolerância à latência assíncrona
+    # 4. Busca os dados no S3
     df, erro_s3 = buscar_resultado_s3(status_resp)
     if erro_s3:
         return {"sucesso": False, "df": None, "sql": sql, "erro": f"Erro ao coletar dados do S3: {erro_s3}"}
