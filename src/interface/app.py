@@ -254,7 +254,7 @@ def show_login():
     """, unsafe_allow_html=True)
 
     # ══ COLUNA CENTRAL (centraliza tudo horizontalmente) ══
-    _, col, _ = st.columns([1, 2.2, 1])
+    _, col, _ = st.columns([2.2, 2.2, 2.2])
 
     with col:
 
