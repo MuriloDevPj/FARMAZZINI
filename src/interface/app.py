@@ -104,16 +104,19 @@ if "next_id" not in st.session_state:
 # ─────────────────────────────────────────────
 def show_login():
     # ══════════════════════════════════════════════════════════════
-    # CSS GLOBAL — fundo, inputs, botão, label nativo estilizado
-    # Estratégia: usamos o label NATIVO do st.text_input (sem
-    # label_visibility="collapsed") e o estilizamos via CSS.
-    # Isso garante que label e input ficam sempre juntos no DOM,
-    # eliminando os bugs de sobreposição de blocos.
-    # O card é feito com st.container() estilizado via CSS.
+    # Design fiel à referência visual:
+    # - Fundo quase preto com dois glows radiais vermelhos (topo dir + base esq)
+    # - Badge "INTELIGÊNCIA DE MERCADO" com borda arredondada
+    # - Logo Bebas Neue com "ZZ" em vermelho
+    # - Card escuro centralizado, largura ~420px
+    # - Inputs com ícones SVG inline (usuário e cadeado)
+    # - Botão vermelho sólido (sem texto, spinnerlike no design original)
+    # - Rodapé "ACESSO RESTRITO" + texto plataforma exclusiva
+    # Estratégia DOM: labels nativos do st.text_input estilizados via CSS
     # ══════════════════════════════════════════════════════════════
     st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap');
 
     /* ── Ocultar chrome do Streamlit ── */
     [data-testid="stHeader"],[data-testid="stToolbar"],
@@ -130,16 +133,16 @@ def show_login():
         background: transparent !important;
     }
 
-    /* ── Fundo com gradientes radiais ── */
+    /* ── Fundo: quase preto com glows vermelhos — igual à referência ── */
     [data-testid="stAppViewContainer"] {
         background:
-            radial-gradient(ellipse 80% 60% at 75% 5%,  #4a0c10 0%, transparent 60%),
-            radial-gradient(ellipse 60% 50% at 20% 90%, #2a0608 0%, transparent 55%),
-            #0e0102 !important;
+            radial-gradient(ellipse 90% 70% at 85% 0%,   rgba(130,15,20,0.75) 0%,  rgba(70,5,10,0.40) 38%, transparent 65%),
+            radial-gradient(ellipse 70% 55% at 12% 100%, rgba(90,8,14,0.55)  0%,  rgba(40,3,6,0.28)  40%, transparent 65%),
+            #0b0203 !important;
         min-height: 100dvh !important;
     }
 
-    /* ── Página: sem altura mínima forçada, fluxo natural ── */
+    /* ── Página: fluxo natural, sem altura forçada ── */
     [data-testid="stVerticalBlock"] {
         display: flex !important;
         flex-direction: column !important;
@@ -159,157 +162,211 @@ def show_login():
         align-items: stretch !important;
     }
 
-    /* ══ CARD: estiliza o container nativo do Streamlit ══ */
+    /* ══ CARD — container nativo do Streamlit ══
+       Cor de fundo um pouco mais clara que o fundo (#161010),
+       bordas quase invisíveis, canto arredondado 16px — fiel ao design */
     div[data-testid="stVerticalBlockBorderWrapper"] {
-        background: rgba(15,4,5,0.88) !important;
-        border: 1px solid rgba(255,255,255,0.09) !important;
-        border-radius: 20px !important;
-        padding: 28px 24px 20px !important;
-        box-shadow: 0 8px 48px rgba(0,0,0,0.65), 0 1px 0 rgba(255,255,255,0.05) inset !important;
-        backdrop-filter: blur(14px) !important;
-        -webkit-backdrop-filter: blur(14px) !important;
+        background: rgba(22,8,10,0.92) !important;
+        border: 1px solid rgba(255,255,255,0.07) !important;
+        border-radius: 16px !important;
+        padding: 32px 28px 24px !important;
+        box-shadow:
+            0 24px 64px rgba(0,0,0,0.75),
+            0 0 0 1px rgba(255,255,255,0.03) inset !important;
+        backdrop-filter: blur(18px) !important;
+        -webkit-backdrop-filter: blur(18px) !important;
     }
-    /* Remove a borda padrão que o Streamlit coloca no container */
     div[data-testid="stVerticalBlockBorderWrapper"] > div {
         border: none !important;
         padding: 0 !important;
     }
 
-    /* ══ LABELS NATIVOS do st.text_input estilizados ══
-       Usamos o label nativo (não ocultamos) e o transformamos
-       nas labels uppercase do design. Isso mantém label + input
-       sempre juntos no DOM — sem risco de sobreposição. */
+    /* ══ LABELS NATIVOS — uppercase pequeno, como na referência ══ */
     div[data-testid="stTextInput"] label {
         font-family: 'DM Sans', sans-serif !important;
         font-size: 10px !important;
-        font-weight: 600 !important;
-        letter-spacing: 2px !important;
+        font-weight: 700 !important;
+        letter-spacing: 2.2px !important;
         text-transform: uppercase !important;
-        color: rgba(255,255,255,0.38) !important;
-        margin-bottom: 4px !important;
+        color: rgba(255,255,255,0.42) !important;
+        margin-bottom: 6px !important;
+        display: block !important;
     }
 
-    /* ── Inputs ── */
+    /* ── Wrapper do input — posição relativa para o ícone ── */
     div[data-testid="stTextInput"] > div { position: relative !important; }
+
+    /* ── INPUTS — fundo escuro com borda sutil, igual ao design ── */
     div[data-testid="stTextInput"] input {
-        background: rgba(0,0,0,0.45) !important;
-        border: 1px solid rgba(255,255,255,0.10) !important;
-        border-radius: 12px !important;
-        color: #fff !important;
+        background: rgba(5,1,2,0.65) !important;
+        border: 1px solid rgba(255,255,255,0.11) !important;
+        border-radius: 10px !important;
+        color: rgba(255,255,255,0.88) !important;
         font-family: 'DM Sans', sans-serif !important;
         font-size: 15px !important;
-        padding: 14px 16px 14px 46px !important;
-        height: 52px !important;
+        font-weight: 400 !important;
+        padding: 0 16px 0 46px !important;
+        height: 54px !important;
         transition: border-color 0.2s, box-shadow 0.2s !important;
+        width: 100% !important;
     }
-    div[data-testid="stTextInput"] input::placeholder { color: rgba(255,255,255,0.22) !important; }
+    div[data-testid="stTextInput"] input::placeholder {
+        color: rgba(255,255,255,0.28) !important;
+    }
     div[data-testid="stTextInput"] input:focus {
-        border-color: rgba(212,48,48,0.6) !important;
-        box-shadow: 0 0 0 3px rgba(212,48,48,0.14) !important;
+        border-color: rgba(200,35,40,0.55) !important;
+        box-shadow: 0 0 0 3px rgba(200,35,40,0.12) !important;
         outline: none !important;
     }
 
-    /* ── Ícone usuário (pelo placeholder) ── */
+    /* ── ÍCONE USUÁRIO — SVG inline via pseudo-elemento ── */
     div[data-testid="stTextInput"]:has(input[placeholder="Pedro Mazzini"]) > div::before {
         content: '';
         position: absolute !important; left: 15px !important; top: 50% !important;
         transform: translateY(-50%) !important;
         width: 18px !important; height: 18px !important;
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23ffffff55' stroke-width='1.8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z'/%3E%3C/svg%3E") !important;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23ffffff44' stroke-width='1.7'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z'/%3E%3C/svg%3E") !important;
         background-repeat: no-repeat !important; background-size: contain !important;
         pointer-events: none !important; z-index: 10 !important;
     }
 
-    /* ── Ícone senha ── */
-    div[data-testid="stTextInput"]:has(input[placeholder="••••••"]) > div::before {
+    /* ── ÍCONE CADEADO — fiel ao design de referência ── */
+    div[data-testid="stTextInput"]:has(input[type="password"]) > div::before {
         content: '';
         position: absolute !important; left: 15px !important; top: 50% !important;
         transform: translateY(-50%) !important;
         width: 17px !important; height: 17px !important;
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23ffffff55' stroke-width='1.8'%3E%3Crect x='3' y='11' width='18' height='11' rx='2'/%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M7 11V7a5 5 0 0 1 10 0v4'/%3E%3C/svg%3E") !important;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23ffffff44' stroke-width='1.7'%3E%3Crect x='3' y='11' width='18' height='11' rx='2' ry='2'/%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M7 11V7a5 5 0 0 1 10 0v4'/%3E%3C/svg%3E") !important;
         background-repeat: no-repeat !important; background-size: contain !important;
         pointer-events: none !important; z-index: 10 !important;
     }
 
-    /* ── Botão ── */
+    /* ── BOTÃO — vermelho sólido com glow, sem texto ornamental ── */
     div[data-testid="stButton"] > button {
-        background: linear-gradient(135deg, #c8282a 0%, #8f1214 100%) !important;
-        border: none !important; border-radius: 12px !important;
+        background: linear-gradient(180deg, #c82030 0%, #8c0f1a 100%) !important;
+        border: none !important;
+        border-radius: 10px !important;
         color: #fff !important;
         font-family: 'DM Sans', sans-serif !important;
-        font-size: 15px !important; font-weight: 600 !important;
-        width: 100% !important; height: 52px !important;
-        padding: 0 !important; margin-top: 8px !important;
-        box-shadow: 0 4px 24px rgba(180,20,20,0.35) !important;
-        transition: opacity 0.18s, transform 0.12s !important;
-        letter-spacing: 0.4px !important;
+        font-size: 15px !important;
+        font-weight: 600 !important;
+        letter-spacing: 0.3px !important;
+        width: 100% !important;
+        height: 54px !important;
+        padding: 0 !important;
+        margin-top: 10px !important;
+        box-shadow:
+            0 4px 20px rgba(160,15,25,0.50),
+            0 1px 0 rgba(255,100,110,0.15) inset !important;
+        transition: opacity 0.16s, transform 0.1s, box-shadow 0.16s !important;
         cursor: pointer !important;
     }
-    div[data-testid="stButton"] > button:hover  { opacity: 0.88 !important; transform: translateY(-1px) !important; }
-    div[data-testid="stButton"] > button:active { opacity: 0.78 !important; transform: translateY(0) !important; }
+    div[data-testid="stButton"] > button:hover {
+        opacity: 0.90 !important;
+        transform: translateY(-1px) !important;
+        box-shadow: 0 6px 28px rgba(160,15,25,0.65) !important;
+    }
+    div[data-testid="stButton"] > button:active {
+        opacity: 0.80 !important;
+        transform: translateY(0) !important;
+    }
+
+    /* ── Espaçamento entre inputs ── */
+    div[data-testid="stTextInput"] { margin-bottom: 14px !important; }
     </style>
     """, unsafe_allow_html=True)
 
-    # ══ COLUNA CENTRAL (centraliza tudo horizontalmente) ══
-    _, col, _ = st.columns([2.2, 2.2, 2.2])
+    # ══ COLUNA CENTRAL — ~420px, igual ao card da referência ══
+    _, col, _ = st.columns([1.8, 2.4, 1.8])
 
     with col:
 
-        # ── CABEÇALHO (logo, badge, tagline) — HTML puro, sem widgets ──
+        # ── CABEÇALHO: badge + logo + tagline ──
         st.markdown("""
-        <div style="text-align:center; padding-top:40px; margin-bottom:20px; font-family:'DM Sans',sans-serif;">
-            <div style="display:inline-block; border:1px solid rgba(200,60,60,0.55);
-                        border-radius:20px; padding:5px 18px; font-size:10px;
-                        letter-spacing:2.5px; color:#c84040; text-transform:uppercase;
-                        font-weight:600; margin-bottom:14px;">
+        <div style="text-align:center; padding-top:52px; margin-bottom:24px;">
+            <!-- Badge "INTELIGÊNCIA DE MERCADO" -->
+            <div style="display:inline-block;
+                        border: 1px solid rgba(185,45,50,0.60);
+                        border-radius: 999px;
+                        padding: 5px 20px;
+                        font-family: 'DM Sans', sans-serif;
+                        font-size: 10px;
+                        font-weight: 700;
+                        letter-spacing: 2.8px;
+                        color: rgba(220,80,85,0.90);
+                        text-transform: uppercase;
+                        margin-bottom: 18px;">
                 Inteligência de Mercado
             </div>
-            <div style="font-family:'Bebas Neue',sans-serif; font-size:52px; letter-spacing:6px;
-                        color:#fff; line-height:1.0; text-shadow:0 2px 20px rgba(180,20,20,0.4);">
-                FARMA<span style="color:#d43030;">ZZ</span>INI
+            <!-- Logo principal -->
+            <div style="font-family:'Bebas Neue',sans-serif;
+                        font-size: 58px;
+                        letter-spacing: 7px;
+                        color: #ffffff;
+                        line-height: 1.0;
+                        text-shadow: 0 4px 28px rgba(160,15,20,0.45);">
+                FARMA<span style="color:#cc2535;">ZZ</span>INI
             </div>
-            <div style="font-size:13px; color:rgba(255,255,255,0.35); letter-spacing:0.5px; margin-top:8px;">
+            <!-- Tagline -->
+            <div style="font-family:'DM Sans',sans-serif;
+                        font-size: 13px;
+                        color: rgba(255,255,255,0.30);
+                        letter-spacing: 0.4px;
+                        margin-top: 10px;">
                 Intel — Análise Competitiva em Tempo Real
             </div>
         </div>
         """, unsafe_allow_html=True)
 
-        # ══ CARD com st.container(border=True) ══
-        # Todos os widgets ficam DENTRO deste container — sem sobreposições.
+        # ══ CARD ══
         with st.container(border=True):
 
-            # Título e subtítulo
+            # Título "Bem-vindo de volta 👋"
             st.markdown("""
-            <div style="font-size:22px; font-weight:700; color:#fff; margin-bottom:4px;
-                        font-family:'DM Sans',sans-serif; letter-spacing:-0.2px;
-                        text-align:center;">
-                Bem-vindo de volta
+            <div style="font-family:'DM Sans',sans-serif;
+                        font-size: 21px;
+                        font-weight: 700;
+                        color: #ffffff;
+                        margin-bottom: 5px;
+                        letter-spacing: -0.2px;">
+                Bem-vindo de volta 👋
             </div>
-            <div style="font-size:13px; color:rgba(255,255,255,0.38); margin-bottom:20px;
-                        font-family:'DM Sans',sans-serif; text-align:center;">
+            <div style="font-family:'DM Sans',sans-serif;
+                        font-size: 13px;
+                        color: rgba(255,255,255,0.36);
+                        margin-bottom: 22px;
+                        line-height: 1.5;">
                 Faça login para acessar o painel de inteligência.
             </div>
             """, unsafe_allow_html=True)
 
-            # Mensagem de erro (quando login falhar)
+            # Mensagem de erro
             if st.session_state.get("login_error", False):
                 st.markdown("""
-                <div style="background:rgba(200,30,30,0.16); border:1px solid rgba(200,30,30,0.38);
-                            border-radius:10px; padding:11px 16px; font-size:13px; color:#f08080;
-                            margin-bottom:12px; display:flex; align-items:center; gap:8px;
-                            font-family:'DM Sans',sans-serif;">
-                    <span>⚠</span><span>Usuário ou senha incorretos. Tente novamente.</span>
+                <div style="background: rgba(180,20,28,0.18);
+                            border: 1px solid rgba(180,20,28,0.42);
+                            border-radius: 9px;
+                            padding: 11px 15px;
+                            font-size: 13px;
+                            color: #f08888;
+                            margin-bottom: 14px;
+                            display: flex;
+                            align-items: center;
+                            gap: 8px;
+                            font-family: 'DM Sans', sans-serif;">
+                    <span>⚠</span>
+                    <span>Usuário ou senha incorretos. Tente novamente.</span>
                 </div>
                 """, unsafe_allow_html=True)
 
-            # Input usuário — label nativo "Usuário" estilizado via CSS
+            # Input usuário (label nativo estilizado via CSS)
             username = st.text_input("Usuário", placeholder="Pedro Mazzini", key="login_user")
 
-            # Input senha — label nativo "Senha" estilizado via CSS
+            # Input senha (label nativo estilizado via CSS)
             password = st.text_input("Senha", placeholder="••••••", type="password", key="login_pass")
 
-            # Botão — use_container_width garante largura total
-            if st.button("→  Entrar no painel", key="btn_login", use_container_width=True):
+            # Botão de login
+            if st.button("Entrar", key="btn_login", use_container_width=True):
                 if username == VALID_USER and password == VALID_PASS:
                     st.session_state.authenticated = True
                     st.session_state.login_error   = False
@@ -318,20 +375,28 @@ def show_login():
                     st.session_state.login_error = True
                     st.rerun()
 
-            # Divisor + rodapé (dentro do card)
+            # Divisor + rodapé "ACESSO RESTRITO" — igual à referência
             st.markdown("""
-            <div style="display:flex; align-items:center; gap:12px; margin:18px 0 10px;">
+            <div style="display:flex; align-items:center; gap:12px; margin: 22px 0 14px;">
                 <div style="flex:1; height:1px; background:rgba(255,255,255,0.07);"></div>
-                <span style="font-size:10px; color:rgba(255,255,255,0.22); letter-spacing:1.5px;
-                             text-transform:uppercase; font-weight:600; font-family:'DM Sans',sans-serif;">
-                    acesso restrito
+                <span style="font-family:'DM Sans',sans-serif;
+                             font-size: 9px;
+                             font-weight: 700;
+                             letter-spacing: 2.2px;
+                             text-transform: uppercase;
+                             color: rgba(255,255,255,0.22);">
+                    Acesso Restrito
                 </span>
                 <div style="flex:1; height:1px; background:rgba(255,255,255,0.07);"></div>
             </div>
-            <div style="font-size:12px; color:rgba(255,255,255,0.25); text-align:center;
-                        line-height:1.7; font-family:'DM Sans',sans-serif; margin-bottom:2px;">
+            <div style="font-family:'DM Sans',sans-serif;
+                        font-size: 12px;
+                        color: rgba(255,255,255,0.24);
+                        text-align: center;
+                        line-height: 1.75;
+                        padding-bottom: 2px;">
                 Plataforma exclusiva para a rede
-                <span style="color:#d43030; font-weight:600;">Farmazzini</span>.<br>
+                <span style="color:#cc3535; font-weight:600;">Farmazzini</span>.<br>
                 Em caso de dúvidas, contacte o administrador do sistema.
             </div>
             """, unsafe_allow_html=True)
