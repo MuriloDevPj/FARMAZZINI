@@ -47,12 +47,25 @@ Regras:
    "Listar os produtos disponíveis com nome, preço PIX e disponibilidade de todas as farmácias."
 5. Mantenha em português. Seja conciso (1-2 frases).
 
+6. CONCEITO CRÍTICO — Ruptura Oculta:
+   Um produto pode estar marcado como "Disponível" no campo disponibilidade mas ter preco_pix
+   nulo ou zero — isso é chamado de RUPTURA OCULTA. Esses produtos parecem disponíveis mas
+   não têm preço real, sendo inúteis para venda. Sempre que a intenção envolver:
+   - "estoque crítico", "ruptura", "sem preço", "itens problemáticos", "comparar estoque real",
+     "estoque oculto", "disponibilidade real" ou "comparar com concorrência no estoque":
+   Inclua EXPLICITAMENTE na intenção reescrita a necessidade de separar três categorias:
+     a) Indisponível (disponibilidade = 'Indisponível')
+     b) Ruptura oculta (disponibilidade = 'Disponível' AND (preco_pix IS NULL OR preco_pix = 0))
+     c) Disponível real (disponibilidade = 'Disponível' AND preco_pix > 0)
+   Agrupe por farmacia e categoria, com contagem de cada grupo.
+
 Exemplos:
 - "quanto tá o remedinho pra dor de cabeça?" → "Listar produtos com nome contendo 'dor de cabeça' ou 'analgésico' ou 'dipirona' ou 'paracetamol', mostrando preço PIX e disponibilidade, ordenado por menor preço."
 - "qual mais barato?" → "Encontrar o produto com menor preço PIX entre todas as farmácias, agrupado por farmácia."
 - "tem promoção?" → "Listar produtos que possuem promoções especiais ou desconto padrão preenchido, mostrando nome, preço original, preço PIX e promoções especiais."
 - "compara as farmácias" → "Comparar preço médio PIX e preço médio original entre FarmaPonte e Vera Cruz, agrupado por farmácia."
 - "estoque" → "Mostrar contagem de produtos disponíveis e indisponíveis por farmácia."
+- "estoque crítico" ou "itens com estoque crítico comparando com a concorrência" → "Contar produtos por farmácia separando em três categorias: Indisponível (disponibilidade='Indisponível'), Ruptura Oculta (disponibilidade='Disponível' AND (preco_pix IS NULL OR preco_pix = 0)) e Disponível Real (disponibilidade='Disponível' AND preco_pix > 0). Agrupar por farmacia e categoria para comparativo entre FarmaPonte e Vera Cruz."
 """
 
 # ==============================================================================
@@ -87,9 +100,21 @@ Regras Estritas:
    - Para "menor preço" SEM produto específico: MIN() com GROUP BY farmacia.
    - Para "menor preço" COM produto: filtre pelo nome com LIKE, ENTÃO ORDER BY com LIMIT.
    - Para busca por nome de produto: use LOWER(nome) LIKE LOWER('%termo%') para tolerância a maiúsculas.
-   - Para "estoque crítico" ou "ruptura": GROUP BY farmacia, disponibilidade com COUNT(*).
+   - Para "estoque crítico", "ruptura" ou "comparar disponibilidade real": use a regra de Ruptura Oculta abaixo.
    - Use LIMIT 20 para queries com ORDER BY. Use LIMIT 50 para queries sem ORDER BY.
    - Se comparativo entre farmácias: GROUP BY farmacia com AVG() ou MIN().
+
+5a. REGRA DE RUPTURA OCULTA (CRÍTICO — regra de negócio da Farmazzini):
+   Um produto marcado como disponibilidade='Disponível' mas com preco_pix IS NULL ou preco_pix = 0
+   é uma RUPTURA OCULTA — parece disponível mas não tem preço real.
+   Sempre que a intenção mencionar estoque crítico, ruptura, comparativo de estoque ou disponibilidade real,
+   classifique os produtos em TRÊS categorias usando CASE WHEN:
+     - 'Indisponível'    → disponibilidade = 'Indisponível'
+     - 'Ruptura Oculta'  → disponibilidade = 'Disponível' AND (preco_pix IS NULL OR preco_pix = 0)
+     - 'Disponível Real' → disponibilidade = 'Disponível' AND preco_pix > 0
+   Use COUNT(*) com GROUP BY farmacia, categoria_estoque para o comparativo.
+   NUNCA use apenas GROUP BY farmacia, disponibilidade para queries de estoque crítico —
+   isso oculta a ruptura oculta dentro do grupo "Disponível".
 
 6. REGRA OBRIGATÓRIA DE COLUNAS:
    - Toda query que lista produtos individuais DEVE incluir: farmacia, nome, disponibilidade.
@@ -110,6 +135,8 @@ Regras Estritas:
      → SELECT farmacia, disponibilidade, COUNT(*) as total FROM tb_processed WHERE ano='2026' AND mes='05' AND dia='26' GROUP BY farmacia, disponibilidade ORDER BY total DESC LIMIT 20
    - "Produtos com promoções especiais preenchidas."
      → SELECT farmacia, nome, preco_original, preco_pix, promocoes_especiais, disponibilidade FROM tb_processed WHERE promocoes_especiais IS NOT NULL AND promocoes_especiais <> '' AND ano='2026' AND mes='05' AND dia='26' LIMIT 50
+   - "Estoque crítico comparando FarmaPonte e Vera Cruz, separando ruptura oculta."
+     → SELECT farmacia, CASE WHEN disponibilidade = 'Indisponível' THEN 'Indisponível' WHEN disponibilidade = 'Disponível' AND (preco_pix IS NULL OR preco_pix = 0) THEN 'Ruptura Oculta' WHEN disponibilidade = 'Disponível' AND preco_pix > 0 THEN 'Disponível Real' ELSE 'Outro' END as categoria_estoque, COUNT(*) as quantidade FROM tb_processed WHERE ano='2026' AND mes='05' AND dia='26' GROUP BY farmacia, CASE WHEN disponibilidade = 'Indisponível' THEN 'Indisponível' WHEN disponibilidade = 'Disponível' AND (preco_pix IS NULL OR preco_pix = 0) THEN 'Ruptura Oculta' WHEN disponibilidade = 'Disponível' AND preco_pix > 0 THEN 'Disponível Real' ELSE 'Outro' END ORDER BY farmacia, quantidade DESC LIMIT 20
 """
 
 # ==============================================================================
