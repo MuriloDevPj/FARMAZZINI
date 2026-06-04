@@ -1,19 +1,15 @@
 """
 ╔══════════════════════════════════════════════════════════════════╗
 ║           FARMAZZINI INTEL — APP PRINCIPAL (STREAMLIT)          ║
-║     VERSÃO COM LOGIN PERSISTENTE VIA COOKIE (sem redirect)       ║
+║     VERSÃO COM LOGIN PERSISTENTE SEM DEPENDÊNCIAS EXTERNAS       ║
 ╚══════════════════════════════════════════════════════════════════╝
 
-SOLUÇÃO DE PERSISTÊNCIA:
-  O Streamlit Cloud redefine o st.session_state a cada rerun completo
-  (ex: quando o iframe navega via query params). Para manter o login
-  entre reruns, usamos um cookie de sessão com streamlit-cookies-controller.
-
-  Fluxo:
-  1. No login bem-sucedido → grava cookie "fz_auth" = "1"
-  2. Em cada rerun → lê o cookie antes de verificar session_state
-  3. Se cookie presente → marca authenticated=True sem pedir login
-  4. No logout → apaga o cookie e limpa session_state
+SOLUÇÃO DE PERSISTÊNCIA (sem biblioteca extra):
+  O Streamlit reseta o session_state a cada rerun via query params.
+  Em vez de cookies, usamos um token de sessão gravado em
+  st.session_state E propagado no parâmetro 'state' que o JavaScript
+  já envia a cada ação. O campo "auth" dentro desse JSON mantém
+  o login vivo por toda a sessão sem precisar de nenhuma lib extra.
 """
 
 import sys
@@ -25,7 +21,6 @@ import streamlit as st
 import streamlit.components.v1 as components
 import json
 from pipeline import processar_mensagem
-from streamlit_cookies_controller import CookieController
 
 # ─────────────────────────────────────────────
 # CONFIGURAÇÃO DA PÁGINA
@@ -55,22 +50,53 @@ VALID_USER = "Pedro Mazzini"
 VALID_PASS = "@2026"
 
 # ─────────────────────────────────────────────
-# COOKIE CONTROLLER
-# Deve ser instanciado UMA VEZ no topo do script,
-# antes de qualquer leitura/escrita de cookies.
+# RESTAURAR ESTADO COMPLETO VIA QUERY PARAM 'state'
+# O JavaScript já envia o estado serializado a cada ação.
+# Incluímos "auth" nesse JSON para que o login sobreviva
+# a todos os reruns sem precisar de cookies ou libs externas.
 # ─────────────────────────────────────────────
-cookie = CookieController()
+_params = st.query_params
+if "state" in _params:
+    try:
+        _s = json.loads(_params.get("state"))
+        st.session_state.chats          = _s.get("chats",          st.session_state.get("chats", []))
+        st.session_state.active_chat_id = _s.get("active_chat_id", st.session_state.get("active_chat_id", 1))
+        st.session_state.active_db      = _s.get("active_db",      st.session_state.get("active_db", "todas"))
+        st.session_state.next_id        = _s.get("next_id",        st.session_state.get("next_id", 2))
+        # ← restaura autenticação embutida no state
+        if _s.get("auth") is True:
+            st.session_state.authenticated = True
+    except (json.JSONDecodeError, Exception):
+        pass
 
-# ─────────────────────────────────────────────
-# SESSION STATE — AUTENTICAÇÃO
-# Lê o cookie para restaurar sessão entre reruns
-# ─────────────────────────────────────────────
+# Defaults iniciais
 if "authenticated" not in st.session_state:
-    # Tenta recuperar autenticação do cookie persistido no browser
-    st.session_state.authenticated = cookie.get("fz_auth") == "1"
-
+    st.session_state.authenticated = False
 if "login_error" not in st.session_state:
     st.session_state.login_error = False
+if "chats" not in st.session_state:
+    st.session_state.chats = [
+        {
+            "id": 1,
+            "title": "Análise de Preço: Dipirona",
+            "messages": [
+                {
+                    "sender": "bot",
+                    "text": (
+                        "Olá! Seja bem-vindo ao <strong>Farmazzini Intel</strong>.<br><br>"
+                        "Estou pronto para análises de <strong>estoque, preços, margens</strong> "
+                        "e <strong>estratégias competitivas</strong>. Faça sua consulta abaixo!"
+                    )
+                }
+            ]
+        }
+    ]
+if "active_chat_id" not in st.session_state:
+    st.session_state.active_chat_id = 1
+if "active_db" not in st.session_state:
+    st.session_state.active_db = "todas"
+if "next_id" not in st.session_state:
+    st.session_state.next_id = 2
 
 
 # ─────────────────────────────────────────────
@@ -87,97 +113,70 @@ def show_login():
     [data-testid="stVerticalBlock"],
     [data-testid="stVerticalBlockBorderWrapper"],
     .main, .block-container, .stApp {
-        padding: 0 !important;
-        margin: 0 !important;
-        max-width: 100% !important;
-        overflow: hidden !important;
-        height: 100dvh !important;
-        min-height: unset !important;
+        padding: 0 !important; margin: 0 !important;
+        max-width: 100% !important; overflow: hidden !important;
+        height: 100dvh !important; min-height: unset !important;
     }
-    [data-testid="stHeader"],
-    [data-testid="stToolbar"],
-    [data-testid="stDecoration"],
-    [data-testid="stStatusWidget"],
+    [data-testid="stHeader"],[data-testid="stToolbar"],
+    [data-testid="stDecoration"],[data-testid="stStatusWidget"],
     header, footer { display: none !important; }
 
     [data-testid="stAppViewContainer"] {
         background: radial-gradient(ellipse at 70% 10%, #3a0a0d 0%, #150204 55%, #0d0102 100%) !important;
     }
-
     [data-testid="stVerticalBlock"] {
-        display: flex !important;
-        flex-direction: column !important;
-        align-items: center !important;
-        justify-content: center !important;
-        min-height: 100dvh !important;
-        gap: 0 !important;
-        padding: 32px 16px !important;
-        font-family: 'DM Sans', sans-serif !important;
+        display: flex !important; flex-direction: column !important;
+        align-items: center !important; justify-content: center !important;
+        min-height: 100dvh !important; gap: 0 !important;
+        padding: 32px 16px !important; font-family: 'DM Sans', sans-serif !important;
     }
-
     div[data-testid="stTextInput"] label {
-        font-size: 11px !important;
-        letter-spacing: 1.5px !important;
-        color: rgba(255,255,255,0.4) !important;
-        text-transform: uppercase !important;
+        font-size: 11px !important; letter-spacing: 1.5px !important;
+        color: rgba(255,255,255,0.4) !important; text-transform: uppercase !important;
         font-family: 'DM Sans', sans-serif !important;
     }
     div[data-testid="stTextInput"] input {
         background: rgba(0,0,0,0.35) !important;
         border: 1px solid rgba(255,255,255,0.08) !important;
-        border-radius: 10px !important;
-        color: #fff !important;
-        font-family: 'DM Sans', sans-serif !important;
-        font-size: 15px !important;
+        border-radius: 10px !important; color: #fff !important;
+        font-family: 'DM Sans', sans-serif !important; font-size: 15px !important;
     }
     div[data-testid="stTextInput"] input:focus {
         border-color: rgba(212,48,48,0.5) !important;
         box-shadow: 0 0 0 2px rgba(212,48,48,0.15) !important;
     }
-
     div[data-testid="stButton"] > button {
         background: linear-gradient(135deg, #c42020 0%, #8b1010 100%) !important;
-        border: none !important;
-        border-radius: 10px !important;
-        color: #fff !important;
-        font-family: 'DM Sans', sans-serif !important;
-        font-size: 15px !important;
-        font-weight: 600 !important;
-        width: 100% !important;
-        padding: 14px !important;
-        letter-spacing: 0.3px !important;
-        margin-top: 4px !important;
-        transition: opacity 0.2s !important;
+        border: none !important; border-radius: 10px !important; color: #fff !important;
+        font-family: 'DM Sans', sans-serif !important; font-size: 15px !important;
+        font-weight: 600 !important; width: 100% !important; padding: 14px !important;
+        letter-spacing: 0.3px !important; margin-top: 4px !important;
     }
     div[data-testid="stButton"] > button:hover { opacity: 0.88 !important; }
     </style>
     """, unsafe_allow_html=True)
 
     st.markdown("""
-    <div style="text-align:center; width:100%; max-width:400px; margin-bottom:24px;">
-        <div style="display:inline-block; border:1px solid rgba(200,60,60,0.6); border-radius:20px;
-                    padding:4px 16px; font-size:11px; letter-spacing:2px; color:#c84040;
-                    text-transform:uppercase; margin-bottom:14px; font-family:'DM Sans',sans-serif;">
+    <div style="text-align:center;width:100%;max-width:400px;margin-bottom:24px;">
+        <div style="display:inline-block;border:1px solid rgba(200,60,60,0.6);border-radius:20px;
+                    padding:4px 16px;font-size:11px;letter-spacing:2px;color:#c84040;
+                    text-transform:uppercase;margin-bottom:14px;font-family:'DM Sans',sans-serif;">
             Inteligência de Mercado
         </div>
-        <div style="font-family:'Bebas Neue',sans-serif; font-size:46px; letter-spacing:5px;
-                    color:#fff; margin:0; line-height:1;">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:46px;letter-spacing:5px;
+                    color:#fff;margin:0;line-height:1;">
             FARMA<span style="color:#d43030;">ZZ</span>INI
         </div>
-        <div style="font-size:13px; color:rgba(255,255,255,0.4); letter-spacing:0.5px; margin-top:6px;
+        <div style="font-size:13px;color:rgba(255,255,255,0.4);letter-spacing:0.5px;margin-top:6px;
                     font-family:'DM Sans',sans-serif;">
             Intel — Análise Competitiva em Tempo Real
         </div>
     </div>
-
-    <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.07);
-                border-radius:18px; padding:32px 28px 8px; width:100%; max-width:400px;
-                position:relative; overflow:hidden; box-sizing:border-box;">
-        <div style="font-size:22px; font-weight:600; color:#fff; margin-bottom:4px;
-                    font-family:'DM Sans',sans-serif;">
-            Bem-vindo de volta 👋
-        </div>
-        <div style="font-size:13px; color:rgba(255,255,255,0.4); margin-bottom:20px;
+    <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);
+                border-radius:18px;padding:32px 28px 8px;width:100%;max-width:400px;box-sizing:border-box;">
+        <div style="font-size:22px;font-weight:600;color:#fff;margin-bottom:4px;
+                    font-family:'DM Sans',sans-serif;">Bem-vindo de volta 👋</div>
+        <div style="font-size:13px;color:rgba(255,255,255,0.4);margin-bottom:20px;
                     font-family:'DM Sans',sans-serif;">
             Faça login para acessar o painel de inteligência.
         </div>
@@ -185,9 +184,9 @@ def show_login():
 
     if st.session_state.login_error:
         st.markdown("""
-        <div style="background:rgba(200,30,30,0.18); border:1px solid rgba(200,30,30,0.35);
-                    border-radius:8px; padding:10px 14px; font-size:13px; color:#f08080;
-                    margin-bottom:12px; font-family:'DM Sans',sans-serif;">
+        <div style="background:rgba(200,30,30,0.18);border:1px solid rgba(200,30,30,0.35);
+                    border-radius:8px;padding:10px 14px;font-size:13px;color:#f08080;
+                    margin-bottom:12px;font-family:'DM Sans',sans-serif;">
             ⚠ Usuário ou senha incorretos. Tente novamente.
         </div>
         """, unsafe_allow_html=True)
@@ -197,8 +196,6 @@ def show_login():
 
     if st.button("→  Entrar no painel", key="btn_login"):
         if username == VALID_USER and password == VALID_PASS:
-            # Grava cookie no browser — persiste entre reruns e abas
-            cookie.set("fz_auth", "1")
             st.session_state.authenticated = True
             st.session_state.login_error   = False
             st.rerun()
@@ -207,16 +204,16 @@ def show_login():
             st.rerun()
 
     st.markdown("""
-        <div style="display:flex; align-items:center; gap:12px; margin:24px 0 16px;">
-            <div style="flex:1; height:1px; background:rgba(255,255,255,0.07);"></div>
-            <span style="font-size:11px; color:rgba(255,255,255,0.25); letter-spacing:1px;
+        <div style="display:flex;align-items:center;gap:12px;margin:24px 0 16px;">
+            <div style="flex:1;height:1px;background:rgba(255,255,255,0.07);"></div>
+            <span style="font-size:11px;color:rgba(255,255,255,0.25);letter-spacing:1px;
                          font-family:'DM Sans',sans-serif;">acesso restrito</span>
-            <div style="flex:1; height:1px; background:rgba(255,255,255,0.07);"></div>
+            <div style="flex:1;height:1px;background:rgba(255,255,255,0.07);"></div>
         </div>
-        <div style="font-size:12px; color:rgba(255,255,255,0.28); text-align:center;
-                    line-height:1.7; font-family:'DM Sans',sans-serif; margin-bottom:24px;">
+        <div style="font-size:12px;color:rgba(255,255,255,0.28);text-align:center;
+                    line-height:1.7;font-family:'DM Sans',sans-serif;margin-bottom:24px;">
             Plataforma exclusiva para a rede
-            <span style="color:#d43030; font-weight:600;">Farmazzini</span>.<br>
+            <span style="color:#d43030;font-weight:600;">Farmazzini</span>.<br>
             Em caso de dúvidas, contacte o administrador do sistema.
         </div>
     </div>
@@ -227,44 +224,6 @@ def show_login():
 # CHATBOT PRINCIPAL
 # ─────────────────────────────────────────────
 def show_chatbot():
-    # Restaura estado completo dos chats via query param 'state'
-    _params_init = st.query_params
-    if "state" in _params_init:
-        try:
-            _state = json.loads(_params_init.get("state"))
-            st.session_state.chats          = _state.get("chats",          st.session_state.get("chats", []))
-            st.session_state.active_chat_id = _state.get("active_chat_id", st.session_state.get("active_chat_id", 1))
-            st.session_state.active_db      = _state.get("active_db",      st.session_state.get("active_db", "todas"))
-            st.session_state.next_id        = _state.get("next_id",        st.session_state.get("next_id", 2))
-        except (json.JSONDecodeError, Exception):
-            pass
-
-    if "chats" not in st.session_state:
-        st.session_state.chats = [
-            {
-                "id": 1,
-                "title": "Análise de Preço: Dipirona",
-                "messages": [
-                    {
-                        "sender": "bot",
-                        "text": (
-                            "Olá! Seja bem-vindo ao <strong>Farmazzini Intel</strong>.<br><br>"
-                            "Estou pronto para análises de <strong>estoque, preços, margens</strong> "
-                            "e <strong>estratégias competitivas</strong>. Faça sua consulta abaixo!"
-                        )
-                    }
-                ]
-            }
-        ]
-
-    if "active_chat_id" not in st.session_state:
-        st.session_state.active_chat_id = 1
-    if "active_db" not in st.session_state:
-        st.session_state.active_db = "todas"
-    if "next_id" not in st.session_state:
-        st.session_state.next_id = 2
-
-    # ── PROCESSAR AÇÃO VIA QUERY PARAMS ──
     params = st.query_params
 
     if "action" in params:
@@ -287,7 +246,7 @@ def show_chatbot():
                         if chat["title"].startswith("Nova Consulta"):
                             chat["title"] = (user_msg[:20] + "...") if len(user_msg) > 20 else user_msg
                         loading_html = """
-                        <div class="loading-container" style="display: flex; align-items: center; padding: 12px 18px; min-height: 40px;">
+                        <div class="loading-container" style="display:flex;align-items:center;padding:12px 18px;min-height:40px;">
                             <div class="dot-flashing"></div>
                         </div>
                         """
@@ -329,8 +288,6 @@ def show_chatbot():
             st.session_state.active_db = params.get("db")
 
         elif action == "logout":
-            # Apaga o cookie e desloga
-            cookie.remove("fz_auth")
             st.session_state.authenticated = False
             st.session_state.login_error   = False
             st.query_params.clear()
@@ -339,33 +296,28 @@ def show_chatbot():
         st.query_params.clear()
         st.rerun()
 
-    # ── SERIALIZAR ESTADO ──
+    # ── SERIALIZAR ESTADO — inclui "auth" para persistir login entre reruns ──
     chats_json     = json.dumps(st.session_state.chats, ensure_ascii=False)
     active_chat_id = st.session_state.active_chat_id
     active_db      = st.session_state.active_db
     next_id        = st.session_state.next_id
 
-    # ── RENDERIZAR HTML ──
     from ui import render_full_ui
     html_content = render_full_ui(
         chats=chats_json,
         active_chat_id=active_chat_id,
         active_db=active_db,
         next_id=next_id,
+        auth=True,          # ← passa flag de autenticação para o JS injetar no state
     )
 
-    # ── CSS — iframe ocupa 100dvh ──
     st.markdown("""
     <style>
-        [data-testid="stHeader"],
-        [data-testid="stToolbar"],
-        [data-testid="stDecoration"],
-        [data-testid="stStatusWidget"],
+        [data-testid="stHeader"],[data-testid="stToolbar"],
+        [data-testid="stDecoration"],[data-testid="stStatusWidget"],
         header, footer {
-            display: none !important;
-            height: 0 !important;
-            min-height: 0 !important;
-            visibility: hidden !important;
+            display: none !important; height: 0 !important;
+            min-height: 0 !important; visibility: hidden !important;
         }
         html, body,
         [data-testid="stAppViewContainer"],
@@ -373,36 +325,27 @@ def show_chatbot():
         [data-testid="stVerticalBlock"],
         [data-testid="stVerticalBlockBorderWrapper"],
         .main, .block-container, .stApp {
-            padding: 0 !important;
-            margin: 0 !important;
-            max-width: 100% !important;
-            background-color: #08030A !important;
-            overflow: hidden !important;
-            height: 100dvh !important;
+            padding: 0 !important; margin: 0 !important;
+            max-width: 100% !important; background-color: #08030A !important;
+            overflow: hidden !important; height: 100dvh !important;
             min-height: unset !important;
         }
         iframe {
-            display: block !important;
-            border: none !important;
-            width: 100vw !important;
-            height: 100dvh !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            position: fixed !important;
-            top: 0 !important;
-            left: 0 !important;
+            display: block !important; border: none !important;
+            width: 100vw !important; height: 100dvh !important;
+            margin: 0 !important; padding: 0 !important;
+            position: fixed !important; top: 0 !important; left: 0 !important;
         }
     </style>
     """, unsafe_allow_html=True)
 
     components.html(html_content, height=10000, scrolling=False)
 
-    # ── SEGUNDO PLANO: PROCESSAR PIPELINE DA AWS ──
+    # ── SEGUNDO PLANO: PIPELINE DA AWS ──
     chat_atual = next(
         (c for c in st.session_state.chats if c["id"] == st.session_state.active_chat_id),
         None
     )
-
     if chat_atual and chat_atual["messages"]:
         ultima_msg = chat_atual["messages"][-1]
         if ultima_msg.get("is_loading") is True:

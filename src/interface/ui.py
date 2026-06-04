@@ -1,4 +1,4 @@
-def render_full_ui(chats: str, active_chat_id: int, active_db: str, next_id: int = 2) -> str:
+def render_full_ui(chats: str, active_chat_id: int, active_db: str, next_id: int = 2, auth: bool = False) -> str:
     db_label = {"todas": "Todas", "ponte": "FarmaPonte", "veracruz": "Vera Cruz"}.get(active_db, "Todas")
     return f"""<!DOCTYPE html>
 <html lang="pt-br">
@@ -897,6 +897,7 @@ let chats        = {chats};
 let activeChatId = {active_chat_id};
 let activeDb     = "{active_db}";
 let nextId       = {next_id};
+let authFlag     = {str(auth).lower()};  // ← propagado pelo Python; mantém login vivo
 let sidebarOpen  = true;
 let pendingDeleteId = null;
 
@@ -1149,6 +1150,7 @@ function sendMsg() {{
         active_chat_id: activeChatId,
         active_db:      activeDb,
         next_id:        nextId,
+        auth:           authFlag,
     }});
 
     const params = new URLSearchParams({{
