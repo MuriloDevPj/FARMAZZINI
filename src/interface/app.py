@@ -1,8 +1,19 @@
 """
 ╔══════════════════════════════════════════════════════════════════╗
 ║           FARMAZZINI INTEL — APP PRINCIPAL (STREAMLIT)          ║
-║              VERSÃO COM TELA DE LOGIN INTEGRADA                  ║
+║     VERSÃO COM LOGIN PERSISTENTE VIA COOKIE (sem redirect)       ║
 ╚══════════════════════════════════════════════════════════════════╝
+
+SOLUÇÃO DE PERSISTÊNCIA:
+  O Streamlit Cloud redefine o st.session_state a cada rerun completo
+  (ex: quando o iframe navega via query params). Para manter o login
+  entre reruns, usamos um cookie de sessão com streamlit-cookies-controller.
+
+  Fluxo:
+  1. No login bem-sucedido → grava cookie "fz_auth" = "1"
+  2. Em cada rerun → lê o cookie antes de verificar session_state
+  3. Se cookie presente → marca authenticated=True sem pedir login
+  4. No logout → apaga o cookie e limpa session_state
 """
 
 import sys
@@ -14,6 +25,7 @@ import streamlit as st
 import streamlit.components.v1 as components
 import json
 from pipeline import processar_mensagem
+from streamlit_cookies_controller import CookieController
 
 # ─────────────────────────────────────────────
 # CONFIGURAÇÃO DA PÁGINA
@@ -43,10 +55,20 @@ VALID_USER = "Pedro Mazzini"
 VALID_PASS = "@2026"
 
 # ─────────────────────────────────────────────
+# COOKIE CONTROLLER
+# Deve ser instanciado UMA VEZ no topo do script,
+# antes de qualquer leitura/escrita de cookies.
+# ─────────────────────────────────────────────
+cookie = CookieController()
+
+# ─────────────────────────────────────────────
 # SESSION STATE — AUTENTICAÇÃO
+# Lê o cookie para restaurar sessão entre reruns
 # ─────────────────────────────────────────────
 if "authenticated" not in st.session_state:
-    st.session_state.authenticated = False
+    # Tenta recuperar autenticação do cookie persistido no browser
+    st.session_state.authenticated = cookie.get("fz_auth") == "1"
+
 if "login_error" not in st.session_state:
     st.session_state.login_error = False
 
@@ -131,7 +153,6 @@ def show_login():
     </style>
     """, unsafe_allow_html=True)
 
-    # Header com logo
     st.markdown("""
     <div style="text-align:center; width:100%; max-width:400px; margin-bottom:24px;">
         <div style="display:inline-block; border:1px solid rgba(200,60,60,0.6); border-radius:20px;
@@ -176,8 +197,10 @@ def show_login():
 
     if st.button("→  Entrar no painel", key="btn_login"):
         if username == VALID_USER and password == VALID_PASS:
+            # Grava cookie no browser — persiste entre reruns e abas
+            cookie.set("fz_auth", "1")
             st.session_state.authenticated = True
-            st.session_state.login_error = False
+            st.session_state.login_error   = False
             st.rerun()
         else:
             st.session_state.login_error = True
@@ -306,9 +329,10 @@ def show_chatbot():
             st.session_state.active_db = params.get("db")
 
         elif action == "logout":
-            # Ação de logout disparada pelo botão dentro do iframe HTML
+            # Apaga o cookie e desloga
+            cookie.remove("fz_auth")
             st.session_state.authenticated = False
-            st.session_state.login_error = False
+            st.session_state.login_error   = False
             st.query_params.clear()
             st.rerun()
 
