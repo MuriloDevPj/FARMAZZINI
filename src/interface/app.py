@@ -284,11 +284,12 @@ def show_login():
             # Título e subtítulo
             st.markdown("""
             <div style="font-size:22px; font-weight:700; color:#fff; margin-bottom:4px;
-                        font-family:'DM Sans',sans-serif; letter-spacing:-0.2px;">
-                Bem-vindo de volta 👋
+                        font-family:'DM Sans',sans-serif; letter-spacing:-0.2px;
+                        text-align:center;">
+                Bem-vindo de volta
             </div>
             <div style="font-size:13px; color:rgba(255,255,255,0.38); margin-bottom:20px;
-                        font-family:'DM Sans',sans-serif;">
+                        font-family:'DM Sans',sans-serif; text-align:center;">
                 Faça login para acessar o painel de inteligência.
             </div>
             """, unsafe_allow_html=True)
