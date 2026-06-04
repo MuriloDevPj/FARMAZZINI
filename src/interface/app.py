@@ -167,17 +167,18 @@ def show_login():
         background: rgba(22,8,10,0.92) !important;
         border: 1px solid rgba(255,255,255,0.07) !important;
         border-radius: 16px !important;
-        padding: 48px 28px 36px !important;
+        padding: 48px 28px 32px !important;
         box-shadow:
             0 24px 64px rgba(0,0,0,0.75),
             0 0 0 1px rgba(255,255,255,0.03) inset !important;
         backdrop-filter: blur(18px) !important;
         -webkit-backdrop-filter: blur(18px) !important;
-        overflow: hidden !important;
+        overflow: visible !important;
     }
     div[data-testid="stVerticalBlockBorderWrapper"] > div {
         border: none !important;
         padding: 0 !important;
+        overflow: visible !important;
     }
     /* Neutraliza margin-bottom automático que o Streamlit injeta
        no último bloco filho — causa do corte do rodapé ── */
@@ -441,7 +442,7 @@ def show_login():
                         color: rgba(255,255,255,0.24);
                         text-align: center;
                         line-height: 1.75;
-                        padding: 0 8px 8px;">
+                        padding: 0 8px 24px;">
                 Plataforma exclusiva para a rede
                 <span style="color:#cc3535; font-weight:600;">Farmazzini</span>.<br>
                 Em caso de dúvidas, contacte o administrador do sistema.
