@@ -197,31 +197,45 @@ def _validar_sql_localmente(sql: str) -> tuple[bool, str]:
     Validação leve antes de chamar o Step Functions.
     Detecta os erros mais comuns que o Athena rejeitaria.
     Retorna (is_valido, mensagem_de_erro).
+
+    Regras de detecção:
+    - Verifica sintaxe proibida no Athena: QUALIFY, ILIKE
+    - Verifica presença das partições de data no WHERE
+    - Verifica referência à tabela tb_processed (com ou sem database qualificado e alias)
+    - Rejeita ORDER BY apenas quando não há GROUP BY nem HAVING nem filtro de nome
+      (queries com GROUP BY/HAVING são agregações legítimas que não causam full scan)
     """
     sql_upper = sql.upper().strip()
 
+    # 1. Deve começar com SELECT
     if not sql_upper.startswith("SELECT"):
         return False, "A query não começa com SELECT."
 
+    # 2. Cláusulas incompatíveis com Athena (Presto SQL)
     if "QUALIFY" in sql_upper:
         return False, "Uso de QUALIFY detectado — não suportado no Athena. Use subquery com WHERE t.rn = 1."
 
     if "ILIKE" in sql_upper:
         return False, "Uso de ILIKE detectado — não suportado no Athena. Use LOWER(col) LIKE LOWER('%valor%')."
 
-    particoes_data = ("ANO=" in sql_upper or "ANO =" in sql_upper)
-    if not particoes_data:
+    # 3. Partições de data obrigatórias
+    if not re.search(r"ANO\s*=", sql_upper):
         return False, "Partições de data (ano/mes/dia) ausentes no WHERE — causaria full scan."
 
-    if "FROM TB_PROCESSED" not in sql_upper:
+    # 4. Tabela tb_processed deve estar referenciada
+    # Aceita: FROM tb_processed, FROM db_xxx.tb_processed, FROM db_xxx.tb_processed t, etc.
+    if not re.search(r"FROM\s+[\w.]*TB_PROCESSED", sql_upper):
         return False, "Tabela tb_processed não referenciada na query."
 
-    # Detecta ORDER BY sem filtro de nome (risco de full scan)
-    tem_order_by = "ORDER BY" in sql_upper
-    tem_filtro_nome = re.search(r"LOWER\s*\(\s*NOME\s*\)|NOME\s+LIKE", sql_upper)
-    tem_group_by = "GROUP BY" in sql_upper
-    if tem_order_by and not tem_filtro_nome and not tem_group_by:
-        return False, "ORDER BY sem filtro de produto específico — risco de full scan e timeout no Athena."
+    # 5. ORDER BY sem agregação nem filtro de produto = risco de full scan
+    # Só rejeita quando: tem ORDER BY  E  não tem GROUP BY  E  não tem HAVING  E  não tem filtro de nome
+    tem_order_by    = "ORDER BY" in sql_upper
+    tem_group_by    = "GROUP BY" in sql_upper
+    tem_having      = "HAVING"   in sql_upper
+    tem_filtro_nome = bool(re.search(r"LOWER\s*\(\s*[\w.]*NOME\s*\)|[\w.]*NOME\s+LIKE", sql_upper))
+
+    if tem_order_by and not tem_group_by and not tem_having and not tem_filtro_nome:
+        return False, "ORDER BY sem GROUP BY nem filtro de produto — risco de full scan e timeout no Athena."
 
     return True, ""
 
