@@ -167,7 +167,7 @@ def show_login():
         background: rgba(22,8,10,0.92) !important;
         border: 1px solid rgba(255,255,255,0.07) !important;
         border-radius: 16px !important;
-        padding: 32px 28px 36px !important;
+        padding: 48px 28px 36px !important;
         box-shadow:
             0 24px 64px rgba(0,0,0,0.75),
             0 0 0 1px rgba(255,255,255,0.03) inset !important;
