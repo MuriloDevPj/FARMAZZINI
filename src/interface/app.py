@@ -315,8 +315,8 @@ def show_login():
     /* ── Padding lateral — afasta inputs e botão das bordas do card ── */
     div[data-testid="stTextInput"],
     div[data-testid="stButton"] {
-        padding-left: 40px !important;
-        padding-right: 40px !important;
+        padding-left: 50px !important;
+        padding-right: 50px !important;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -349,7 +349,7 @@ def show_login():
                         letter-spacing: 7px;
                         color: #ffffff;
                         line-height: 1.0;
-                        text-shadow: 0 4px 40px rgba(160,15,20,0.45);">
+                        text-shadow: 0 4px 28px rgba(160,15,20,0.45);">
                 FARMA<span style="color:#cc2535;">ZZ</span>INI
             </div>
             <!-- Tagline -->
