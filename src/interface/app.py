@@ -164,8 +164,8 @@ def show_login():
 
     /* ══ CARD — container nativo do Streamlit ══ */
     div[data-testid="stVerticalBlockBorderWrapper"] {
-        background: rgba(72, 10, 16, 0.88) !important;
-        border: 1px solid rgba(204,37,53,0.30) !important;
+        background: #cc2535 !important;
+        border: 1px solid rgba(255,255,255,0.20) !important;
         border-radius: 16px !important;
         padding: 48px 28px 32px !important;
         box-shadow:
