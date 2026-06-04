@@ -105,7 +105,7 @@ if "next_id" not in st.session_state:
 def show_login():
     st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700&display=swap');
 
     html, body,
     [data-testid="stAppViewContainer"],
@@ -113,87 +113,203 @@ def show_login():
     [data-testid="stVerticalBlock"],
     [data-testid="stVerticalBlockBorderWrapper"],
     .main, .block-container, .stApp {
-        padding: 0 !important; margin: 0 !important;
-        max-width: 100% !important; overflow: hidden !important;
-        height: 100dvh !important; min-height: unset !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        max-width: 100% !important;
+        overflow: hidden !important;
+        height: 100dvh !important;
+        min-height: unset !important;
     }
-    [data-testid="stHeader"],[data-testid="stToolbar"],
-    [data-testid="stDecoration"],[data-testid="stStatusWidget"],
+    [data-testid="stHeader"], [data-testid="stToolbar"],
+    [data-testid="stDecoration"], [data-testid="stStatusWidget"],
     header, footer { display: none !important; }
 
+    /* Fundo: gradiente radial vermelho escuro igual à referência */
     [data-testid="stAppViewContainer"] {
-        background: radial-gradient(ellipse at 70% 10%, #3a0a0d 0%, #150204 55%, #0d0102 100%) !important;
+        background:
+            radial-gradient(ellipse 80% 60% at 75% 5%, #4a0c10 0%, transparent 60%),
+            radial-gradient(ellipse 60% 50% at 20% 90%, #2a0608 0%, transparent 55%),
+            #0e0102 !important;
     }
+
+    /* Centraliza o bloco vertical */
     [data-testid="stVerticalBlock"] {
-        display: flex !important; flex-direction: column !important;
-        align-items: center !important; justify-content: center !important;
-        min-height: 100dvh !important; gap: 0 !important;
-        padding: 32px 16px !important; font-family: 'DM Sans', sans-serif !important;
-    }
-    div[data-testid="stTextInput"] label {
-        font-size: 11px !important; letter-spacing: 1.5px !important;
-        color: rgba(255,255,255,0.4) !important; text-transform: uppercase !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        min-height: 100dvh !important;
+        gap: 0 !important;
+        padding: 32px 16px !important;
         font-family: 'DM Sans', sans-serif !important;
     }
+
+    /* ── Labels dos inputs ── */
+    div[data-testid="stTextInput"] label {
+        font-size: 10px !important;
+        letter-spacing: 2px !important;
+        color: rgba(255,255,255,0.38) !important;
+        text-transform: uppercase !important;
+        font-family: 'DM Sans', sans-serif !important;
+        font-weight: 600 !important;
+        margin-bottom: 6px !important;
+    }
+
+    /* ── Wrapper do input: posição relativa para o ícone absoluto ── */
+    div[data-testid="stTextInput"] > div {
+        position: relative !important;
+    }
+
+    /* ── Campo de texto ── */
     div[data-testid="stTextInput"] input {
-        background: rgba(0,0,0,0.35) !important;
-        border: 1px solid rgba(255,255,255,0.08) !important;
-        border-radius: 10px !important; color: #fff !important;
-        font-family: 'DM Sans', sans-serif !important; font-size: 15px !important;
+        background: rgba(0,0,0,0.40) !important;
+        border: 1px solid rgba(255,255,255,0.09) !important;
+        border-radius: 12px !important;
+        color: #fff !important;
+        font-family: 'DM Sans', sans-serif !important;
+        font-size: 15px !important;
+        padding: 14px 16px 14px 46px !important;
+        height: 52px !important;
+        transition: border-color 0.2s, box-shadow 0.2s !important;
+    }
+    div[data-testid="stTextInput"] input::placeholder {
+        color: rgba(255,255,255,0.22) !important;
     }
     div[data-testid="stTextInput"] input:focus {
-        border-color: rgba(212,48,48,0.5) !important;
-        box-shadow: 0 0 0 2px rgba(212,48,48,0.15) !important;
+        border-color: rgba(212,48,48,0.55) !important;
+        box-shadow: 0 0 0 3px rgba(212,48,48,0.12) !important;
+        outline: none !important;
     }
+
+    /* ── Botão ── */
     div[data-testid="stButton"] > button {
-        background: linear-gradient(135deg, #c42020 0%, #8b1010 100%) !important;
-        border: none !important; border-radius: 10px !important; color: #fff !important;
-        font-family: 'DM Sans', sans-serif !important; font-size: 15px !important;
-        font-weight: 600 !important; width: 100% !important; padding: 14px !important;
-        letter-spacing: 0.3px !important; margin-top: 4px !important;
+        background: linear-gradient(135deg, #c8282a 0%, #8f1214 100%) !important;
+        border: none !important;
+        border-radius: 12px !important;
+        color: #fff !important;
+        font-family: 'DM Sans', sans-serif !important;
+        font-size: 15px !important;
+        font-weight: 600 !important;
+        width: 100% !important;
+        height: 52px !important;
+        padding: 0 !important;
+        letter-spacing: 0.4px !important;
+        margin-top: 6px !important;
+        box-shadow: 0 4px 24px rgba(180,20,20,0.35) !important;
+        transition: opacity 0.18s, transform 0.12s !important;
     }
-    div[data-testid="stButton"] > button:hover { opacity: 0.88 !important; }
+    div[data-testid="stButton"] > button:hover {
+        opacity: 0.90 !important;
+        transform: translateY(-1px) !important;
+    }
+    div[data-testid="stButton"] > button:active {
+        transform: translateY(0) !important;
+        opacity: 0.80 !important;
+    }
+
+    /* ── Ícone SVG dentro do input de usuário ── */
+    div[data-testid="stTextInput"]:has(input[aria-label="Usuário"]) > div::before,
+    div[data-testid="stTextInput"]:has(input[placeholder="Pedro Mazzini"]) > div::before {
+        content: '';
+        position: absolute !important;
+        left: 16px !important;
+        top: 50% !important;
+        transform: translateY(-50%) !important;
+        width: 18px !important;
+        height: 18px !important;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23ffffff66' stroke-width='1.8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z'/%3E%3C/svg%3E") !important;
+        background-repeat: no-repeat !important;
+        background-size: contain !important;
+        pointer-events: none !important;
+        z-index: 10 !important;
+    }
+
+    /* ── Ícone SVG dentro do input de senha ── */
+    div[data-testid="stTextInput"]:has(input[aria-label="Senha"]) > div::before,
+    div[data-testid="stTextInput"]:has(input[type="password"]) > div::before {
+        content: '';
+        position: absolute !important;
+        left: 16px !important;
+        top: 50% !important;
+        transform: translateY(-50%) !important;
+        width: 17px !important;
+        height: 17px !important;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23ffffff66' stroke-width='1.8'%3E%3Crect x='3' y='11' width='18' height='11' rx='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M7 11V7a5 5 0 0 1 10 0v4'/%3E%3C/svg%3E") !important;
+        background-repeat: no-repeat !important;
+        background-size: contain !important;
+        pointer-events: none !important;
+        z-index: 10 !important;
+    }
     </style>
     """, unsafe_allow_html=True)
 
+    # ── CABEÇALHO: badge + logo + tagline ──
     st.markdown("""
-    <div style="text-align:center;width:100%;max-width:400px;margin-bottom:24px;">
-        <div style="display:inline-block;border:1px solid rgba(200,60,60,0.6);border-radius:20px;
-                    padding:4px 16px;font-size:11px;letter-spacing:2px;color:#c84040;
-                    text-transform:uppercase;margin-bottom:14px;font-family:'DM Sans',sans-serif;">
+    <div style="text-align:center;width:100%;max-width:420px;margin-bottom:20px;">
+        <div style="display:inline-block;border:1px solid rgba(200,60,60,0.55);border-radius:20px;
+                    padding:5px 18px;font-size:10px;letter-spacing:2.5px;color:#c84040;
+                    text-transform:uppercase;margin-bottom:16px;font-family:'DM Sans',sans-serif;
+                    font-weight:600;">
             Inteligência de Mercado
         </div>
-        <div style="font-family:'Bebas Neue',sans-serif;font-size:46px;letter-spacing:5px;
-                    color:#fff;margin:0;line-height:1;">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:52px;letter-spacing:6px;
+                    color:#fff;margin:0;line-height:1.0;text-shadow:0 2px 20px rgba(180,20,20,0.4);">
             FARMA<span style="color:#d43030;">ZZ</span>INI
         </div>
-        <div style="font-size:13px;color:rgba(255,255,255,0.4);letter-spacing:0.5px;margin-top:6px;
-                    font-family:'DM Sans',sans-serif;">
+        <div style="font-size:13px;color:rgba(255,255,255,0.35);letter-spacing:0.5px;margin-top:8px;
+                    font-family:'DM Sans',sans-serif;font-weight:400;">
             Intel — Análise Competitiva em Tempo Real
         </div>
     </div>
-    <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);
-                border-radius:18px;padding:32px 28px 8px;width:100%;max-width:400px;box-sizing:border-box;">
-        <div style="font-size:22px;font-weight:600;color:#fff;margin-bottom:4px;
-                    font-family:'DM Sans',sans-serif;">Bem-vindo de volta 👋</div>
-        <div style="font-size:13px;color:rgba(255,255,255,0.4);margin-bottom:20px;
-                    font-family:'DM Sans',sans-serif;">
+
+    <!-- CARD DE LOGIN -->
+    <div style="
+        background: rgba(255,255,255,0.035);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 20px;
+        padding: 32px 30px 10px 30px;
+        width: 100%;
+        max-width: 420px;
+        box-sizing: border-box;
+        backdrop-filter: blur(12px);
+        box-shadow: 0 8px 40px rgba(0,0,0,0.45), 0 1px 0 rgba(255,255,255,0.05) inset;
+    ">
+        <div style="font-size:22px;font-weight:700;color:#fff;margin-bottom:4px;
+                    font-family:'DM Sans',sans-serif;letter-spacing:-0.2px;">
+            Bem-vindo de volta 👋
+        </div>
+        <div style="font-size:13px;color:rgba(255,255,255,0.38);margin-bottom:22px;
+                    font-family:'DM Sans',sans-serif;font-weight:400;">
             Faça login para acessar o painel de inteligência.
         </div>
     """, unsafe_allow_html=True)
 
+    # ── ERRO DE LOGIN ──
     if st.session_state.login_error:
         st.markdown("""
-        <div style="background:rgba(200,30,30,0.18);border:1px solid rgba(200,30,30,0.35);
-                    border-radius:8px;padding:10px 14px;font-size:13px;color:#f08080;
-                    margin-bottom:12px;font-family:'DM Sans',sans-serif;">
-            ⚠ Usuário ou senha incorretos. Tente novamente.
+        <div style="
+            background: rgba(200,30,30,0.16);
+            border: 1px solid rgba(200,30,30,0.38);
+            border-radius: 10px;
+            padding: 11px 16px;
+            font-size: 13px;
+            color: #f08080;
+            margin-bottom: 14px;
+            font-family: 'DM Sans', sans-serif;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        ">
+            <span style="font-size:15px;">⚠</span>
+            <span>Usuário ou senha incorretos. Tente novamente.</span>
         </div>
         """, unsafe_allow_html=True)
 
+    # ── INPUTS (lógica intocada) ──
     username = st.text_input("Usuário", placeholder="Pedro Mazzini", key="login_user")
     password = st.text_input("Senha", placeholder="••••••", type="password", key="login_pass")
 
+    # ── BOTÃO (lógica intocada) ──
     if st.button("→  Entrar no painel", key="btn_login"):
         if username == VALID_USER and password == VALID_PASS:
             st.session_state.authenticated = True
@@ -203,15 +319,18 @@ def show_login():
             st.session_state.login_error = True
             st.rerun()
 
+    # ── RODAPÉ DO CARD ──
     st.markdown("""
-        <div style="display:flex;align-items:center;gap:12px;margin:24px 0 16px;">
+        <div style="display:flex;align-items:center;gap:12px;margin:22px 0 14px;">
             <div style="flex:1;height:1px;background:rgba(255,255,255,0.07);"></div>
-            <span style="font-size:11px;color:rgba(255,255,255,0.25);letter-spacing:1px;
-                         font-family:'DM Sans',sans-serif;">acesso restrito</span>
+            <span style="font-size:10px;color:rgba(255,255,255,0.22);letter-spacing:1.5px;
+                         font-family:'DM Sans',sans-serif;text-transform:uppercase;font-weight:600;">
+                acesso restrito
+            </span>
             <div style="flex:1;height:1px;background:rgba(255,255,255,0.07);"></div>
         </div>
-        <div style="font-size:12px;color:rgba(255,255,255,0.28);text-align:center;
-                    line-height:1.7;font-family:'DM Sans',sans-serif;margin-bottom:24px;">
+        <div style="font-size:12px;color:rgba(255,255,255,0.25);text-align:center;
+                    line-height:1.8;font-family:'DM Sans',sans-serif;margin-bottom:26px;">
             Plataforma exclusiva para a rede
             <span style="color:#d43030;font-weight:600;">Farmazzini</span>.<br>
             Em caso de dúvidas, contacte o administrador do sistema.
