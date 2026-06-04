@@ -169,12 +169,13 @@ def show_login():
         background: rgba(22,8,10,0.92) !important;
         border: 1px solid rgba(255,255,255,0.07) !important;
         border-radius: 16px !important;
-        padding: 32px 28px 24px !important;
+        padding: 32px 28px 32px !important;
         box-shadow:
             0 24px 64px rgba(0,0,0,0.75),
             0 0 0 1px rgba(255,255,255,0.03) inset !important;
         backdrop-filter: blur(18px) !important;
         -webkit-backdrop-filter: blur(18px) !important;
+        overflow: hidden !important;
     }
     div[data-testid="stVerticalBlockBorderWrapper"] > div {
         border: none !important;
@@ -273,6 +274,13 @@ def show_login():
 
     /* ── Espaçamento entre inputs ── */
     div[data-testid="stTextInput"] { margin-bottom: 14px !important; }
+
+    /* ── Padding lateral nos inputs e botão (afasta das bordas do card) ── */
+    div[data-testid="stTextInput"],
+    div[data-testid="stButton"] {
+        padding-left: 8px !important;
+        padding-right: 8px !important;
+    }
     </style>
     """, unsafe_allow_html=True)
 
@@ -321,21 +329,23 @@ def show_login():
         # ══ CARD ══
         with st.container(border=True):
 
-            # Título "Bem-vindo de volta 👋"
+            # Título e subtítulo — centralizado, sem emoji
             st.markdown("""
             <div style="font-family:'DM Sans',sans-serif;
                         font-size: 21px;
                         font-weight: 700;
                         color: #ffffff;
                         margin-bottom: 5px;
-                        letter-spacing: -0.2px;">
-                Bem-vindo de volta 👋
+                        letter-spacing: -0.2px;
+                        text-align: center;">
+                Bem-vindo de volta
             </div>
             <div style="font-family:'DM Sans',sans-serif;
                         font-size: 13px;
                         color: rgba(255,255,255,0.36);
                         margin-bottom: 22px;
-                        line-height: 1.5;">
+                        line-height: 1.5;
+                        text-align: center;">
                 Faça login para acessar o painel de inteligência.
             </div>
             """, unsafe_allow_html=True)
@@ -375,7 +385,7 @@ def show_login():
                     st.session_state.login_error = True
                     st.rerun()
 
-            # Divisor + rodapé "ACESSO RESTRITO" — igual à referência
+            # Divisor + rodapé "ACESSO RESTRITO" — dentro do card, padding garantido
             st.markdown("""
             <div style="display:flex; align-items:center; gap:12px; margin: 22px 0 14px;">
                 <div style="flex:1; height:1px; background:rgba(255,255,255,0.07);"></div>
@@ -394,7 +404,7 @@ def show_login():
                         color: rgba(255,255,255,0.24);
                         text-align: center;
                         line-height: 1.75;
-                        padding-bottom: 2px;">
+                        padding: 0 8px 8px;">
                 Plataforma exclusiva para a rede
                 <span style="color:#cc3535; font-weight:600;">Farmazzini</span>.<br>
                 Em caso de dúvidas, contacte o administrador do sistema.
