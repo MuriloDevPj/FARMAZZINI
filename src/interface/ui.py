@@ -673,7 +673,7 @@ tr:last-child td {{ border-bottom:none; }}
 <!-- ══ LOADING OVERLAY — exibido durante processamento da query ══ -->
 <div class="loading-overlay" id="loadingOverlay">
   <div class="loading-overlay-glow"></div>
-  <div class="loading-overlay-logo">FARMAZZINI <span>INTEL</span></div>
+  <div class="loading-overlay-logo">FARMA<span>ZZ</span>INI <span>INTEL</span></div>
   <div class="loading-overlay-card">
     <div class="loading-overlay-dots">
       <span></span><span></span><span></span>
@@ -857,7 +857,7 @@ tr:last-child td {{ border-bottom:none; }}
     <div class="header">
       <div class="header-left">
         <button class="menu-toggle" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
-        <div class="logo-placeholder">FARMAZZINI <span>INTEL</span></div>
+        <div class="logo-placeholder">FARMA<span>ZZ</span>INI <span>INTEL</span></div>
       </div>
       <div style="font-size:13px;color:var(--text-muted);display:flex;align-items:center;gap:8px;">
         <span class="tag-badge">✨ Pipeline Ativo</span>
