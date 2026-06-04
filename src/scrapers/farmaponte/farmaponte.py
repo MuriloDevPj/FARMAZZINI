@@ -146,8 +146,6 @@ def parse_html(html: str, cashback: str = "") -> dict | None:
     disponivel = "Disponível" if preco_pix else "Indisponível"
 
     # ── Cashback ──────────────────────────────────────────────────────────────
-    # Recebido como parâmetro — extraído do card na página de listagem.
-    # Fallback: tenta o elemento na página do produto (nem sempre presente).
     if not cashback:
         cashback_el = soup.select_one("strong.loyalty_price")
         if cashback_el:
@@ -169,9 +167,6 @@ def parse_html(html: str, cashback: str = "") -> dict | None:
                 desconto_especial = txt
 
     # Tipo 2: Compre junto / quantidade mínima
-    # <div class="seal seal_discont buy-together" data-qtd="3" data-buy="None">
-    #   <b>A PARTIR DE 3 UNIDADES, PAGUE R$ 10,24 CADA</b>
-    # </div>
     if not desconto_especial:
         buy_together_el = soup.select_one("div.seal_discont.buy-together")
         if buy_together_el:
