@@ -312,11 +312,11 @@ def show_login():
     /* ── Espaçamento entre inputs ── */
     div[data-testid="stTextInput"] { margin-bottom: 14px !important; }
 
-    /* ── Padding lateral nos inputs e botão (afasta das bordas do card) ── */
+    /* ── Padding lateral — afasta inputs e botão das bordas do card ── */
     div[data-testid="stTextInput"],
     div[data-testid="stButton"] {
-        padding-left: 8px !important;
-        padding-right: 8px !important;
+        padding-left: 28px !important;
+        padding-right: 28px !important;
     }
     </style>
     """, unsafe_allow_html=True)
