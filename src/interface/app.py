@@ -164,8 +164,11 @@ def show_login():
 
     /* ══ CARD — container nativo do Streamlit ══ */
     div[data-testid="stVerticalBlockBorderWrapper"] {
-        background: rgba(22,8,10,0.92) !important;
-        border: 1px solid rgba(255,255,255,0.07) !important;
+        background:
+            radial-gradient(ellipse 110% 60% at 50% 0%,   rgba(140,15,22,0.22) 0%, transparent 70%),
+            radial-gradient(ellipse 90%  70% at 80% 100%,  rgba(100,8,14,0.16)  0%, transparent 65%),
+            rgba(28,8,11,0.96) !important;
+        border: 1px solid rgba(180,30,40,0.18) !important;
         border-radius: 16px !important;
         padding: 48px 28px 32px !important;
         box-shadow:
@@ -223,6 +226,16 @@ def show_login():
     div[data-testid="stTextInput"] input[type="password"]::-ms-reveal,
     div[data-testid="stTextInput"] input[type="password"]::-ms-clear {
         display: none !important;
+    }
+
+    /* ── Oculta ícones SVG nativos que o Streamlit injeta como filhos do wrapper do input ──
+       Eles aparecem duplicados quando o campo recebe foco, pois convivem com o ::before do CSS ── */
+    div[data-testid="stTextInput"] > div > svg,
+    div[data-testid="stTextInput"] > div > div > svg,
+    div[data-testid="stTextInput"] [data-baseweb="input"] svg,
+    div[data-testid="stTextInput"] [data-baseweb="base-input"] svg {
+        display: none !important;
+        visibility: hidden !important;
     }
 
     /* ── INPUTS — fundo escuro com borda sutil, igual ao design ── */
