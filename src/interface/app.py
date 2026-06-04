@@ -176,7 +176,9 @@ def show_login():
         -webkit-backdrop-filter: blur(18px) !important;
         overflow: visible !important;
     }
-    div[data-testid="stVerticalBlockBorderWrapper"] > div {
+    div[data-testid="stVerticalBlockBorderWrapper"] > div,
+    div[data-testid="stVerticalBlockBorderWrapper"] > div > div {
+        background: transparent !important;
         border: none !important;
         padding: 0 !important;
         overflow: visible !important;
