@@ -162,14 +162,12 @@ def show_login():
         align-items: stretch !important;
     }
 
-    /* ══ CARD — container nativo do Streamlit ══
-       Cor de fundo um pouco mais clara que o fundo (#161010),
-       bordas quase invisíveis, canto arredondado 16px — fiel ao design */
+    /* ══ CARD — container nativo do Streamlit ══ */
     div[data-testid="stVerticalBlockBorderWrapper"] {
         background: rgba(22,8,10,0.92) !important;
         border: 1px solid rgba(255,255,255,0.07) !important;
         border-radius: 16px !important;
-        padding: 32px 28px 32px !important;
+        padding: 32px 28px 36px !important;
         box-shadow:
             0 24px 64px rgba(0,0,0,0.75),
             0 0 0 1px rgba(255,255,255,0.03) inset !important;
@@ -180,6 +178,14 @@ def show_login():
     div[data-testid="stVerticalBlockBorderWrapper"] > div {
         border: none !important;
         padding: 0 !important;
+    }
+    /* Neutraliza margin-bottom automático que o Streamlit injeta
+       no último bloco filho — causa do corte do rodapé ── */
+    div[data-testid="stVerticalBlockBorderWrapper"] > div > div:last-child,
+    div[data-testid="stVerticalBlockBorderWrapper"] [data-testid="stMarkdownContainer"]:last-child,
+    div[data-testid="stVerticalBlockBorderWrapper"] [data-testid="stMarkdownContainer"]:last-child > div {
+        margin-bottom: 0 !important;
+        padding-bottom: 0 !important;
     }
 
     /* ══ LABELS NATIVOS — uppercase pequeno, como na referência ══ */
@@ -194,8 +200,29 @@ def show_login():
         display: block !important;
     }
 
-    /* ── Wrapper do input — posição relativa para o ícone ── */
+    /* ── Wrapper do input — posição relativa para ícone customizado ── */
     div[data-testid="stTextInput"] > div { position: relative !important; }
+
+    /* ── Esconde o ícone nativo de autocomplete do browser (chave/usuário)
+       que aparece duplicado dentro do input ao digitar ── */
+    div[data-testid="stTextInput"] input::-webkit-credentials-auto-fill-button,
+    div[data-testid="stTextInput"] input::-webkit-contacts-auto-fill-button,
+    div[data-testid="stTextInput"] input::-webkit-caps-lock-indicator {
+        display: none !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+    }
+
+    /* ── Esconde o ícone nativo de "senha salva" do browser (Chrome/Safari) ── */
+    div[data-testid="stTextInput"] input[type="password"]::-webkit-textfield-decoration-container {
+        display: none !important;
+    }
+
+    /* ── Esconde o botão nativo de "revelar senha" do Edge/IE ── */
+    div[data-testid="stTextInput"] input[type="password"]::-ms-reveal,
+    div[data-testid="stTextInput"] input[type="password"]::-ms-clear {
+        display: none !important;
+    }
 
     /* ── INPUTS — fundo escuro com borda sutil, igual ao design ── */
     div[data-testid="stTextInput"] input {
@@ -210,6 +237,8 @@ def show_login():
         height: 54px !important;
         transition: border-color 0.2s, box-shadow 0.2s !important;
         width: 100% !important;
+        /* Desativa autopreenchimento visual do browser que injeta ícones ── */
+        background-clip: padding-box !important;
     }
     div[data-testid="stTextInput"] input::placeholder {
         color: rgba(255,255,255,0.28) !important;
@@ -220,26 +249,34 @@ def show_login():
         outline: none !important;
     }
 
-    /* ── ÍCONE USUÁRIO — SVG inline via pseudo-elemento ── */
+    /* ── ÍCONE USUÁRIO — aplicado ao div que contém o input (não no ::before do pai)
+       Usa o seletor :has() apontando para o input com placeholder específico ── */
     div[data-testid="stTextInput"]:has(input[placeholder="Pedro Mazzini"]) > div::before {
-        content: '';
-        position: absolute !important; left: 15px !important; top: 50% !important;
+        content: '' !important;
+        position: absolute !important;
+        left: 15px !important; top: 50% !important;
         transform: translateY(-50%) !important;
         width: 18px !important; height: 18px !important;
         background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23ffffff44' stroke-width='1.7'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z'/%3E%3C/svg%3E") !important;
-        background-repeat: no-repeat !important; background-size: contain !important;
-        pointer-events: none !important; z-index: 10 !important;
+        background-repeat: no-repeat !important;
+        background-size: contain !important;
+        pointer-events: none !important;
+        z-index: 10 !important;
     }
 
-    /* ── ÍCONE CADEADO — fiel ao design de referência ── */
+    /* ── ÍCONE CADEADO — seletor :has(input[type="password"]) garante
+       que só age no campo senha, nunca no campo usuário ── */
     div[data-testid="stTextInput"]:has(input[type="password"]) > div::before {
-        content: '';
-        position: absolute !important; left: 15px !important; top: 50% !important;
+        content: '' !important;
+        position: absolute !important;
+        left: 15px !important; top: 50% !important;
         transform: translateY(-50%) !important;
         width: 17px !important; height: 17px !important;
         background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23ffffff44' stroke-width='1.7'%3E%3Crect x='3' y='11' width='18' height='11' rx='2' ry='2'/%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M7 11V7a5 5 0 0 1 10 0v4'/%3E%3C/svg%3E") !important;
-        background-repeat: no-repeat !important; background-size: contain !important;
-        pointer-events: none !important; z-index: 10 !important;
+        background-repeat: no-repeat !important;
+        background-size: contain !important;
+        pointer-events: none !important;
+        z-index: 10 !important;
     }
 
     /* ── BOTÃO — vermelho sólido com glow, sem texto ornamental ── */
