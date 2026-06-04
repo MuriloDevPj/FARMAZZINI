@@ -103,14 +103,24 @@ if "next_id" not in st.session_state:
 # TELA DE LOGIN
 # ─────────────────────────────────────────────
 def show_login():
+    # ══════════════════════════════════════════════════════════════
+    # CSS GLOBAL — fundo, inputs, botão, label nativo estilizado
+    # Estratégia: usamos o label NATIVO do st.text_input (sem
+    # label_visibility="collapsed") e o estilizamos via CSS.
+    # Isso garante que label e input ficam sempre juntos no DOM,
+    # eliminando os bugs de sobreposição de blocos.
+    # O card é feito com st.container() estilizado via CSS.
+    # ══════════════════════════════════════════════════════════════
     st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap');
 
+    /* ── Ocultar chrome do Streamlit ── */
     [data-testid="stHeader"],[data-testid="stToolbar"],
     [data-testid="stDecoration"],[data-testid="stStatusWidget"],
     header, footer { display: none !important; }
 
+    /* ── Reset de layout ── */
     html, body, .stApp,
     [data-testid="stAppViewContainer"],
     [data-testid="stAppViewBlockContainer"],
@@ -120,6 +130,7 @@ def show_login():
         background: transparent !important;
     }
 
+    /* ── Fundo com gradientes radiais ── */
     [data-testid="stAppViewContainer"] {
         background:
             radial-gradient(ellipse 80% 60% at 75% 5%,  #4a0c10 0%, transparent 60%),
@@ -128,21 +139,19 @@ def show_login():
         min-height: 100dvh !important;
     }
 
-    /* Centraliza o bloco principal verticalmente */
+    /* ── Centralização vertical da página ── */
     [data-testid="stVerticalBlock"] {
         display: flex !important;
         flex-direction: column !important;
         align-items: center !important;
         justify-content: center !important;
         min-height: 100dvh !important;
-        padding: 24px 0 !important;
+        padding: 32px 0 !important;
         gap: 0 !important;
     }
 
-    /* Remove padding das colunas */
-    [data-testid="stColumn"] {
-        padding: 0 !important;
-    }
+    /* ── Remove padding interno das colunas ── */
+    [data-testid="stColumn"] { padding: 0 !important; }
     [data-testid="stColumn"] > div {
         padding: 0 !important;
         display: flex !important;
@@ -150,10 +159,40 @@ def show_login():
         align-items: stretch !important;
     }
 
-    /* Labels dos inputs — oculta o nativo, usamos markdown */
-    div[data-testid="stTextInput"] label { display: none !important; }
+    /* ══ CARD: estiliza o container nativo do Streamlit ══
+       st.container() gera um div[data-testid="stVerticalBlockBorderWrapper"].
+       Esse é o único jeito confiável de ter widgets DENTRO de um card
+       no Streamlit — sem iframes, sem sobreposições. */
+    div[data-testid="stVerticalBlockBorderWrapper"] {
+        background: rgba(15,4,5,0.88) !important;
+        border: 1px solid rgba(255,255,255,0.09) !important;
+        border-radius: 20px !important;
+        padding: 28px 24px 24px !important;
+        box-shadow: 0 8px 48px rgba(0,0,0,0.65), 0 1px 0 rgba(255,255,255,0.05) inset !important;
+        backdrop-filter: blur(14px) !important;
+        -webkit-backdrop-filter: blur(14px) !important;
+    }
+    /* Remove a borda padrão que o Streamlit coloca no container */
+    div[data-testid="stVerticalBlockBorderWrapper"] > div {
+        border: none !important;
+        padding: 0 !important;
+    }
 
-    /* Inputs */
+    /* ══ LABELS NATIVOS do st.text_input estilizados ══
+       Usamos o label nativo (não ocultamos) e o transformamos
+       nas labels uppercase do design. Isso mantém label + input
+       sempre juntos no DOM — sem risco de sobreposição. */
+    div[data-testid="stTextInput"] label {
+        font-family: 'DM Sans', sans-serif !important;
+        font-size: 10px !important;
+        font-weight: 600 !important;
+        letter-spacing: 2px !important;
+        text-transform: uppercase !important;
+        color: rgba(255,255,255,0.38) !important;
+        margin-bottom: 4px !important;
+    }
+
+    /* ── Inputs ── */
     div[data-testid="stTextInput"] > div { position: relative !important; }
     div[data-testid="stTextInput"] input {
         background: rgba(0,0,0,0.45) !important;
@@ -173,7 +212,7 @@ def show_login():
         outline: none !important;
     }
 
-    /* Ícone usuário */
+    /* ── Ícone usuário (pelo placeholder) ── */
     div[data-testid="stTextInput"]:has(input[placeholder="Pedro Mazzini"]) > div::before {
         content: '';
         position: absolute !important; left: 15px !important; top: 50% !important;
@@ -184,7 +223,7 @@ def show_login():
         pointer-events: none !important; z-index: 10 !important;
     }
 
-    /* Ícone senha */
+    /* ── Ícone senha ── */
     div[data-testid="stTextInput"]:has(input[placeholder="••••••"]) > div::before {
         content: '';
         position: absolute !important; left: 15px !important; top: 50% !important;
@@ -195,7 +234,7 @@ def show_login():
         pointer-events: none !important; z-index: 10 !important;
     }
 
-    /* Botão */
+    /* ── Botão ── */
     div[data-testid="stButton"] > button {
         background: linear-gradient(135deg, #c8282a 0%, #8f1214 100%) !important;
         border: none !important; border-radius: 12px !important;
@@ -203,103 +242,101 @@ def show_login():
         font-family: 'DM Sans', sans-serif !important;
         font-size: 15px !important; font-weight: 600 !important;
         width: 100% !important; height: 52px !important;
-        padding: 0 !important; margin-top: 6px !important;
+        padding: 0 !important; margin-top: 8px !important;
         box-shadow: 0 4px 24px rgba(180,20,20,0.35) !important;
         transition: opacity 0.18s, transform 0.12s !important;
         letter-spacing: 0.4px !important;
+        cursor: pointer !important;
     }
-    div[data-testid="stButton"] > button:hover  { opacity: 0.90 !important; transform: translateY(-1px) !important; }
-    div[data-testid="stButton"] > button:active { opacity: 0.80 !important; transform: translateY(0px) !important; }
+    div[data-testid="stButton"] > button:hover  { opacity: 0.88 !important; transform: translateY(-1px) !important; }
+    div[data-testid="stButton"] > button:active { opacity: 0.78 !important; transform: translateY(0) !important; }
     </style>
     """, unsafe_allow_html=True)
 
-    # ── 3 colunas: vazia | conteúdo (420px aprox.) | vazia ──
+    # ══ COLUNA CENTRAL (centraliza tudo horizontalmente) ══
     _, col, _ = st.columns([1, 2.2, 1])
 
     with col:
-        # CABEÇALHO
+
+        # ── CABEÇALHO (logo, badge, tagline) — HTML puro, sem widgets ──
         st.markdown("""
-        <div style="text-align:center;margin-bottom:22px;font-family:'DM Sans',sans-serif;">
-            <div style="display:inline-block;border:1px solid rgba(200,60,60,0.55);
-                        border-radius:20px;padding:5px 18px;font-size:10px;letter-spacing:2.5px;
-                        color:#c84040;text-transform:uppercase;font-weight:600;margin-bottom:14px;">
+        <div style="text-align:center; margin-bottom:24px; font-family:'DM Sans',sans-serif;">
+            <div style="display:inline-block; border:1px solid rgba(200,60,60,0.55);
+                        border-radius:20px; padding:5px 18px; font-size:10px;
+                        letter-spacing:2.5px; color:#c84040; text-transform:uppercase;
+                        font-weight:600; margin-bottom:16px;">
                 Inteligência de Mercado
             </div>
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:52px;letter-spacing:6px;
-                        color:#fff;line-height:1.0;text-shadow:0 2px 20px rgba(180,20,20,0.4);">
+            <div style="font-family:'Bebas Neue',sans-serif; font-size:52px; letter-spacing:6px;
+                        color:#fff; line-height:1.0; text-shadow:0 2px 20px rgba(180,20,20,0.4);">
                 FARMA<span style="color:#d43030;">ZZ</span>INI
             </div>
-            <div style="font-size:13px;color:rgba(255,255,255,0.35);letter-spacing:0.5px;margin-top:8px;">
+            <div style="font-size:13px; color:rgba(255,255,255,0.35); letter-spacing:0.5px; margin-top:8px;">
                 Intel — Análise Competitiva em Tempo Real
             </div>
         </div>
+        """, unsafe_allow_html=True)
 
-        <!-- CARD INÍCIO -->
-        <div style="background:rgba(15,4,5,0.85);border:1px solid rgba(255,255,255,0.09);
-                    border-radius:20px;padding:32px 28px 26px;
-                    box-shadow:0 8px 48px rgba(0,0,0,0.6),0 1px 0 rgba(255,255,255,0.05) inset;
-                    backdrop-filter:blur(14px);">
-            <div style="font-size:22px;font-weight:700;color:#fff;margin-bottom:4px;
-                        font-family:'DM Sans',sans-serif;letter-spacing:-0.2px;">
+        # ══ CARD com st.container(border=True) ══
+        # Todos os widgets ficam DENTRO deste container — sem sobreposições.
+        with st.container(border=True):
+
+            # Título e subtítulo
+            st.markdown("""
+            <div style="font-size:22px; font-weight:700; color:#fff; margin-bottom:4px;
+                        font-family:'DM Sans',sans-serif; letter-spacing:-0.2px;">
                 Bem-vindo de volta 👋
             </div>
-            <div style="font-size:13px;color:rgba(255,255,255,0.38);margin-bottom:22px;
+            <div style="font-size:13px; color:rgba(255,255,255,0.38); margin-bottom:20px;
                         font-family:'DM Sans',sans-serif;">
                 Faça login para acessar o painel de inteligência.
             </div>
-        </div>
-        """, unsafe_allow_html=True)
-
-        # Erro de login
-        if st.session_state.get("login_error", False):
-            st.markdown("""
-            <div style="background:rgba(200,30,30,0.16);border:1px solid rgba(200,30,30,0.38);
-                        border-radius:10px;padding:11px 16px;font-size:13px;color:#f08080;
-                        margin-bottom:4px;display:flex;align-items:center;gap:8px;
-                        font-family:'DM Sans',sans-serif;">
-                <span>⚠</span><span>Usuário ou senha incorretos. Tente novamente.</span>
-            </div>
             """, unsafe_allow_html=True)
 
-        # Label + Input usuário
-        st.markdown("""<div style="font-size:10px;letter-spacing:2px;color:rgba(255,255,255,0.38);
-                    text-transform:uppercase;font-weight:600;margin-bottom:6px;
-                    font-family:'DM Sans',sans-serif;">Usuário</div>""", unsafe_allow_html=True)
-        username = st.text_input("u", placeholder="Pedro Mazzini", key="login_user", label_visibility="collapsed")
+            # Mensagem de erro (quando login falhar)
+            if st.session_state.get("login_error", False):
+                st.markdown("""
+                <div style="background:rgba(200,30,30,0.16); border:1px solid rgba(200,30,30,0.38);
+                            border-radius:10px; padding:11px 16px; font-size:13px; color:#f08080;
+                            margin-bottom:12px; display:flex; align-items:center; gap:8px;
+                            font-family:'DM Sans',sans-serif;">
+                    <span>⚠</span><span>Usuário ou senha incorretos. Tente novamente.</span>
+                </div>
+                """, unsafe_allow_html=True)
 
-        # Label + Input senha
-        st.markdown("""<div style="font-size:10px;letter-spacing:2px;color:rgba(255,255,255,0.38);
-                    text-transform:uppercase;font-weight:600;margin:10px 0 6px;
-                    font-family:'DM Sans',sans-serif;">Senha</div>""", unsafe_allow_html=True)
-        password = st.text_input("p", placeholder="••••••", type="password", key="login_pass", label_visibility="collapsed")
+            # Input usuário — label nativo "Usuário" estilizado via CSS
+            username = st.text_input("Usuário", placeholder="Pedro Mazzini", key="login_user")
 
-        # Botão (lógica original intacta)
-        if st.button("→  Entrar no painel", key="btn_login"):
-            if username == VALID_USER and password == VALID_PASS:
-                st.session_state.authenticated = True
-                st.session_state.login_error   = False
-                st.rerun()
-            else:
-                st.session_state.login_error = True
-                st.rerun()
+            # Input senha — label nativo "Senha" estilizado via CSS
+            password = st.text_input("Senha", placeholder="••••••", type="password", key="login_pass")
 
-        # Divisor + rodapé
-        st.markdown("""
-        <div style="display:flex;align-items:center;gap:12px;margin:22px 0 12px;">
-            <div style="flex:1;height:1px;background:rgba(255,255,255,0.07);"></div>
-            <span style="font-size:10px;color:rgba(255,255,255,0.22);letter-spacing:1.5px;
-                         text-transform:uppercase;font-weight:600;font-family:'DM Sans',sans-serif;">
-                acesso restrito
-            </span>
-            <div style="flex:1;height:1px;background:rgba(255,255,255,0.07);"></div>
-        </div>
-        <div style="font-size:12px;color:rgba(255,255,255,0.25);text-align:center;
-                    line-height:1.8;font-family:'DM Sans',sans-serif;margin-bottom:4px;">
-            Plataforma exclusiva para a rede
-            <span style="color:#d43030;font-weight:600;">Farmazzini</span>.<br>
-            Em caso de dúvidas, contacte o administrador do sistema.
-        </div>
-        """, unsafe_allow_html=True)
+            # Botão — use_container_width garante largura total
+            if st.button("→  Entrar no painel", key="btn_login", use_container_width=True):
+                if username == VALID_USER and password == VALID_PASS:
+                    st.session_state.authenticated = True
+                    st.session_state.login_error   = False
+                    st.rerun()
+                else:
+                    st.session_state.login_error = True
+                    st.rerun()
+
+            # Divisor + rodapé (dentro do card)
+            st.markdown("""
+            <div style="display:flex; align-items:center; gap:12px; margin:24px 0 14px;">
+                <div style="flex:1; height:1px; background:rgba(255,255,255,0.07);"></div>
+                <span style="font-size:10px; color:rgba(255,255,255,0.22); letter-spacing:1.5px;
+                             text-transform:uppercase; font-weight:600; font-family:'DM Sans',sans-serif;">
+                    acesso restrito
+                </span>
+                <div style="flex:1; height:1px; background:rgba(255,255,255,0.07);"></div>
+            </div>
+            <div style="font-size:12px; color:rgba(255,255,255,0.25); text-align:center;
+                        line-height:1.8; font-family:'DM Sans',sans-serif;">
+                Plataforma exclusiva para a rede
+                <span style="color:#d43030; font-weight:600;">Farmazzini</span>.<br>
+                Em caso de dúvidas, contacte o administrador do sistema.
+            </div>
+            """, unsafe_allow_html=True)
 
 
 # ─────────────────────────────────────────────
